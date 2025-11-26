@@ -7,60 +7,213 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     @yield('styles')
+    <style>
+        main { padding-top: 5rem; }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
 
-    <!-- Navbar -->
-    <header class="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <!-- Logo + Nama Instansi -->
-                <div class="flex items-center space-x-4">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BBSPGL" class="h-12">
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-800">Kementerian ESDM</h1>
-                        <p class="text-xs text-gray-600">Balai Besar Survei dan Pemetaan Geologi Kelautan (BBSPGL)</p>
-                    </div>
-                </div>
+<!-- NAVBAR KUNING EMAS RESMI — TULISAN TIDAK TEBAL + KOTAK TRANSPARAN SAAT AKTIF -->
+<header class="bg-[#ffd700] shadow-xl fixed top-0 left-0 right-0 z-50">
+    <div class="container mx-auto px-6 py-5">
+        <div class="flex justify-between items-center">
 
-                <!-- Menu Navigasi -->
-                <nav class="hidden md:flex space-x-8">
-                    <a href="{{ route('beranda') }}"
-                       class="px-4 py-2 rounded-lg text-gray-700 font-medium hover:bg-blue-600 hover:text-white transition {{ request()->routeIs('beranda') ? 'bg-blue-600 text-white' : '' }}">
-                        Beranda
-                    </a>
-                    <a href="{{ route('peta') }}"
-                       class="px-4 py-2 rounded-lg text-gray-700 font-medium hover:bg-blue-600 hover:text-white transition {{ request()->routeIs('peta') ? 'bg-blue-600 text-white' : '' }}">
-                        Peta
-                    </a>
-                    <a href="{{ route('katalog') }}"
-                       class="px-4 py-2 rounded-lg text-gray-700 font-medium hover:bg-blue-600 hover:text-white transition {{ request()->routeIs('katalog') ? 'bg-blue-600 text-white' : '' }}">
-                        Katalog
-                    </a>
-                </nav>
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="{{ route('beranda') }}">
+                    <img src="{{ asset('images/fix.png') }}" alt="Logo BBSPGL" class="h-16 drop-shadow-md">
+                </a>
+            </div>
 
-                <!-- Mobile Menu Button (nanti bisa ditambah hamburger kalau mau) -->
-                <div class="md:hidden">
-                    <button class="text-gray-700">
-                        <i class="fas fa-bars text-2xl"></i>
-                    </button>
-                </div>
+            <!-- Menu Desktop — Tulisan TIDAK TEBAL -->
+            <nav class="hidden md:flex items-center space-x-10">
+                <a href="{{ route('beranda') }}"
+                   class="px-6 py-3 text-[#003366] font-medium text-lg rounded-lg transition-all duration-300
+                   {{ request()->routeIs('beranda') 
+                       ? 'bg-white/20 border-2 border-white shadow-md' 
+                       : 'hover:bg-white/10 hover:border-white/30 border-2 border-transparent' }}">
+                    Beranda
+                </a>
+                <a href="{{ route('peta') }}"
+                   class="px-6 py-3 text-[#003366] font-medium text-lg rounded-lg transition-all duration-300
+                   {{ request()->routeIs('peta') 
+                       ? 'bg-white/20 border-2 border-white shadow-md' 
+                       : 'hover:bg-white/10 hover:border-white/30 border-2 border-transparent' }}">
+                    Peta
+                </a>
+                <a href="{{ route('katalog') }}"
+                   class="px-6 py-3 text-[#003366] font-medium text-lg rounded-lg transition-all duration-300
+                   {{ request()->routeIs('katalog') 
+                       ? 'bg-white/20 border-2 border-white shadow-md' 
+                       : 'hover:bg-white/10 hover:border-white/30 border-2 border-transparent' }}">
+                    Katalog
+                </a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobileMenuBtn" class="text-[#003366]">
+                    <i class="fas fa-bars text-3xl"></i>
+                </button>
             </div>
         </div>
-    </header>
+    </div>
+
+    <!-- Mobile Menu — Juga TIDAK TEBAL -->
+    <div id="mobileMenu" class="hidden md:hidden bg-[#ffd700] border-t-4 border-[#003366]">
+        <div class="px-6 py-8 space-y-6 text-center">
+            <a href="{{ route('beranda') }}"
+               class="block px-10 py-5 text-[#003366] font-medium text-2xl rounded-xl transition-all
+               {{ request()->routeIs('beranda') 
+                   ? 'bg-white/25 border-4 border-white shadow-xl' 
+                   : 'border-4 border-white/50' }}">
+                Beranda
+            </a>
+            <a href="{{ route('peta') }}"
+               class="block px-10 py-5 text-[#003366] font-medium text-2xl rounded-xl transition-all
+               {{ request()->routeIs('peta') 
+                   ? 'bg-white/25 border-4 border-white shadow-xl' 
+                   : 'border-4 border-white/50' }}">
+                Peta
+            </a>
+            <a href="{{ route('katalog') }}"
+               class="block px-10 py-5 text-[#003366] font-medium text-2xl rounded-xl transition-all
+               {{ request()->routeIs('katalog') 
+                   ? 'bg-white/25 border-4 border-white shadow-xl' 
+                   : 'border-4 border-white/50' }}">
+                Katalog
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Jarak konten aman -->
+<style>
+    main { 
+        padding-top: 6.5rem !important; 
+    }
+</style>
+
+<!-- Jarak aman agar konten tidak tertutup navbar -->
+<style>
+    main { 
+        padding-top: 6.5rem !important; 
+    }
+</style>
+
+<!-- CSS: Garis bawah putih saat halaman aktif -->
+<style>
+    .active-nav::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: white;
+        border-radius: 2px;
+    }
+    main { 
+        padding-top: 6.5rem !important; 
+    }
+</style>
 
     <!-- Konten Utama -->
-    <main class="flex-1 pt-20">
+    <main class="flex-1">
         @yield('content')
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-10">
-        <div class="container mx-auto px-6 text-center">
-            <p>Hak Cipta © {{ date('Y') }} Balai Besar Survei dan Pemetaan Geologi Kelautan (BBSPGL)</p>
+    <!-- Footer Rapi 3 Kolom (Pelayanan Publik Sudah Dihapus) -->
+    <footer class="bg-[#002855] text-white py-16">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm">
+
+                <!-- Kolom 1: Logo + Deskripsi + Sosmed + Hak Cipta -->
+                <div class="flex flex-col items-center lg:items-start">
+                    <img src="{{ asset('images/pict.png') }}" alt="Logo Badan Geologi" class="h-24 mb-6">
+
+                    <p class="text-xs leading-relaxed text-gray-300 text-center lg:text-left mb-8">
+                        Berdasarkan Peraturan Presiden RI No 97 th 2021, Badan Geologi mempunyai tugas menyelenggarakan penyelidikan dan pelayanan di bidang sumber daya geologi, vulkanologi dan mitigasi bencana geologi, air tanah, dan geologi lingkungan, serta survei geologi.
+                    </p>
+
+                    <div class="flex space-x-6 mb-8">
+                        <a href="https://www.facebook.com/p/Badan-Geologi-100068349101047/" class="text-white hover:text-[#FDB813] transition text-xl"><i class="fab fa-facebook-f"></i></a>
+                        <a href="http://x.com/badangeologi_" class="text-white hover:text-[#FDB813] transition text-xl"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/badan.geologi/" class="text-white hover:text-[#FDB813] transition text-xl"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.youtube.com/c/BadanGeologiBG" class="text-white hover:text-[#FDB813] transition text-xl"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.tiktok.com/@badangeologi" class="text-white hover:text-[#FDB813] transition text-xl"><i class="fab fa-tiktok"></i></a>
+                    </div>
+
+
+                    <p class="text-xs text-gray-400 text-center lg:text-left">
+                        Hak Cipta © {{ date('Y') }} Badan Geologi,<br>
+                        Kementerian Energi dan Sumber Daya Mineral
+                    </p>
+                </div>
+
+                <!-- Kolom 2: Berita Terkini -->
+                <div class="flex flex-col">
+                    <h3 class="text-2xl font-bold text-[#FDB813] mb-8">Berita Terkini</h3>
+                    <ul class="space-y-6">
+                        <li>
+                            <a href="https://geologi.esdm.go.id/media-center/potensi-energi-laut-indonesia-survei-dan-pemetaan-potensi-energi-arus-laut" class="text-gray-200 hover:text-[#FDB813] transition text-base leading-tight">
+                                Potensi Energi Laut Indonesia : Survei Dan Pemetaan Potensi Energi Arus Laut
+                            </a>
+                            <p class="text-xs text-yellow-400 mt-2">Selasa, 23 September 2025</p>
+                        </li>
+                        <li>
+                            <a href="https://geologi.esdm.go.id/media-center/potensi-energi-laut-indonesia" class="text-gray-200 hover:text-[#FDB813] transition text-base leading-tight">
+                                Potensi Energi Laut Indonesia
+                            </a>
+                            <p class="text-xs text-yellow-400 mt-2">Rabu, 13 Agustus 2025</p>
+                        </li>
+                        <li>
+                            <a href="https://geologi.esdm.go.id/media-center/sinergi-bbspgl-psg-dan-phe-mendukung-eksplorasi-hidrogen-alami" class="text-gray-200 hover:text-[#FDB813] transition text-base leading-tight">
+                                Sinergi Bbspgl, Psg, Dan Phe Mendukung Eksplorasi Hidrogen Alami
+                            </a>
+                            <p class="text-xs text-yellow-400 mt-2">Rabu, 9 Juli 2025</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Kolom 3: Jam Kerja -->
+                <div class="flex flex-col">
+                    <h3 class="text-2xl font-bold text-[#FDB813] mb-8">Jam Kerja</h3>
+                    <p class="text-gray-300 mb-8 text-lg">Kami siap melayani Anda.</p>
+                    <ul class="space-y-4 text-gray-200 text-base">
+                        <li class="flex justify-between">
+                            <span>Senin–Kamis</span>
+                            <span class="font-medium">08:00–16:00 WIB</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Jumat</span>
+                            <span class="font-medium">08:00–16:30 WIB</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Sabtu & Minggu</span>
+                            <span class="text-red-400 font-medium">Tutup</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Tanggal Merah</span>
+                            <span class="text-red-400 font-medium">Tutup</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Copyright bawah -->
+            <div class="border-t border-gray-700 mt-12 pt-6 text-center text-xs text-gray-500">
+                © {{ date('Y') }} BBSPGL - Balai Besar Survei dan Pemetaan Geologi Kelautan. All rights reserved.
+            </div>
         </div>
     </footer>
 
     @yield('scripts')
+
+    <script>
+        document.getElementById('mobileMenuBtn')?.addEventListener('click', function () {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
