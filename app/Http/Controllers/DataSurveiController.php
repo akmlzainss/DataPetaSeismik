@@ -28,4 +28,4 @@ public function katalog()
 {
     return view('user.katalog'); // nanti kita buat view-nya
 }
-}
+}          
