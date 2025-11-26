@@ -3,9 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataSurveiController;
 
-// Halaman utama (dashboard publik)
-Route::get('/', [DataSurveiController::class, 'index'])->name('dashboard');
-
-// Detail satu data survei (opsional untuk nanti)
-Route::get('/survei/{dataSurvei}', [DataSurveiController::class, 'show'])
-     ->name('survei.show');
+Route::get('/', [DataSurveiController::class, 'index'])->name('beranda');     // ← Beranda
+Route::get('/peta', [DataSurveiController::class, 'peta'])->name('peta');    // nanti kita buat
+Route::get('/katalog', [DataSurveiController::class, 'katalog'])->name('katalog'); // nanti kita buat
