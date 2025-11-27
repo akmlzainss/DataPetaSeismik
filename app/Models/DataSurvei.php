@@ -10,17 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class DataSurvei extends Model
 {
     use HasFactory;
-
     protected $table = 'data_survei';
-
     // Menentukan bahwa kolom tahun adalah tipe data integer (year)
     protected $casts = [
         'tahun' => 'integer',
     ];
-
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'judul',
+        'ketua_tim', // Tambahkan ini
         'tahun',
         'tipe',
         'wilayah',
