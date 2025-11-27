@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             
             // --- ALIAS KUSTOM UNTUK ADMIN ---
             'auth.admin' => \App\Http\Middleware\AdminAuthMiddleware::class,
+            'guest:admin' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
         ]);
         
         // Pendaftaran middleware global (jika ada) dan lainnya ditaruh di sini.

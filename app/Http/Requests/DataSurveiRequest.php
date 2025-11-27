@@ -21,7 +21,7 @@ class DataSurveiRequest extends FormRequest
             'tipe'            => ['required', 'string', Rule::in(['2D', '3D', 'HR', 'Lainnya'])],
             'wilayah'        => ['required', 'string', 'max:255'],
             'deskripsi'      => ['nullable', 'string'],
-            'gambar_pratinjau' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'gambar_pratinjau' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif', 'max:51200'],
             'tautan_file'    => ['nullable', 'string', 'max:2048'],
         ];
     }
@@ -39,7 +39,7 @@ class DataSurveiRequest extends FormRequest
             'wilayah.required'  => 'Wilayah / blok wajib diisi.',
             'gambar_pratinjau.file' => 'File harus berupa gambar.',
             'gambar_pratinjau.mimes' => 'Format gambar harus jpeg, png, jpg, atau gif.',
-            'gambar_pratinjau.max' => 'Ukuran gambar maksimal 2MB.',
+            'gambar_pratinjau.max' => 'Ukuran gambar maksimal 50MB.',
         ];
     }
 }
