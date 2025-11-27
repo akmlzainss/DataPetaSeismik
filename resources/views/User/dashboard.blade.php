@@ -5,16 +5,76 @@
 @section('styles')
 <style>
     .hero-bg {
-        background-image: url('{{ asset('images/bg.jpg') }}');
-        background-size: cover;
-        background-position: center;
         position: relative;
         min-height: 70vh;
+        overflow: hidden;
     }
+    
+    .carousel-item {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+    
+    .carousel-item.active {
+        opacity: 1;
+    }
+    
     .hero-overlay {
         background: linear-gradient(to bottom, rgba(0, 74, 153, 0.45), rgba(0, 0, 0, 0.65));
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
     }
-    /* line-clamp untuk deskripsi (Tailwind line-clamp memerlukan plugin; ini fallback CSS sederhana) */
+    
+    .carousel-nav {
+        z-index: 20;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 12px 16px;
+        border-radius: 50%;
+    }
+    
+    .carousel-nav:hover {
+        background: rgba(0, 0, 0, 0.6);
+        transform: scale(1.1);
+    }
+    
+    .carousel-indicators {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .indicator.active {
+        background: white;
+        width: 30px;
+        border-radius: 6px;
+    }
+    
     .line-clamp-3 {
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -25,13 +85,19 @@
 @endsection
 
 @section('content')
-<!-- Hero Section -->
+<!-- Hero Section with Carousel -->
 <section class="hero-bg flex items-center justify-center text-white relative">
-    <div class="hero-overlay absolute inset-0"></div>
+    <!-- Carousel Items -->
+    <div class="carousel-item active" style="background-image: url('{{ asset('images/bg.jpg') }}');"></div>
+    <div class="carousel-item" style="background-image: url('{{ asset('images/loct.jpg') }}');"></div>
+    
+    <!-- Overlay -->
+    <div class="hero-overlay"></div>
+    
+    <!-- Content -->
     <div class="relative z-10 text-center px-6 max-w-4xl mx-auto py-16">
         <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
-            Geologi Kelautan
-        </h1>
+Survei dan Pemetaan        </h1>
         <p class="text-lg md:text-2xl mb-6 drop-shadow">
             Platform terpadu penyedia data dan informasi geologi kelautan
         </p>
@@ -46,13 +112,19 @@
         </div>
     </div>
 
-    <!-- Carousel nav (visual only) -->
-    <button class="absolute left-6 top-1/2 transform -translate-y-1/2 text-white text-3xl opacity-80 hover:opacity-100">
+    <!-- Carousel Navigation -->
+    <button onclick="changeSlide(-1)" class="carousel-nav absolute left-6 top-1/2 transform -translate-y-1/2 text-white text-2xl">
         <i class="fas fa-chevron-left"></i>
     </button>
-    <button class="absolute right-6 top-1/2 transform -translate-y-1/2 text-white text-3xl opacity-80 hover:opacity-100">
+    <button onclick="changeSlide(1)" class="carousel-nav absolute right-6 top-1/2 transform -translate-y-1/2 text-white text-2xl">
         <i class="fas fa-chevron-right"></i>
     </button>
+    
+    <!-- Indicators -->
+    <div class="carousel-indicators">
+        <span class="indicator active" onclick="goToSlide(0)"></span>
+        <span class="indicator" onclick="goToSlide(1)"></span>
+    </div>
 </section>
 
 <!-- Section Data Survei -->
@@ -109,4 +181,69 @@
         @endif
     </div>
 </section>
+
+@section('scripts')
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel-item');
+    const indicators = document.querySelectorAll('.indicator');
+    const totalSlides = slides.length;
+    let autoplayInterval;
+
+    function showSlide(index) {
+        // Remove active class from all slides and indicators
+        slides.forEach(slide => slide.classList.remove('active'));
+        indicators.forEach(indicator => indicator.classList.remove('active'));
+        
+        // Add active class to current slide and indicator
+        slides[index].classList.add('active');
+        indicators[index].classList.add('active');
+    }
+
+    function changeSlide(direction) {
+        currentSlide += direction;
+        
+        if (currentSlide >= totalSlides) {
+            currentSlide = 0;
+        } else if (currentSlide < 0) {
+            currentSlide = totalSlides - 1;
+        }
+        
+        showSlide(currentSlide);
+        resetAutoplay();
+    }
+
+    function goToSlide(index) {
+        currentSlide = index;
+        showSlide(currentSlide);
+        resetAutoplay();
+    }
+
+    function autoplay() {
+        autoplayInterval = setInterval(() => {
+            changeSlide(1);
+        }, 5000); // Ganti slide setiap 5 detik
+    }
+
+    function resetAutoplay() {
+        clearInterval(autoplayInterval);
+        autoplay();
+    }
+
+    // Mulai autoplay saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        autoplay();
+    });
+
+    // Pause autoplay saat hover
+    const heroSection = document.querySelector('.hero-bg');
+    heroSection.addEventListener('mouseenter', () => {
+        clearInterval(autoplayInterval);
+    });
+    
+    heroSection.addEventListener('mouseleave', () => {
+        autoplay();
+    });
+</script>
+@endsection
 @endsection
