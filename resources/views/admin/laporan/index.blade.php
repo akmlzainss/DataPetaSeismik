@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'Laporan - Admin BBSPGL')
 
 @section('content')

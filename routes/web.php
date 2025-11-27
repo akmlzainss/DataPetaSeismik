@@ -8,7 +8,8 @@ use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PengaturanController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DataSurveiController;
+use App\Http\Controllers\User\UserDataSurveiController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -64,9 +65,10 @@ Route::middleware('auth.admin')->prefix('admin')->name('admin.')->group(function
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
-Route::get('/', [DataSurveiController::class, 'index'])->name('beranda');     // ← Beranda
-Route::get('/peta', [DataSurveiController::class, 'peta'])->name('peta');    // nanti kita buat
-Route::get('/katalog', [DataSurveiController::class, 'katalog'])->name('katalog'); // nanti kita buat
+
+Route::get('/', [UserDataSurveiController::class, 'index'])->name('beranda');
+Route::get('/peta', [UserDataSurveiController::class, 'peta'])->name('peta');
+Route::get('/katalog', [UserDataSurveiController::class, 'katalog'])->name('katalog');
+
+Route::get('/survei/{id}', [UserDataSurveiController::class, 'show'])->name('survei.show');
+
