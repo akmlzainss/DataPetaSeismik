@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/openseadragon.min.css">
     <style>
+        /* Gaya khusus untuk OpenSeadragon */
         #openseadragon-viewer {
             width: 100%;
             height: 80vh;
@@ -43,6 +44,7 @@
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             transition: all 0.2s;
+            line-height: 1; /* Penting agar simbol di tengah */
         }
 
         .osd-btn:hover {
@@ -55,6 +57,21 @@
             margin-bottom: 8px;
             color: #003366;
         }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .detail-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-table tr td:first-child {
+            font-weight: bold;
+            width: 200px;
+            color: #555;
+        }
     </style>
 @endpush
 
@@ -66,14 +83,22 @@
 
     <div class="welcome-section">
         <div class="detail-container">
-            <!-- Header -->
             <div class="detail-header">
                 <h2 class="detail-title">{{ $dataSurvei->judul }}</h2>
                 <span class="detail-badge">{{ $dataSurvei->tipe }}</span>
             </div>
 
-            <!-- OPEN-SEADRAGON VIEWER (INI YANG BIKIN KEREN!) -->
-            @if ($dataSurvei->gambar_pratinjau)
+            @php
+                // Gunakan gambar medium, jika tidak ada, fallback ke gambar pratinjau (original)
+                $imageViewerUrl = null;
+                if ($dataSurvei->gambar_medium && Storage::disk('public')->exists($dataSurvei->gambar_medium)) {
+                    $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_medium);
+                } elseif ($dataSurvei->gambar_pratinjau && Storage::disk('public')->exists($dataSurvei->gambar_pratinjau)) {
+                    $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_pratinjau);
+                }
+            @endphp
+            
+            @if ($imageViewerUrl)
                 <div style="position: relative;">
                     <div id="openseadragon-viewer"></div>
                     <div class="osd-toolbar">
@@ -85,11 +110,10 @@
                 </div>
             @else
                 <div class="empty-state" style="padding: 60px 0;">
-                    <p>Tidak ada gambar pratinjau.</p>
+                    <p>Tidak ada gambar pratinjau yang tersedia untuk ditampilkan.</p>
                 </div>
             @endif
 
-            <!-- Detail Table (tetap ada) -->
             <table class="detail-table">
                 <tr>
                     <td>Ketua Tim</td>
@@ -105,11 +129,11 @@
                 </tr>
                 <tr>
                     <td>Deskripsi</td>
-                    <td>{{ $dataSurvei->deskripsi ?? '-' }}</td>
+                    <td>{!! nl2br(e($dataSurvei->deskripsi ?? '-')) !!}</td> 
+                    {{-- Menggunakan nl2br untuk baris baru --}}
                 </tr>
             </table>
 
-            <!-- Metadata & Actions tetap sama -->
             <div class="detail-metadata">
                 <div class="detail-metadata-item">
                     <span class="detail-metadata-label">Diunggah oleh:</span>
@@ -124,11 +148,44 @@
             <div class="detail-actions">
                 <a href="{{ route('admin.data_survei.edit', $dataSurvei) }}" class="btn-edit-detail">Edit Data</a>
                 <a href="{{ route('admin.data_survei.index') }}" class="btn-back-detail">Kembali</a>
-                <form action="{{ route('admin.data_survei.destroy', $dataSurvei) }}" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Yakin ingin menghapus data survei ini?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-delete-detail">Hapus Data</button>
-                </form>
+                
+                {{-- Tombol Hapus: Sekarang akan memicu modal --}}
+                <button type="button" class="btn-delete-detail" id="triggerDeleteModal" 
+                        data-judul="{{ $dataSurvei->judul }}" 
+                        data-action="{{ route('admin.data_survei.destroy', $dataSurvei) }}">
+                    Hapus Data
+                </button>
+            </div>
+            
+            {{-- Form Hapus yang disembunyikan, akan disubmit oleh JavaScript --}}
+            <form id="deleteForm" action="{{ route('admin.data_survei.destroy', $dataSurvei) }}" method="POST" style="display:none;">
+                @csrf @method('DELETE')
+            </form>
+        </div>
+    </div>
+    
+    {{-- MODAL DAN OVERLAY DITAMBAHKAN DI SINI --}}
+    
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div id="loadingText" class="loading-text">Memproses...</div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+            <h3 class="modal-title">Konfirmasi Hapus</h3>
+            <p class="modal-message">
+                Apakah Anda yakin ingin menghapus data survei <strong id="deleteItemTitle"></strong>?<br>
+                Data yang sudah dihapus <strong>tidak dapat dikembalikan</strong>.
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="cancelDelete()">Batal</button>
+                <button type="button" class="modal-btn modal-btn-delete" id="confirmDeleteBtn">Ya, Hapus</button>
             </div>
         </div>
     </div>
@@ -136,63 +193,87 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/openseadragon.min.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Ambil URL gambar yang benar
-    const imageUrl = @json(
-        $dataSurvei->gambar_medium
-            ? asset('storage/' . $dataSurvei->gambar_medium)
-            : asset('storage/' . $dataSurvei->gambar_pratinjau)
-    );
+    // FUNGSI UNTUK OPENSEADRAGON (TIDAK BERUBAH)
+    document.addEventListener("DOMContentLoaded", function () {
+        const viewerElement = document.getElementById("openseadragon-viewer");
+        const imageUrl = @json($imageViewerUrl); 
 
-    console.log('OpenSeadragon loading image:', imageUrl); // CEK DI CONSOLE!
+        if (viewerElement && imageUrl) {
+            console.log("OpenSeadragon loading image:", imageUrl);
 
-    const viewer = OpenSeadragon({
-        id: "openseadragon-viewer",
-        prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/images/",
-        tileSources: {
-            type: 'image',
-            url: imageUrl,
-            // Tambahan penting biar gambar besar langsung muncul
-            crossOriginPolicy: false,
-            ajaxWithCredentials: false
-        },
-        gestureSettingsMouse: {
-            scrollToZoom: true,
-            clickToZoom: true,
-            dblClickToZoom: true
-        },
-        animationTime: 0.5,
-        blendTime: 0.1,
-        constrainDuringPan: true,
-        maxZoomPixelRatio: 10,
-        minZoomLevel: 0.5,
-        visibilityRatio: 1,
-        zoomPerScroll: 1.4,
-        showNavigationControl: false
-    });
+            const viewer = OpenSeadragon({
+                id: "openseadragon-viewer",
+                prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/images/", 
+                tileSources: {
+                    type: 'image',
+                    url: imageUrl,
+                },
+                gestureSettingsMouse: {
+                    scrollToZoom: true,
+                    clickToZoom: true,
+                    dblClickToZoom: true
+                },
+                showNavigationControl: false 
+            });
 
-    // Tombol manual
-    document.getElementById('zoomIn').onclick = () => viewer.viewport.zoomBy(1.5);
-    document.getElementById('zoomOut').onclick = () => viewer.viewport.zoomBy(0.7);
-    document.getElementById('home').onclick = () => viewer.viewport.goHome();
-    document.getElementById('fullPage').onclick = () => {
-        if (!document.fullscreenElement) {
-            document.getElementById('openseadragon-viewer').requestFullscreen();
-        } else {
-            document.exitFullscreen();
+            // Event listener untuk tombol toolbar kustom
+            document.getElementById('zoomIn')?.addEventListener('click', () => viewer.viewport.zoomBy(1.5));
+            document.getElementById('zoomOut')?.addEventListener('click', () => viewer.viewport.zoomBy(1/1.5));
+            document.getElementById('home')?.addEventListener('click', () => viewer.viewport.goHome());
+            document.getElementById('fullPage')?.addEventListener('click', () => viewer.setFullPage(!viewer.isFullPage()));
+
+            viewer.addHandler('open', () => {
+                console.log("Gambar berhasil dimuat!");
+                viewer.viewport.fitVertically(true); 
+            });
+
+            viewer.addHandler('open-failed', (e) => {
+                console.error("Gagal load OpenSeadragon:", e);
+                viewerElement.innerHTML = "<p style='color:#c62828;padding:50px;text-align:center;'>Gagal memuat gambar. Pastikan file gambar ada dan dapat diakses.</p>";
+            });
         }
-    };
-
-    // Debug: kalau masih kosong
-    viewer.addHandler('open-failed', function(event) {
-        console.error('Gagal load gambar OpenSeadragon:', event);
-        alert('Gambar gagal dimuat. Cek URL di Console (F12)');
     });
 
-    viewer.addHandler('open', function() {
-        console.log('Gambar berhasil dimuat di OpenSeadragon!');
+    // FUNGSI UNTUK MODAL KONFIRMASI HAPUS (BARU)
+    let deleteForm = document.getElementById('deleteForm');
+
+    // 1. Menangani klik tombol Hapus Data untuk menampilkan modal
+    document.getElementById('triggerDeleteModal')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Ambil judul dari data-attribute tombol
+        const title = this.dataset.judul; 
+        
+        // Update teks di modal
+        document.getElementById('deleteItemTitle').textContent = `"${title}"`; 
+
+        // Update action form tersembunyi (jika diperlukan, walau di kasus ini sudah terisi)
+        const actionUrl = this.dataset.action;
+        if (actionUrl) {
+             deleteForm.action = actionUrl;
+        }
+
+        // Tampilkan modal
+        document.getElementById('deleteModal').classList.add('active');
     });
-});
+
+    // 2. Fungsi untuk membatalkan penghapusan
+    function cancelDelete() {
+        document.getElementById('deleteModal').classList.remove('active');
+        // deleteForm tidak di-null-kan karena formnya tetap di DOM
+    }
+
+    // 3. Menangani klik tombol Ya, Hapus untuk submit form
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
+        if (deleteForm) {
+            // Tampilkan loading overlay sebelum submit
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Menghapus data...';
+            
+            deleteForm.submit();
+        }
+    });
 </script>
 @endpush
