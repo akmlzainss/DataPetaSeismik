@@ -260,3 +260,605 @@ body {
     .sidebar-menu a svg { margin: 0; }
     .main-content { margin-left: 80px; padding: 20px; }
 }
+
+
+
+/* ====================== DASHBOARD IMPROVEMENTS ====================== */
+
+/* Stats Card dengan Icon */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px !important;
+}
+
+.stat-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-icon svg {
+    width: 36px;
+    height: 36px;
+}
+
+.stat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-info h3 {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.stat-info .stat-value {
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    color: #003366 !important;
+    margin: 0 !important;
+}
+
+.stat-info .stat-label {
+    font-size: 13.5px !important;
+    color: #888 !important;
+    margin-top: 6px !important;
+}
+
+/* Dashboard Row (2 kolom) */
+.dashboard-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Dashboard Card */
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 4px;
+}
+
+.card-subtitle {
+    font-size: 13px;
+    color: #888;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* Simple Table */
+.simple-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.simple-table thead {
+    background: #f8f9fa;
+}
+
+.simple-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #003366;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.simple-table td {
+    padding: 12px;
+    font-size: 14px;
+    color: #555;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.simple-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.simple-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.badge-sm {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.badge-2d {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+.badge-3d {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border-color: #e1bee7;
+}
+
+.badge-hr {
+    background: #fff3e0;
+    color: #f57c00;
+    border-color: #ffe0b2;
+}
+
+.badge-lainnya {
+    background: #e0f2f1;
+    color: #00695c;
+    border-color: #b2dfdb;
+}
+
+/* Activity List */
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #666;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #003366;
+    margin-bottom: 4px;
+}
+
+.activity-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #888;
+}
+
+/* Quick Actions */
+.quick-actions {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+}
+
+.quick-actions h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 16px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #003366;
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    background: #ffd700;
+    border-color: #e6c200;
+    transform: translateY(-2px);
+}
+
+.quick-action-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+}
+
+.quick-action-btn span {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Responsive Dashboard */
+@media (max-width: 1200px) {
+    .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-body {
+        padding: 16px;
+        overflow-x: auto;
+    }
+    
+    .simple-table {
+        font-size: 13px;
+    }
+    
+    .simple-table th,
+    .simple-table td {
+        padding: 8px;
+    }
+}
+
+/* Dashboard Row (2 kolom) */
+.dashboard-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Dashboard Card */
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 4px;
+}
+
+.card-subtitle {
+    font-size: 13px;
+    color: #888;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* Simple Table */
+.simple-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.simple-table thead {
+    background: #f8f9fa;
+}
+
+.simple-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #003366;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.simple-table td {
+    padding: 12px;
+    font-size: 14px;
+    color: #555;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.simple-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.simple-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.badge-sm {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.badge-2d {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+.badge-3d {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border-color: #e1bee7;
+}
+
+.badge-hr {
+    background: #fff3e0;
+    color: #f57c00;
+    border-color: #ffe0b2;
+}
+
+.badge-lainnya {
+    background: #e0f2f1;
+    color: #00695c;
+    border-color: #b2dfdb;
+}
+
+/* Activity List */
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #666;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #003366;
+    margin-bottom: 4px;
+}
+
+.activity-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #888;
+}
+
+/* Quick Actions */
+.quick-actions {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+}
+
+.quick-actions h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 16px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #003366;
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    background: #ffd700;
+    border-color: #e6c200;
+    transform: translateY(-2px);
+}
+
+.quick-action-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+}
+
+.quick-action-btn span {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Responsive Dashboard */
+@media (max-width: 1200px) {
+    .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-body {
+        padding: 16px;
+        overflow-x: auto;
+    }
+    
+    .simple-table {
+        font-size: 13px;
+    }
+    
+    .simple-table th,
+    .simple-table td {
+        padding: 8px;
+    }
+}
+
+
+/* ====================== FIX Z-INDEX & DECORATION OVERLAY ====================== */
+
+/* Langkah 1: Pastikan Main Content selalu terlihat di depan */
+.main-content {
+    position: relative; 
+    z-index: 10000 !important; /* Nilai sangat tinggi agar di depan overlay apa pun */
+    background-color: #f5f7fa !important; /* Pastikan tidak ada transparansi */
+}
+
+/* Langkah 2: Menonaktifkan semua Pseudo-element dekoratif yang tidak dikenal */
+/* Target body, html, dan main-content karena ini lokasi favorit elemen dekorasi latar belakang */
+body::before, 
+body::after,
+html::before,
+html::after,
+.main-content::before,
+.main-content::after {
+    /* Ini akan menghapus elemen dekorasi yang dibuat melalui CSS */
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+    z-index: 1 !important;
+}
+
+/* Langkah 3: Jika elemennya berupa DIV dengan nama umum */
+/* Hapus atau sembunyikan DIV yang tampak seperti overlay jika ada di HTML (meski Anda tidak menemukannya) */
+.decor-overlay, 
+.giant-graphic, 
+.decorative-shape {
+    display: none !important;
+}
