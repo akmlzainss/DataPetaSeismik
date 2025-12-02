@@ -1,0 +1,27 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+
+class AdminSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $now = Carbon::now();
+
+        DB::table('admin')->insertOrIgnore([
+            'nama'           => 'Admin Utama',        // PASTI 'nama', bukan 'nama_admin'
+            'email'          => 'amay@example.com',
+            'kata_sandi'     => Hash::make('12345678'),
+            'remember_token' => null,
+            'created_at'     => $now,
+            'updated_at'     => $now,
+        ]);
+
+        $this->command->info('Admin berhasil dibuat: amay@example.com | password: 12345678');
+    }
+}

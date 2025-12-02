@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DataSurvei; // Pastikan model ini sudah ada
-use App\Http\Requests\DataSurveiRequest; // Pastikan Request ini sudah ada
+use App\Models\DataSurvei; 
+use App\Http\Requests\DataSurveiRequest; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Jobs\ProcessSurveiImage; // Pastikan Job ini sudah ada
+use App\Jobs\ProcessSurveiImage; 
 use Illuminate\Support\Str;
 
 class DataSurveiController extends Controller
@@ -103,6 +103,15 @@ class DataSurveiController extends Controller
         // Pastikan relasi pengunggah dan lokasi dimuat
         $dataSurvei->load('pengunggah', 'lokasi'); 
         return view('admin.data_survei.show', compact('dataSurvei'));
+    }
+    
+    /**
+     * Mengembalikan detail data survei tertentu dalam format JSON.
+     * Digunakan oleh fitur geocoding di halaman Lokasi Marker.
+     */
+    public function showJson(DataSurvei $dataSurvei)
+    {
+        return response()->json($dataSurvei);
     }
 
     /**
