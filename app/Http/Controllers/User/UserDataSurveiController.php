@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller; // ← WAJIB, ini yang hilang
 use App\Models\DataSurvei;
+use App\Models\LokasiMarker;
 use Illuminate\Http\Request;
 
 class UserDataSurveiController extends Controller
@@ -22,13 +23,15 @@ class UserDataSurveiController extends Controller
     }
 
     public function peta()
-    {
-        $surveis = DataSurvei::with('lokasi')->get();
-        return view('user.peta', compact('surveis'));
-    }
+{
+    $markers = LokasiMarker::with('survei')->get();
+    return view('user.peta', compact('markers'));
+}
 
     public function katalog()
     {
         return view('user.katalog');
     }
+
+
 }

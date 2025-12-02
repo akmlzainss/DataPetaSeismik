@@ -24,7 +24,13 @@ class Admin extends Authenticatable
         'remember_token',
     ];
 
-    // >>> Tambahkan INI
+    // BARIS INI WAJIB ADA (ini kuncinya!)
+    public function getAuthPasswordName(): string
+    {
+        return 'kata_sandi';
+    }
+
+    // Baris ini juga tetap ada (untuk Hash::make)
     public function getAuthPassword()
     {
         return $this->kata_sandi;

@@ -1,213 +1,87 @@
-@extends('layouts.app')
+{{-- resources/views/user/peta.blade.php --}}
+@extends('layouts.app') {{-- atau layouts.user kalau kamu punya --}}
 
-@section('title', 'Peta Interaktif - BBSPGL')
-
-@section('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<style>
-    .peta-container {
-        margin-top: 6rem;
-        padding: 1rem;
-        min-height: 100vh;
-        background: #f5f7fa;
-    }
-
-    #map {
-        height: 85vh;
-        border-radius: 20px;
-        border: 6px solid #e91e63;
-        box-shadow: 0 15px 40px rgba(233, 30, 99, 0.35);
-        overflow: hidden;
-    }
-
-    .map-title {
-        text-align: center;
-        font-size: 2.3rem;
-        font-weight: bold;
-        color: #e91e63;
-        margin-bottom: 20px;
-        text-shadow: 0 0 10px rgba(0,0,0,0.35);
-    }
-
-    /* Tombol modern */
-    .zoom-toggle {
-        position: absolute;
-        bottom: 30px;
-        right: 30px;
-        z-index: 2000;
-        padding: 12px 22px;
-        background: #e91e63;
-        color: white;
-        border-radius: 40px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 0 25px rgba(233, 30, 99, 0.5);
-        transition: .25s;
-    }
-    .zoom-toggle:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 35px rgba(233, 30, 99, 0.8);
-    }
-
-</style>
-@endsection
-
-
+@section('title', 'Peta Survei Seismik Nasional - BBSPGL')
 
 @section('content')
-<div class="peta-container">
-    
-    <h1 class="map-title">PETA INDONESIA - BBSPGL</h1>
+<div class="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#003366] mb-4">
+                Peta Interaktif Survei Seismik Indonesia
+            </h1>
+            <p class="text-xl text-gray-700">Badan Geologi - BBSPGL Energi dan Sumber Daya Mineral</p>
+        </div>
 
-    <div class="relative">
-        <div id="map"></div>
+        <div class="bg-white rounded-3xl shadow-2xl p-6">
+            <div id="map" class="h-96 md:h-screen rounded-2xl"></div>
 
-        <button id="zoomBtn" class="zoom-toggle">
-            🔒 Zoom Mode OFF
-        </button>
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Total <strong>{{ $markers->count() }}</strong> lokasi survei seismik telah ditandai
+                    <span class="text-green-600">• Update real-time</span>
+                </p>
+            </div>
+        </div>
     </div>
-
 </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+<style>
+    #map { height: 80vh; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+</style>
+@endpush
 
-
-@section('scripts')
+@push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 <script>
-@php
-    $markers = $surveis->filter(fn($s) => $s->lokasi && $s->lokasi->pusat_lintang && $s->lokasi->pusat_bujur)
-        ->map(fn($s) => [
-            'judul' => $s->judul,
-            'lat'   => (float)$s->lokasi->pusat_lintang,
-            'lng'   => (float)$s->lokasi->pusat_bujur,
-        ])->values()->all();
-@endphp
-const markers = @json($markers);
+document.addEventListener("DOMContentLoaded", function () {
+    const map = L.map('map').setView([-2.5, 118], 5);
 
-// ====================================
-// 1. INISIALISASI PETA NORMAL (CERAH)
-// ====================================
-const map = L.map('map', {
-    zoomControl: true,
-    attributionControl: false,
-    minZoom: 5,
-    maxZoom: 10,
-    maxBounds: [[10, 90], [-15, 145]],
-    maxBoundsViscosity: 1.0
-}).setView([-2.5, 118], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-// Basemap CERAH / NORMAL (Stadia Maps Light)
-L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
-    maxZoom: 10
-}).addTo(map);
-
-
-// ====================================
-// 2. GRID Lintang Bujur
-// ====================================
-L.latlngGraticule({
-    showLabel: true,
-    color: '#e91e63',
-    weight: 2,
-    opacity: 0.7,
-    font: "14px Arial",
-    fontColor: "#e91e63",
-    zoomInterval: [{start: 5, end: 10, interval: 5}]
-}).addTo(map);
-
-
-// ====================================
-// 3. GEOJSON INDONESIA
-// ====================================
-fetch('https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province.geojson')
-    .then(r => r.json())
-    .then(data => {
-        L.geoJSON(data, {
-            style: {
-                color: "#e91e63",
-                weight: 4,
-                fillColor: "#ffe5f0",
-                fillOpacity: 0.4
-            }
-        }).addTo(map);
+    const markers = L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        maxClusterRadius: 50
     });
 
+    @foreach($markers as $m)
+        const marker = L.marker([{{ $m->pusat_lintang }}, {{ $m->pusat_bujur }}], {
+            icon: L.divIcon({
+                html: '<div style="background:#003366;color:#FFD700;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:3px solid #FFD700;">{{ $m->survei->tipe }}</div>',
+                className: 'custom-marker',
+                iconSize: [32, 32]
+            })
+        });
 
-// ====================================
-// 4. TITIK SURVEI
-// ====================================
-markers.forEach(m => {
-    L.circleMarker([m.lat, m.lng], {
-        radius: 8,
-        fillColor: "#ff1744",
-        color: "#000",
-        weight: 2,
-        fillOpacity: 1
-    }).addTo(map)
-      .bindPopup(`<b class="text-red-600 text-lg">${m.judul}</b>`);
+        marker.bindPopup(`
+            <div class="text-center p-2">
+                <h3 class="font-bold text-[#003366] text-lg">{{ addslashes($m->survei->judul) }}</h3>
+                <p class="text-sm"><strong>Tahun:</strong> {{ $m->survei->tahun }}</p>
+                <p class="text-sm"><strong>Tipe:</strong> {{ $m->survei->tipe }}</p>
+                <p class="text-sm"><strong>Wilayah:</strong> {{ $m->survei->wilayah }}</p>
+                <hr class="my-2">
+                <a href="{{ route('survei.show', $m->survei->id) }}" 
+                   class="inline-block bg-[#003366] text-[#FFD700] px-4 py-2 rounded-lg font-bold hover:bg-[#002244] transition">
+                   Lihat Detail Survei →
+                </a>
+            </div>
+        `);
+
+        markers.addLayer(marker);
+    @endforeach
+
+    map.addLayer(markers);
+    map.fitBounds(markers.getBounds().pad(0.1));
 });
-
-
-// ====================================
-// 5. LABEL LAUT BESAR
-// ====================================
-const laut = [
-    {t: "LAUT JAWA", lat: -6.5, lng: 110},
-    {t: "LAUT BALI", lat: -8.4, lng: 115.5},
-    {t: "LAUT FLORES", lat: -8.5, lng: 121},
-    {t: "LAUT BANDA", lat: -4.5, lng: 129},
-    {t: "LAUT SULAWESI", lat: 2.5, lng: 123},
-    {t: "LAUT MALUKU", lat: 0, lng: 127},
-    {t: "LAUT TIMOR", lat: -10, lng: 125},
-    {t: "LAUT ARAFURA", lat: -7, lng: 135},
-    {t: "SAMUDRA HINDIA", lat: -12, lng: 105}
-];
-
-laut.forEach(l => {
-    L.marker([l.lat, l.lng], {
-        icon: L.divIcon({
-            className: "text-xl font-bold text-blue-900",
-            html: l.t,
-            iconSize: [200, 40],
-            iconAnchor: [100, 20]
-        })
-    }).addTo(map);
-});
-
-
-// ====================================
-// ⭐ LOGIKA ZOOM MODE (ANTI NAVBAR KETUTUP)
-// ====================================
-let zoomActive = false;
-
-const zoomBtn = document.getElementById("zoomBtn");
-
-// AWAL: Zoom Scroll Disabled
-map.scrollWheelZoom.disable();
-
-function setZoomMode(active) {
-    zoomActive = active;
-
-    if (active) {
-        map.scrollWheelZoom.enable();
-        zoomBtn.textContent = "🔓 Zoom Mode ON";
-    } else {
-        map.scrollWheelZoom.disable();
-        zoomBtn.textContent = "🔒 Zoom Mode OFF";
-    }
-}
-
-// Toggle tombol
-zoomBtn.addEventListener("click", () => {
-    setZoomMode(!zoomActive);
-});
-
-// Auto nonaktif saat mouse keluar map
-map.on("mouseout", () => setZoomMode(false));
-
 </script>
-@endsection
+@endpush

@@ -9,7 +9,7 @@
     <p>Selamat datang, <strong>{{ Auth::guard('admin')->user()->nama ?? 'Admin' }}</strong></p>
 </div>
 
-<!-- Statistik Utama -->
+{{-- ========== STATISTIK UTAMA (4 CARDS) ========== --}}
 <div class="stats-container">
     <div class="stat-card">
         <div class="stat-icon" style="background: #e3f2fd;">
@@ -19,8 +19,8 @@
         </div>
         <div class="stat-info">
             <h3>Total Data Survei</h3>
-            <div class="stat-value">{{ $totalSurvei ?? 0 }}</div>
-            <div class="stat-label">Data survei seismik</div>
+            <div class="stat-value">{{ number_format($totalSurvei ?? 0) }}</div>
+            <div class="stat-label">Data survei seismik nasional</div>
         </div>
     </div>
 
@@ -32,8 +32,12 @@
         </div>
         <div class="stat-info">
             <h3>Lokasi Marker</h3>
-            <div class="stat-value">{{ $totalMarker ?? 0 }}</div>
-            <div class="stat-label">Titik marker aktif</div>
+            <div class="stat-value">{{ number_format($totalMarker ?? 0) }}</div>
+            <div class="stat-label">
+                <span style="color: {{ $persentaseMarker >= 75 ? '#28a745' : ($persentaseMarker >= 50 ? '#ffc107' : '#dc3545') }}; font-weight: 700;">
+                    {{ $persentaseMarker }}%
+                </span> dari total survei
+            </div>
         </div>
     </div>
 
@@ -45,8 +49,8 @@
         </div>
         <div class="stat-info">
             <h3>Pengguna Admin</h3>
-            <div class="stat-value">{{ $totalAdmin ?? 0 }}</div>
-            <div class="stat-label">Admin terdaftar</div>
+            <div class="stat-value">{{ number_format($totalAdmin ?? 0) }}</div>
+            <div class="stat-label">Admin terdaftar & aktif</div>
         </div>
     </div>
 
@@ -58,18 +62,53 @@
         </div>
         <div class="stat-info">
             <h3>Survei Bulan Ini</h3>
-            <div class="stat-value">{{ $surveiBulanIni ?? 0 }}</div>
-            <div class="stat-label">Data baru</div>
+            <div class="stat-value">{{ number_format($surveiBulanIni ?? 0) }}</div>
+            <div class="stat-label">
+                <span style="color: {{ $pertumbuhanBulanan >= 0 ? '#28a745' : '#dc3545' }}; font-weight: 600;">
+                    {{ $pertumbuhanBulanan >= 0 ? '↑' : '↓' }} {{ abs($pertumbuhanBulanan) }}%
+                </span> vs bulan lalu
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Row 2 Kolom -->
+{{-- ========== TREND 6 BULAN TERAKHIR (CHART SIMPLE) ========== --}}
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3>Trend Upload Survei (6 Bulan Terakhir)</h3>
+        <span class="card-subtitle">Grafik perkembangan data survei</span>
+    </div>
+    <div class="card-body">
+        <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 200px; gap: 12px; padding: 20px 0;">
+            @foreach($trendBulanan as $data)
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <div style="font-weight: 700; font-size: 18px; color: #003366;">{{ $data['jumlah'] }}</div>
+                    <div style="
+                        width: 100%; 
+                        background: linear-gradient(180deg, #003366 0%, #0066cc 100%); 
+                        border-radius: 6px 6px 0 0;
+                        height: {{ $data['jumlah'] > 0 ? ($data['jumlah'] / max(array_column($trendBulanan, 'jumlah'))) * 140 : 5 }}px;
+                        min-height: 5px;
+                        transition: all 0.3s ease;
+                    "></div>
+                    <div style="font-size: 12px; color: #666; font-weight: 600;">{{ $data['bulan'] }}</div>
+                </div>
+            @endforeach
+        </div>
+        <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+            <a href="{{ route('admin.laporan.index') }}" style="color: #003366; font-weight: 600; text-decoration: none;">
+                Lihat Laporan Lengkap →
+            </a>
+        </div>
+    </div>
+</div>
+
+{{-- ========== ROW 2 KOLOM ========== --}}
 <div class="dashboard-row">
-    <!-- Statistik Per Tipe -->
+    {{-- STATISTIK PER TIPE --}}
     <div class="dashboard-card">
         <div class="card-header">
-            <h3>Statistik Per Tipe Survei</h3>
+            <h3>Ringkasan Per Tipe Survei</h3>
             <span class="card-subtitle">Distribusi data survei seismik</span>
         </div>
         <div class="card-body">
@@ -87,14 +126,14 @@
                         <td>
                             <span class="badge badge-{{ strtolower($tipe->tipe) }}">{{ $tipe->tipe }}</span>
                         </td>
-                        <td style="text-align: center;">{{ $tipe->total }}</td>
+                        <td style="text-align: center; font-weight: 600;">{{ number_format($tipe->total) }}</td>
                         <td style="text-align: right;">
                             <strong>{{ number_format(($tipe->total / ($totalSurvei ?: 1)) * 100, 1) }}%</strong>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="3" style="text-align: center; color: #999;">Belum ada data</td>
+                        <td colspan="3" style="text-align: center; color: #999; padding: 30px;">Belum ada data</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -102,44 +141,79 @@
         </div>
     </div>
 
-    <!-- Aktivitas Terbaru -->
+    {{-- TOP 5 WILAYAH --}}
     <div class="dashboard-card">
         <div class="card-header">
-            <h3>Aktivitas Terbaru</h3>
-            <span class="card-subtitle">10 data survei terakhir</span>
+            <h3>Top 5 Wilayah Survei</h3>
+            <span class="card-subtitle">Wilayah dengan survei terbanyak</span>
         </div>
         <div class="card-body">
-            <div class="activity-list">
-                @forelse($surveiTerbaru ?? [] as $survei)
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                        </svg>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">{{ Str::limit($survei->judul, 40) }}</div>
-                        <div class="activity-meta">
-                            <span class="badge badge-sm badge-{{ strtolower($survei->tipe) }}">{{ $survei->tipe }}</span>
-                            <span>{{ $survei->created_at->diffForHumans() }}</span>
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="text-align: center; padding: 40px; color: #999;">
-                    <p>Belum ada aktivitas</p>
-                </div>
-                @endforelse
-            </div>
+            <table class="simple-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Wilayah</th>
+                        <th style="text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($topWilayah ?? [] as $index => $wilayah)
+                    <tr>
+                        <td style="width: 50px; font-weight: 700; color: #003366;">
+                            #{{ $index + 1 }}
+                        </td>
+                        <td>{{ Str::limit($wilayah->wilayah, 35) }}</td>
+                        <td style="text-align: right; font-weight: 600;">{{ number_format($wilayah->total) }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #999; padding: 30px;">Belum ada data</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Survei Per Tahun -->
+{{-- ========== AKTIVITAS TERBARU (5 ITEMS) ========== --}}
 <div class="dashboard-card">
     <div class="card-header">
-        <h3>Distribusi Survei Per Tahun</h3>
-        <span class="card-subtitle">5 tahun terakhir</span>
+        <h3>Aktivitas Terbaru</h3>
+        <span class="card-subtitle">5 data survei terakhir yang diunggah</span>
+    </div>
+    <div class="card-body">
+        <div class="activity-list">
+            @forelse($surveiTerbaru as $survei)
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                    </svg>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">{{ Str::limit($survei->judul, 50) }}</div>
+                    <div class="activity-meta">
+                        <span class="badge badge-sm badge-{{ strtolower($survei->tipe) }}">{{ $survei->tipe }}</span>
+                        <span>{{ $survei->created_at->diffForHumans() }}</span>
+                        <span>• {{ $survei->pengunggah->nama ?? 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <p>Belum ada aktivitas</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+{{-- ========== SURVEI PER TAHUN (3 TAHUN TERAKHIR) ========== --}}
+<div class="dashboard-card">
+    <div class="card-header">
+        <h3>Ringkasan 3 Tahun Terakhir</h3>
+        <span class="card-subtitle">Perbandingan data per tahun</span>
     </div>
     <div class="card-body">
         <table class="simple-table">
@@ -157,23 +231,28 @@
                 @forelse($surveiPerTahun ?? [] as $tahun)
                 <tr>
                     <td><strong>{{ $tahun->tahun }}</strong></td>
-                    <td style="text-align: center;">{{ $tahun->tipe_2d ?? 0 }}</td>
-                    <td style="text-align: center;">{{ $tahun->tipe_3d ?? 0 }}</td>
-                    <td style="text-align: center;">{{ $tahun->tipe_hr ?? 0 }}</td>
-                    <td style="text-align: center;">{{ $tahun->tipe_lainnya ?? 0 }}</td>
-                    <td style="text-align: right;"><strong>{{ $tahun->total }}</strong></td>
+                    <td style="text-align: center;">{{ number_format($tahun->tipe_2d ?? 0) }}</td>
+                    <td style="text-align: center;">{{ number_format($tahun->tipe_3d ?? 0) }}</td>
+                    <td style="text-align: center;">{{ number_format($tahun->tipe_hr ?? 0) }}</td>
+                    <td style="text-align: center;">{{ number_format($tahun->tipe_lainnya ?? 0) }}</td>
+                    <td style="text-align: right; font-weight: 700; color: #003366;">{{ number_format($tahun->total) }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" style="text-align: center; color: #999;">Belum ada data</td>
+                    <td colspan="6" style="text-align: center; color: #999; padding: 30px;">Belum ada data</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
+        <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+            <a href="{{ route('admin.laporan.index') }}" style="color: #003366; font-weight: 600; text-decoration: none;">
+                Lihat Data 5 Tahun Terakhir →
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
+{{-- ========== QUICK ACTIONS ========== --}}
 <div class="quick-actions">
     <h3>Aksi Cepat</h3>
     <div class="quick-actions-grid">
@@ -195,11 +274,11 @@
             </svg>
             <span>Kelola Marker</span>
         </a>
-        <a href="{{ route('admin.pengaturan.index') }}" class="quick-action-btn">
+        <a href="{{ route('admin.laporan.index') }}" class="quick-action-btn">
             <svg viewBox="0 0 24 24">
-                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
             </svg>
-            <span>Pengaturan</span>
+            <span>Lihat Laporan</span>
         </a>
     </div>
 </div>

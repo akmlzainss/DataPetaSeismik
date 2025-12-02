@@ -7,12 +7,13 @@ use App\Models\DataSurvei;
 use App\Models\LokasiMarker;
 use App\Models\Admin;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Total statistik
+        // ========== STATISTIK UTAMA (4 CARDS) ==========
         $totalSurvei = DataSurvei::count();
         $totalMarker = LokasiMarker::count();
         $totalAdmin = Admin::count();
@@ -20,7 +21,7 @@ class DashboardController extends Controller
                                     ->whereYear('created_at', now()->year)
                                     ->count();
 
-        // Statistik per tipe survei dengan CASE WHEN untuk match exact value
+        // ========== STATISTIK PER TIPE (SIMPLE) ==========
         $surveiPerTipe = DataSurvei::select(
                             'tipe',
                             DB::raw('COUNT(*) as total')
@@ -29,13 +30,13 @@ class DashboardController extends Controller
                         ->orderBy('total', 'desc')
                         ->get();
 
-        // 10 survei terbaru
+        // ========== AKTIVITAS TERBARU (5 ITEMS) ==========
         $surveiTerbaru = DataSurvei::with('pengunggah')
                                    ->latest()
-                                   ->take(10)
+                                   ->take(5)
                                    ->get();
 
-        // Survei per tahun (5 tahun terakhir) dengan breakdown per tipe
+        // ========== SURVEI PER TAHUN (3 TAHUN TERAKHIR SAJA) ==========
         $surveiPerTahun = DataSurvei::select(
                             'tahun',
                             DB::raw('COUNT(*) as total'),
@@ -44,10 +45,46 @@ class DashboardController extends Controller
                             DB::raw('SUM(CASE WHEN tipe = "HR" THEN 1 ELSE 0 END) as tipe_hr'),
                             DB::raw('SUM(CASE WHEN tipe NOT IN ("2D", "3D", "HR") THEN 1 ELSE 0 END) as tipe_lainnya')
                         )
+                        ->whereYear('created_at', '>=', now()->year - 2) // Hanya 3 tahun terakhir
                         ->groupBy('tahun')
                         ->orderBy('tahun', 'desc')
-                        ->take(5)
                         ->get();
+
+        // ========== GRAFIK TREND BULANAN (6 BULAN TERAKHIR) ==========
+        $trendBulanan = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $tanggal = Carbon::now()->subMonths($i);
+            $jumlah = DataSurvei::whereYear('created_at', $tanggal->year)
+                ->whereMonth('created_at', $tanggal->month)
+                ->count();
+            
+            $trendBulanan[] = [
+                'bulan' => $tanggal->format('M'),
+                'bulan_lengkap' => $tanggal->format('F Y'),
+                'jumlah' => $jumlah
+            ];
+        }
+
+        // ========== TOP 5 WILAYAH ==========
+        $topWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
+            ->groupBy('wilayah')
+            ->orderBy('total', 'DESC')
+            ->take(5)
+            ->get();
+
+        // ========== PERBANDINGAN BULAN INI VS BULAN LALU ==========
+        $surveiBulanLalu = DataSurvei::whereMonth('created_at', now()->subMonth()->month)
+                                     ->whereYear('created_at', now()->subMonth()->year)
+                                     ->count();
+        
+        $pertumbuhanBulanan = $surveiBulanLalu > 0 
+            ? round((($surveiBulanIni - $surveiBulanLalu) / $surveiBulanLalu) * 100, 1) 
+            : 0;
+
+        // ========== STATUS MARKER (QUICK INFO) ==========
+        $surveiDenganMarker = DataSurvei::has('lokasi')->count();
+        $surveiTanpaMarker = DataSurvei::doesntHave('lokasi')->count();
+        $persentaseMarker = $totalSurvei > 0 ? round(($surveiDenganMarker / $totalSurvei) * 100, 1) : 0;
 
         return view('admin.dashboard', compact(
             'totalSurvei',
@@ -56,7 +93,13 @@ class DashboardController extends Controller
             'surveiBulanIni',
             'surveiPerTipe',
             'surveiTerbaru',
-            'surveiPerTahun'
+            'surveiPerTahun',
+            'trendBulanan',
+            'topWilayah',
+            'pertumbuhanBulanan',
+            'surveiDenganMarker',
+            'surveiTanpaMarker',
+            'persentaseMarker'
         ));
     }
 }
