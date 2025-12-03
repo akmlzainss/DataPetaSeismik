@@ -724,3 +724,81 @@
         font-size: 13px;
     }
 }
+
+
+
+
+
+
+/* ============================================================= */
+/* SELECT2 CUSTOM STYLING - KHUSUS UNTUK HALAMAN MARKER ADMIN   */
+/* ============================================================= */
+
+.select2-container {
+    display: block !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection {
+    height: 48px !important;
+    border-radius: 8px !important;
+    border: 2px solid #d1d5db !important;
+    padding: 0 12px !important;
+    background: white !important;
+    box-shadow: none !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection__rendered {
+    line-height: 46px !important;
+    font-size: 14px;
+    color: #333;
+}
+
+.select2-container--bootstrap-5 .select2-selection__arrow {
+    height: 46px !important;
+    right: 12px !important;
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: #003366 !important;
+    box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.08) !important;
+}
+
+.select2-dropdown {
+    border: 2px solid #003366 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 30px rgba(0, 51, 102, 0.15);
+}
+
+.select2-results__option {
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+.select2-results__option--highlighted {
+    background: #003366 !important;
+    color: #FFD700 !important;
+}
+
+.select2-results__option[aria-selected="true"] {
+    background: #e6f0ff !important;
+    color: #003366 !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.select2-container--bootstrap-5 .select2-selection__clear {
+    margin-right: 30px;
+    color: #003366;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Hover effect pada dropdown item */
+.select2-results__option:hover {
+    background: #003366 !important;
+    color: #FFD700 !important;
+}

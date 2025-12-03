@@ -13,7 +13,7 @@ class UserDataSurveiController extends Controller
     {
         $surveis = DataSurvei::with('lokasi')->latest()->paginate(6);
 
-        return view('user.dashboard', compact('surveis'));
+        return view('user.home', compact('surveis'));
     }
 
     public function show(DataSurvei $dataSurvei)
