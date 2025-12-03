@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\LokasiMarkerController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\User\UserDataSurveiController;
+use App\Http\Controllers\User\HomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -92,7 +93,7 @@ Route::controller(PengaturanController::class)
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [UserDataSurveiController::class, 'index'])->name('beranda');
+Route::get('/', [HomeController::class, 'index'])->name('beranda');
 Route::get('/peta', [UserDataSurveiController::class, 'peta'])->name('peta');
 Route::get('/katalog', [UserDataSurveiController::class, 'katalog'])->name('katalog');
 Route::get('/survei/{id}', [UserDataSurveiController::class, 'show'])->name('survei.show');
