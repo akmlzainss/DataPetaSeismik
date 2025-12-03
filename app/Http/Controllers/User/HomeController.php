@@ -67,7 +67,7 @@ class HomeController extends Controller
                                 ->take(5)
                                 ->get();
         
-        return view('user.home', compact(
+        return view('user.homepage.index', compact(
             'totalSurvei',
             'totalWilayah',
             'surveiBulanIni',

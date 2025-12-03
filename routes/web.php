@@ -6,8 +6,11 @@ use App\Http\Controllers\Admin\DataSurveiController;
 use App\Http\Controllers\Admin\LokasiMarkerController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\PengaturanController;
-use App\Http\Controllers\User\UserDataSurveiController;
 use App\Http\Controllers\User\HomeController;
+use App\Http\Controllers\User\KatalogController;
+use App\Http\Controllers\User\KontakController;
+use App\Http\Controllers\User\PetaController;
+use App\Http\Controllers\User\TentangKamiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -93,10 +96,22 @@ Route::controller(PengaturanController::class)
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [HomeController::class, 'index'])->name('beranda');
-Route::get('/peta', [UserDataSurveiController::class, 'peta'])->name('peta');
-Route::get('/katalog', [UserDataSurveiController::class, 'katalog'])->name('katalog');
-Route::get('/survei/{id}', [UserDataSurveiController::class, 'show'])->name('survei.show');
+// --- ROUTE HALAMAN PUBLIK (User) ---
 
-// Optional: tambah route detail dengan slug biar lebih SEO
-// Route::get('/survei/{dataSurvei:slug}', [UserDataSurveiController::class, 'show'])->name('survei.show');
+// Beranda (Homepage)
+Route::get('/', [HomeController::class, 'index'])->name('beranda');
+
+// Katalog Data Survei
+Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog');
+
+// Peta Interaktif
+Route::get('/peta', [PetaController::class, 'index'])->name('peta');
+
+// Tentang Kami
+Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tentang');
+
+// Kontak
+Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
+
+// Catatan: Setelah ini didefinisikan, Anda harus mengganti '#' 
+// dengan route() yang sesuai di layouts/app.blade.php.
