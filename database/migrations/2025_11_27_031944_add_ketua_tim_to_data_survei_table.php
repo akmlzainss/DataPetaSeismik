@@ -21,5 +21,5 @@ return new class extends Migration
         Schema::table('data_survei', function (Blueprint $table) {
             $table->dropColumn('ketua_tim');
         });
-    }
+    }  
 };

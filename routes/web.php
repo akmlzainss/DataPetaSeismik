@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataSurveiController;
 use App\Http\Controllers\Admin\LokasiMarkerController;
 use App\Http\Controllers\Admin\LaporanController;
-use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\User\UserDataSurveiController;
 use Illuminate\Support\Facades\Route;
@@ -71,9 +70,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
     Route::resource('laporan', LaporanController::class)->names('laporan');
     
 
-    // Pengguna (Admin Only)
-    Route::resource('pengguna', PenggunaController::class)->names('pengguna');
-
+   
     // Pengaturan
 Route::controller(PengaturanController::class)
     ->prefix('pengaturan')
