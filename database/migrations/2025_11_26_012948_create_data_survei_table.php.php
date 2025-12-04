@@ -38,4 +38,5 @@ return new class extends Migration
         Schema::dropIfExists('data_survei');
         // Pastikan untuk menghapus foreign key jika ada
     }
+    
 };
