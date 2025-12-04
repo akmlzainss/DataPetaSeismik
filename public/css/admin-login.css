@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #003366 0%, #005599 50%, #0077cc 100%);
+    background: linear-gradient(135deg, #003366 0%, #005599 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -17,11 +17,21 @@ body {
     overflow: hidden;
 }
 
+/* Pattern Background */
 body::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px);
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background-image: repeating-linear-gradient(
+        45deg, 
+        transparent, 
+        transparent 35px, 
+        rgba(255,255,255,.03) 35px, 
+        rgba(255,255,255,.03) 70px
+    );
     pointer-events: none;
 }
 
@@ -29,51 +39,67 @@ body::before {
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 460px;
+    max-width: 480px;
 }
 
+/* Logo Header - Konsisten dengan Sidebar */
 .logo-section {
+    background: rgba(0, 51, 102, 0.5);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px 16px 0 0;
+    padding: 30px 40px;
     text-align: center;
-    margin-bottom: 30px;
     animation: fadeInDown 0.7s ease-out;
 }
 
-.logo-circle {
-    width: 90px;
-    height: 90px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    border-radius: 50%;
-    margin: 0 auto 18px;
+.logo-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+    gap: 16px;
+    margin-bottom: 12px;
 }
 
-.logo-circle svg {
-    width: 50px;
-    height: 50px;
-    fill: #003366;
+.logo-section img {
+    width: 60px;
+    height: auto;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
 }
 
-.logo-section h1 {
+.logo-text {
     color: #ffffff;
-    font-size: 26px;
     font-weight: 700;
-    margin-bottom: 6px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.logo-text span:first-child {
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+}
+
+.logo-text span:last-child {
+    font-size: 0.75rem;
+    margin-top: -2px;
+    opacity: 0.95;
 }
 
 .logo-section p {
     color: #ffd700;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
+    margin-top: 8px;
 }
 
+/* Login Container */
 .login-container {
     background: #ffffff;
-    padding: 45px;
-    border-radius: 16px;
+    padding: 45px 40px;
+    border-radius: 0 0 16px 16px;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
     animation: fadeInUp 0.7s ease-out;
 }
@@ -81,73 +107,67 @@ body::before {
 .login-header {
     text-align: center;
     margin-bottom: 35px;
-    padding-bottom: 20px;
+    padding-bottom: 25px;
     border-bottom: 2px solid #f0f0f0;
 }
 
 .login-header h2 {
     color: #003366;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .login-header p {
     color: #666;
     font-size: 14px;
-    margin-top: 6px;
 }
 
+/* Alert Error */
 .alert-error {
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
     color: white;
-    padding: 15px 18px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 24px;
     font-size: 14px;
+    font-weight: 500;
     display: flex;
     align-items: center;
+    gap: 12px;
     animation: shake 0.5s ease-out;
     box-shadow: 0 6px 20px rgba(238, 90, 111, 0.3);
 }
 
 .alert-error::before {
-    content: 'Warning';
-    font-size: 20px;
-    margin-right: 12px;
+    content: '⚠️';
+    font-size: 22px;
 }
 
-.form-group { margin-bottom: 25px; }
+/* Form Group */
+.form-group { 
+    margin-bottom: 24px; 
+}
 
 label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 600;
     color: #003366;
-    font-size: 14px;
+    font-size: 14.5px;
 }
 
-.input-wrapper { position: relative; }
-
-.input-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
-    fill: #666;
-    pointer-events: none;
-}
-
+/* Input Fields - Tanpa Icon */
 input[type="email"],
 input[type="password"] {
     width: 100%;
-    padding: 15px 15px 15px 48px;
+    padding: 16px 18px;
     border: 2px solid #e0e0e0;
     border-radius: 10px;
     font-size: 15px;
     background-color: #f8f9fa;
     transition: all 0.3s ease;
+    font-family: inherit;
 }
 
 input[type="email"]:focus,
@@ -158,15 +178,21 @@ input[type="password"]:focus {
     box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.15);
 }
 
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+    color: #999;
+}
+
+/* Remember Me */
 .remember-group {
     display: flex;
     align-items: center;
-    margin: 20px 0 30px;
+    margin: 22px 0 32px;
 }
 
 .remember-group input[type="checkbox"] {
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
     margin-right: 10px;
     accent-color: #ffd700;
     cursor: pointer;
@@ -174,25 +200,27 @@ input[type="password"]:focus {
 
 .remember-group label {
     margin: 0;
-    color: #444;
+    color: #555;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
 }
 
+/* Submit Button */
 button[type="submit"] {
     width: 100%;
     background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
     color: #003366;
-    padding: 17px;
+    padding: 18px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     transition: all 0.3s ease;
     box-shadow: 0 6px 20px rgba(255, 215, 0, 0.35);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
 }
 
 button[type="submit"]:hover {
@@ -201,6 +229,11 @@ button[type="submit"]:hover {
     box-shadow: 0 10px 30px rgba(255, 215, 0, 0.45);
 }
 
+button[type="submit"]:active {
+    transform: translateY(-1px);
+}
+
+/* Footer */
 .login-footer {
     text-align: center;
     margin-top: 30px;
@@ -212,22 +245,62 @@ button[type="submit"]:hover {
 
 /* Animations */
 @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-40px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(-30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-12px); }
-    75% { transform: translateX(12px); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
 }
 
+/* Responsive */
 @media (max-width: 480px) {
-    .login-container { padding: 35px 25px; }
-    .logo-section h1 { font-size: 22px; }
+    .login-wrapper {
+        max-width: 100%;
+    }
+    
+    .logo-section {
+        padding: 25px 20px;
+    }
+    
+    .logo-content {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .logo-text {
+        text-align: center;
+    }
+    
+    .login-container { 
+        padding: 35px 25px; 
+    }
+    
+    .login-header h2 { 
+        font-size: 22px; 
+    }
+    
+    button[type="submit"] {
+        padding: 16px;
+        font-size: 15px;
+    }
 }

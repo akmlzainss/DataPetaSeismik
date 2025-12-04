@@ -189,49 +189,92 @@ class DataSurveiController extends Controller
     }
 
     private function sanitizeHtml(?string $html): ?string
-    {
-        if ($html === null) return null;
-        $allowed = '<p><br><strong><b><em><i><u><span><ol><ul><li><blockquote><h1><h2><h3><h4><h5><h6><a><table><thead><tbody><tr><td><th><colgroup><col><img>';
-        $clean = strip_tags($html, $allowed);
-        $clean = preg_replace('/on\\w+\s*=\s*("[^"]*"|\'[^\']*\')/i', '', $clean);
-        $clean = preg_replace('/href\s*=\s*("|\')\s*javascript:[^"\']*(\1)/i', 'href="#"', $clean);
-        $clean = preg_replace('/<a\s+([^>]*?)target=("|\')_blank(\2)([^>]*?)>/i', '<a $1 target="_blank" rel="noopener noreferrer" $4>', $clean);
-        $clean = preg_replace_callback('/style\s*=\s*("([^"]*)"|\'([^\']*)\')/i', function ($m) {
-            $style = $m[2] ?? $m[3] ?? '';
-            $allowedProps = ['color', 'background-color', 'text-align'];
-            $rules = array_filter(array_map('trim', explode(';', $style)));
-            $kept = [];
-            foreach ($rules as $r) {
-                [$prop, $val] = array_map('trim', explode(':', $r, 2));
-                if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
-                    $kept[] = $prop . ':' . $val;
-                }
-            }
-            return count($kept) ? 'style="' . implode(';', $kept) . '"' : '';
-        }, $clean);
-        $clean = preg_replace_callback('/<img\s+[^>]*>/i', function ($m) {
-            $tag = $m[0];
-            if (preg_match('/src\s*=\s*("([^"]*)"|\'([^\']*)\')/i', $tag, $sm)) {
-                $src = $sm[2] ?? $sm[3] ?? '';
-                $ok = preg_match('/^(https?:\/\/|\/)/i', $src) || preg_match('/^data:image\/(png|jpeg|jpg|gif);/i', $src);
-                if (!$ok) return '';
-            }
-            $tag = preg_replace('/on\\w+\s*=\s*("[^"]*"|\'[^\']*\')/i', '', $tag);
-            $tag = preg_replace_callback('/style\s*=\s*("([^"]*)"|\'([^\']*)\')/i', function ($m2) {
-                $style = $m2[2] ?? $m2[3] ?? '';
-                $allowedProps = ['width', 'height'];
-                $rules = array_filter(array_map('trim', explode(';', $style)));
-                $kept = [];
-                foreach ($rules as $r) {
-                    [$prop, $val] = array_map('trim', explode(':', $r, 2));
-                    if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
-                        $kept[] = $prop . ':' . $val;
+{
+    if ($html === null) return null;
+
+    // Izinkan semua tag yang dihasilkan Quill
+    $allowedTags = '<div><p><br><strong><b><em><i><u><s><strike><span><ul><li><ol><blockquote><h1><h2><h3><h4><h5><h6><a><table><thead><tbody><tr><td><th><code><pre><img>';
+    
+    // Hapus tag yang tidak diizinkan
+    $clean = strip_tags($html, $allowedTags);
+
+    // Hapus event handlers (XSS prevention) dan javascript links
+    $clean = preg_replace('/on\w+\s*=\s*(".*?"|\'.*?\')/i', '', $clean);
+    $clean = preg_replace('/href\s*=\s*("|\')\s*javascript:[^"\']*(\1)/i', 'href="#"', $clean);
+    
+    // Perbaikan PENTING: Proses atribut CLASS, STYLE, SRC, ALT, dan HREF.
+    // Quill.js sangat bergantung pada CLASS (misalnya ql-align-center, ql-syntax)
+    
+    // Regex callback untuk memproses atribut hanya pada tag yang relevan
+    $clean = preg_replace_callback('/<(\w+)\s*([^>]*?)>/i', function ($m) {
+        $tag = $m[1];
+        $attributes = $m[2]; 
+
+        // Tag yang atributnya harus diperiksa
+        $tagsToCheck = ['div', 'p', 'span', 'img', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote', 'pre', 'code'];
+        if (!in_array(strtolower($tag), $tagsToCheck)) {
+            return "<$tag>"; // Kembali tanpa atribut (kecuali sudah di-strip_tags)
+        }
+        
+        $new_attributes = [];
+        // Regex untuk menangkap atribut yang diizinkan (class, style, href, src, alt, width, height)
+        if (preg_match_all('/(class|style|href|src|alt|width|height)\s*=\s*("([^"]*)"|\'([^\']*)\')/i', $attributes, $matches, PREG_SET_ORDER)) {
+            
+            foreach ($matches as $match) {
+                $attr_name = strtolower($match[1]);
+                // Ambil nilai dari double quote (match[3]) atau single quote (match[4])
+                $attr_value = $match[3] ?? $match[4] ?? ''; 
+
+                if ($attr_name === 'style') {
+                    // Sanitasi properti CSS yang diizinkan (penting untuk warna dan alignment)
+                    $allowedProps = ['color', 'background-color', 'text-align', 'font-size', 'line-height', 'width', 'height', 'border', 'padding', 'margin']; 
+                    $rules = array_filter(array_map('trim', explode(';', $attr_value)));
+                    $kept = [];
+                    foreach ($rules as $r) {
+                        if (strpos($r, ':') !== false) {
+                            [$prop, $val] = array_map('trim', explode(':', $r, 2));
+                            if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
+                                $kept[] = $prop . ':' . $val;
+                            }
+                        }
                     }
+                    if (count($kept)) {
+                        $new_attributes[] = 'style="' . implode(';', $kept) . '"';
+                    }
+                } elseif (in_array($attr_name, ['class', 'src', 'alt', 'width', 'height'])) {
+                    // Izinkan class (untuk Quill styles), src/alt (untuk image)
+                    $new_attributes[] = $match[0];
+                } elseif ($attr_name === 'href') {
+                    // Izinkan href
+                    $new_attributes[] = $match[0];
                 }
-                return count($kept) ? 'style="' . implode(';', $kept) . '"' : '';
-            }, $tag);
-            return $tag;
-        }, $clean);
-        return $clean;
-    }
+            }
+        }
+        
+        // Tambah target blank ke tag <a> jika ada href, atau jika belum ada
+        if (strtolower($tag) === 'a') {
+            if (!preg_match('/target=["\']_blank["\']/i', $attributes)) {
+                 $new_attributes[] = 'target="_blank"';
+            }
+            if (!preg_match('/rel=["\']noopener noreferrer["\']/i', $attributes)) {
+                 $new_attributes[] = 'rel="noopener noreferrer"';
+            }
+        }
+        
+        // Gabungkan kembali tag dengan atribut yang aman
+        if (empty($new_attributes)) {
+            return "<$tag>";
+        } else {
+            // Hapus duplikasi atribut dan gabungkan
+            $new_attributes = array_unique($new_attributes);
+            return "<$tag " . implode(' ', $new_attributes) . ">";
+        }
+    }, $clean);
+
+
+    // Hapus tag yang kosong, kecuali <br> dan <img>
+    $clean = preg_replace('/<(\w+)\s*(?:\/|[^>]*?)>[\s|&nbsp;]*<\/\1>/', '', $clean);
+
+    return $clean;
+}
 }
