@@ -1,0 +1,439 @@
+/* public/css/public-tentang.css - Government Theme */
+
+/* ====================== TENTANG PAGE STYLES ====================== */
+
+.tentang-section {
+    padding: 80px 24px;
+    background: white;
+    min-height: calc(100vh - 200px);
+}
+
+.tentang-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ====================== PAGE HEADER ====================== */
+.tentang-header {
+    margin-bottom: 50px;
+}
+
+.tentang-title {
+    font-size: 38px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 4px solid #ffd700;
+    display: inline-block;
+}
+
+/* ====================== CONTENT SECTIONS ====================== */
+.tentang-content {
+    color: #555;
+    line-height: 1.8;
+}
+
+.content-section {
+    margin-bottom: 50px;
+}
+
+.section-heading {
+    font-size: 28px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+.section-heading:first-of-type {
+    margin-top: 0;
+}
+
+.lead-text {
+    font-size: 18px;
+    line-height: 1.9;
+    color: #666;
+    font-weight: 400;
+    margin-bottom: 30px;
+    text-align: justify;
+}
+
+.content-paragraph {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 16px;
+    text-align: justify;
+}
+
+/* ====================== VISI SECTION ====================== */
+.visi-box {
+    background: #e6f2ff;
+    padding: 32px;
+    border-radius: 6px;
+    border-left: 5px solid #003366;
+    box-shadow: 0 2px 10px rgba(0, 51, 102, 0.08);
+    margin: 30px 0;
+}
+
+.visi-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.visi-heading i {
+    font-size: 24px;
+    color: #ffd700;
+}
+
+.visi-text {
+    font-size: 17px;
+    font-style: italic;
+    color: #004488;
+    line-height: 1.8;
+}
+
+.visi-text .highlight {
+    font-weight: 700;
+    color: #003366;
+}
+
+/* ====================== MISI SECTION ====================== */
+.misi-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.misi-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #ffd700;
+    transition: all 0.3s ease;
+}
+
+.misi-item:hover {
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 51, 102, 0.1);
+    transform: translateX(5px);
+}
+
+.misi-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #003366;
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.misi-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #555;
+}
+
+/* ====================== TUGAS POKOK SECTION ====================== */
+.tugas-pokok-box {
+    background: #fffbeb;
+    padding: 28px;
+    border-radius: 6px;
+    border-left: 5px solid #ffd700;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.15);
+    margin: 30px 0;
+}
+
+.tugas-heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tugas-heading i {
+    font-size: 22px;
+    color: #ffd700;
+}
+
+.tugas-text {
+    font-size: 17px;
+    color: #78350f;
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+/* ====================== FUNGSI SECTION ====================== */
+.fungsi-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: #003366;
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
+
+.fungsi-list {
+    list-style: none;
+    counter-reset: fungsi-counter;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.fungsi-item {
+    counter-increment: fungsi-counter;
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 18px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.fungsi-item::before {
+    content: counter(fungsi-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    background: #003366;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* ====================== STRUKTUR ORGANISASI SECTION ====================== */
+.divider-top {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 40px;
+    margin-top: 50px;
+}
+
+.struktur-box {
+    padding: 50px 40px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.struktur-box:hover {
+    border-color: #003366;
+    box-shadow: 0 6px 20px rgba(0, 51, 102, 0.1);
+}
+
+.struktur-icon {
+    font-size: 64px;
+    color: #003366;
+    margin-bottom: 20px;
+}
+
+.struktur-text {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.7;
+}
+
+.struktur-placeholder {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 24px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    color: #999;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ====================== INFO BOXES ====================== */
+.info-box {
+    padding: 24px;
+    border-radius: 6px;
+    margin: 25px 0;
+    border-left: 4px solid;
+}
+
+.info-box.blue {
+    background: #eff6ff;
+    border-color: #003366;
+}
+
+.info-box.yellow {
+    background: #fef3c7;
+    border-color: #ffd700;
+}
+
+.info-box.gray {
+    background: #f3f4f6;
+    border-color: #6b7280;
+}
+
+.info-box-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-box.blue .info-box-title {
+    color: #003366;
+}
+
+.info-box.yellow .info-box-title {
+    color: #92400e;
+}
+
+.info-box.gray .info-box-title {
+    color: #374151;
+}
+
+.info-box-text {
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.info-box.blue .info-box-text {
+    color: #1e40af;
+}
+
+.info-box.yellow .info-box-text {
+    color: #78350f;
+}
+
+.info-box.gray .info-box-text {
+    color: #4b5563;
+}
+
+/* ====================== RESPONSIVE DESIGN ====================== */
+@media (max-width: 968px) {
+    .tentang-section {
+        padding: 60px 20px;
+    }
+
+    .tentang-title {
+        font-size: 30px;
+    }
+
+    .section-heading {
+        font-size: 24px;
+    }
+
+    .lead-text {
+        font-size: 16px;
+    }
+
+    .visi-box,
+    .tugas-pokok-box {
+        padding: 24px;
+    }
+
+    .visi-heading,
+    .tugas-heading {
+        font-size: 18px;
+    }
+
+    .visi-text,
+    .tugas-text {
+        font-size: 15px;
+    }
+
+    .fungsi-heading {
+        font-size: 20px;
+    }
+
+    .misi-item {
+        padding: 16px;
+    }
+
+    .struktur-box {
+        padding: 40px 24px;
+    }
+
+    .struktur-icon {
+        font-size: 52px;
+    }
+}
+
+@media (max-width: 640px) {
+    .tentang-title {
+        font-size: 26px;
+    }
+
+    .section-heading {
+        font-size: 22px;
+    }
+
+    .lead-text {
+        font-size: 15px;
+        text-align: left;
+    }
+
+    .content-paragraph {
+        font-size: 15px;
+        text-align: left;
+    }
+
+    .visi-box,
+    .tugas-pokok-box {
+        padding: 20px;
+    }
+
+    .misi-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fungsi-item {
+        padding-left: 45px;
+        font-size: 15px;
+    }
+
+    .fungsi-item::before {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
+}
+
+/* ====================== UTILITIES ====================== */
+.text-center {
+    text-align: center;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+/* Ensure icons don't break layout */
+i.fas {
+    display: inline-block;
+    flex-shrink: 0;
+}
