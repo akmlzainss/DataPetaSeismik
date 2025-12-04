@@ -1,89 +1,197 @@
+{{-- resources/views/katalog.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Katalog Data Survei Seismik')
 
 @push('styles')
-{{-- Tambahan CSS jika diperlukan --}}
+<link rel="stylesheet" href="{{ asset('css/public-katalog.css') }}">
 @endpush
 
 @section('content')
-<section class="py-16 bg-gray-50">
-    <div class="container mx-auto px-6 lg:px-8">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-4 border-b-4 border-blue-500 inline-block pb-1">Katalog Data Survei</h1>
-        <p class="text-xl text-gray-600 mb-12">Jelajahi, saring, dan unduh data survei geologi kelautan yang tersedia untuk umum.</p>
+
+<section class="katalog-section">
+    <div class="katalog-container">
+        
+        {{-- Page Header --}}
+        <div class="katalog-header">
+            <h1 class="katalog-title">Katalog Data Survei</h1>
+            <p class="katalog-subtitle">
+                Jelajahi, saring, dan unduh data survei geologi kelautan yang tersedia untuk umum.
+            </p>
+        </div>
 
         {{-- Search and Filter Bar --}}
-        <div class="mb-10 p-6 bg-white border border-gray-200 rounded-xl shadow-lg flex flex-col md:flex-row gap-4">
-            <input type="text" placeholder="Cari berdasarkan judul, wilayah, atau tahun..." class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" aria-label="Search">
-            
-            <select class="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 md:w-1/4 transition duration-150">
-                <option value="">Filter Tipe Survei</option>
-                <option value="seismik">Seismik Refleksi</option>
-                <option value="magnetik">Magnetik</option>
-                <option value="graviti">Gravitasi</option>
-            </select>
-            
-            <button class="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-150 shadow-md">
-                <i class="fas fa-search mr-2"></i> Cari
-            </button>
+        <div class="search-filter-bar">
+            <div class="search-filter-wrapper">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Cari berdasarkan judul, wilayah, atau tahun..." 
+                    aria-label="Pencarian"
+                >
+                
+                <select class="filter-select" aria-label="Filter Tipe Survei">
+                    <option value="">Filter Tipe Survei</option>
+                    <option value="seismik">Seismik Refleksi</option>
+                    <option value="magnetik">Magnetik</option>
+                    <option value="gravitasi">Gravitasi</option>
+                </select>
+                
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                    Cari
+                </button>
+            </div>
         </div>
 
         {{-- Data Cards Grid --}}
-        @if(empty($surveys)) 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {{-- Card Dummy 1 --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                    <div class="p-5">
-                        <span class="inline-block px-3 py-1 text-xs font-semibold text-white bg-green-500 rounded-full mb-2">Seismik 2D</span>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Survei Perairan Jawa Barat</h3>
-                        <p class="text-sm text-gray-500 mb-4">Tahun: 2024 | Area: Laut Jawa</p>
-                        <p class="text-gray-700 text-sm mb-4 line-clamp-3">Pengambilan data seismik resolusi tinggi untuk pemetaan struktur geologi dangkal di zona subduksi.</p>
-                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium flex items-center mt-2">
-                            Lihat Detail 
-                            <i class="fas fa-arrow-right ml-2 text-sm"></i>
+        @if(empty($surveys))
+            <div class="data-cards-grid">
+                
+                {{-- Card Dummy 1 - Seismik --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-seismik">Seismik 2D</span>
+                        <h3 class="data-card-title">Survei Perairan Jawa Barat</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2024</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Laut Jawa</span>
+                        </div>
+                        <p class="data-card-description">
+                            Pengambilan data seismik resolusi tinggi untuk pemetaan struktur geologi dangkal 
+                            di zona subduksi. Data mencakup interpretasi stratigrafi dan identifikasi potensi hidrokarbon.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
 
-                {{-- Card Dummy 2 --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                    <div class="p-5">
-                        <span class="inline-block px-3 py-1 text-xs font-semibold text-white bg-yellow-600 rounded-full mb-2">Magnetik</span>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Pemetaan Anomali Sulawesi</h3>
-                        <p class="text-sm text-gray-500 mb-4">Tahun: 2023 | Area: Sulawesi Tengah</p>
-                        <p class="text-gray-700 text-sm mb-4 line-clamp-3">Data anomali magnetik yang digunakan untuk mengidentifikasi batuan dasar dan potensi mineral.</p>
-                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium flex items-center mt-2">
-                            Lihat Detail 
-                            <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                {{-- Card Dummy 2 - Magnetik --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-magnetik">Magnetik</span>
+                        <h3 class="data-card-title">Pemetaan Anomali Sulawesi</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2023</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Sulawesi Tengah</span>
+                        </div>
+                        <p class="data-card-description">
+                            Data anomali magnetik yang digunakan untuk mengidentifikasi batuan dasar dan potensi mineral. 
+                            Survei mencakup area seluas 2.500 km² dengan resolusi tinggi.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
 
-                {{-- Card Dummy 3 --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                    <div class="p-5">
-                        <span class="inline-block px-3 py-1 text-xs font-semibold text-white bg-red-500 rounded-full mb-2">Gravitasi</span>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Survei Selat Sunda</h3>
-                        <p class="text-sm text-gray-500 mb-4">Tahun: 2022 | Area: Selat Sunda</p>
-                        <p class="text-gray-700 text-sm mb-4 line-clamp-3">Data *free-air* dan *Bouguer anomaly* untuk pemodelan densitas bawah permukaan.</p>
-                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium flex items-center mt-2">
-                            Lihat Detail 
-                            <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                {{-- Card Dummy 3 - Gravitasi --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-gravitasi">Gravitasi</span>
+                        <h3 class="data-card-title">Survei Selat Sunda</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2022</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Selat Sunda</span>
+                        </div>
+                        <p class="data-card-description">
+                            Data free-air dan Bouguer anomaly untuk pemodelan densitas bawah permukaan. 
+                            Hasil survei mendukung pemetaan cekungan sedimen dan struktur tektonik regional.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
+
+                {{-- Card Dummy 4 - Seismik --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-seismik">Seismik 3D</span>
+                        <h3 class="data-card-title">Blok Natuna Timur</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2024</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Laut Natuna</span>
+                        </div>
+                        <p class="data-card-description">
+                            Survei seismik 3D komprehensif mencakup 1.200 km² untuk eksplorasi minyak dan gas bumi. 
+                            Data berkualitas tinggi dengan pengolahan full-stack migration.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Card Dummy 5 - Magnetik --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-magnetik">Magnetik</span>
+                        <h3 class="data-card-title">Eksplorasi Maluku Utara</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2023</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Halmahera</span>
+                        </div>
+                        <p class="data-card-description">
+                            Pemetaan magnetik untuk identifikasi zona mineralisasi dan struktur geologi kompleks 
+                            di wilayah vulkanik aktif dengan potensi deposit logam mulia.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Card Dummy 6 - Gravitasi --}}
+                <div class="data-card">
+                    <div class="data-card-content">
+                        <span class="survey-badge badge-gravitasi">Gravitasi</span>
+                        <h3 class="data-card-title">Cekungan Kalimantan Timur</h3>
+                        <div class="data-card-meta">
+                            <span>Tahun: 2023</span>
+                            <span class="meta-divider"></span>
+                            <span>Area: Kutai Basin</span>
+                        </div>
+                        <p class="data-card-description">
+                            Data gravitasi regional untuk pemodelan cekungan sedimen dan estimasi ketebalan sedimen. 
+                            Mendukung evaluasi potensi hidrokarbon di area prospektif.
+                        </p>
+                        <a href="#" class="data-card-link">
+                            Lihat Detail
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
             </div>
-            
-            {{-- Placeholder Paginasi --}}
-            <div class="mt-12 text-center">
-                <p class="text-gray-500 text-sm">Placeholder Paginasi</p>
+
+            {{-- Pagination Placeholder --}}
+            <div class="pagination-wrapper">
+                <div class="pagination-placeholder">
+                    Menampilkan 6 dari 150+ data survei tersedia
+                </div>
             </div>
+
         @else
-            <div class="text-center py-20 bg-white border border-gray-200 rounded-xl shadow-inner">
-                <i class="fas fa-database text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500 text-xl font-medium">Tidak ada data survei yang ditemukan saat ini.</p>
+            {{-- Empty State --}}
+            <div class="empty-state">
+                <i class="fas fa-database empty-state-icon"></i>
+                <p class="empty-state-text">Tidak ada data survei yang ditemukan saat ini.</p>
             </div>
         @endif
+
     </div>
 </section>
+
 @endsection
