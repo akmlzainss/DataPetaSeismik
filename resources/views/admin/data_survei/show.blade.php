@@ -129,8 +129,7 @@
                 </tr>
                 <tr>
                     <td>Deskripsi</td>
-                    <td>{!! nl2br(e($dataSurvei->deskripsi ?? '-')) !!}</td> 
-                    {{-- Menggunakan nl2br untuk baris baru --}}
+                    <td>{!! $safeDeskripsi ?? '-' !!}</td>
                 </tr>
             </table>
 
