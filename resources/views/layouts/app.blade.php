@@ -28,7 +28,7 @@
                 <img src="{{ asset('images/logo.png') }}" alt="BBSPGL Logo">
                 <div class="navbar-logo-text">
                     <span class="main">BBSPGL</span>
-                    <span class="sub">Survei & Pemetaan Geologi</span>
+                    <span class="sub">Survei & Pemetaan Geologi Kelautan</span>
                 </div>
             </a>
             

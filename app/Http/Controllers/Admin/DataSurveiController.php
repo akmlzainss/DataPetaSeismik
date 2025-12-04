@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DataSurvei; 
-use App\Http\Requests\DataSurveiRequest; 
+use App\Models\DataSurvei;
+use App\Http\Requests\DataSurveiRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Jobs\ProcessSurveiImage; 
+use App\Jobs\ProcessSurveiImage;
 use Illuminate\Support\Str;
 
 class DataSurveiController extends Controller
@@ -73,6 +73,10 @@ class DataSurveiController extends Controller
         $data = $request->validated();
         $data['diunggah_oleh'] = Auth::guard('admin')->id();
 
+        if (isset($data['deskripsi'])) {
+            $data['deskripsi'] = $this->sanitizeHtml($data['deskripsi']);
+        }
+
         // Handle upload gambar pratinjau (original)
         if ($request->hasFile('gambar_pratinjau')) {
             $file = $request->file('gambar_pratinjau');
@@ -101,10 +105,11 @@ class DataSurveiController extends Controller
     public function show(DataSurvei $dataSurvei)
     {
         // Pastikan relasi pengunggah dan lokasi dimuat
-        $dataSurvei->load('pengunggah', 'lokasi'); 
-        return view('admin.data_survei.show', compact('dataSurvei'));
+        $dataSurvei->load('pengunggah', 'lokasi');
+        $safeDeskripsi = $this->sanitizeHtml($dataSurvei->deskripsi);
+        return view('admin.data_survei.show', compact('dataSurvei', 'safeDeskripsi'));
     }
-    
+
     /**
      * Mengembalikan detail data survei tertentu dalam format JSON.
      * Digunakan oleh fitur geocoding di halaman Lokasi Marker.
@@ -129,6 +134,10 @@ class DataSurveiController extends Controller
     {
         $data = $request->validated();
 
+        if (isset($data['deskripsi'])) {
+            $data['deskripsi'] = $this->sanitizeHtml($data['deskripsi']);
+        }
+
         if ($request->hasFile('gambar_pratinjau')) {
             // Hapus semua versi gambar lama (original, thumbnail, medium)
             foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium] as $file) {
@@ -136,7 +145,7 @@ class DataSurveiController extends Controller
                     Storage::disk('public')->delete($file);
                 }
             }
-            
+
             // Reset kolom gambar di DB agar tidak menggunakan path gambar lama
             $data['gambar_thumbnail'] = null;
             $data['gambar_medium'] = null;
@@ -177,5 +186,52 @@ class DataSurveiController extends Controller
         return redirect()
             ->route('admin.data_survei.index')
             ->with('success', 'Data survei berhasil dihapus!');
+    }
+
+    private function sanitizeHtml(?string $html): ?string
+    {
+        if ($html === null) return null;
+        $allowed = '<p><br><strong><b><em><i><u><span><ol><ul><li><blockquote><h1><h2><h3><h4><h5><h6><a><table><thead><tbody><tr><td><th><colgroup><col><img>';
+        $clean = strip_tags($html, $allowed);
+        $clean = preg_replace('/on\\w+\s*=\s*("[^"]*"|\'[^\']*\')/i', '', $clean);
+        $clean = preg_replace('/href\s*=\s*("|\')\s*javascript:[^"\']*(\1)/i', 'href="#"', $clean);
+        $clean = preg_replace('/<a\s+([^>]*?)target=("|\')_blank(\2)([^>]*?)>/i', '<a $1 target="_blank" rel="noopener noreferrer" $4>', $clean);
+        $clean = preg_replace_callback('/style\s*=\s*("([^"]*)"|\'([^\']*)\')/i', function ($m) {
+            $style = $m[2] ?? $m[3] ?? '';
+            $allowedProps = ['color', 'background-color', 'text-align'];
+            $rules = array_filter(array_map('trim', explode(';', $style)));
+            $kept = [];
+            foreach ($rules as $r) {
+                [$prop, $val] = array_map('trim', explode(':', $r, 2));
+                if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
+                    $kept[] = $prop . ':' . $val;
+                }
+            }
+            return count($kept) ? 'style="' . implode(';', $kept) . '"' : '';
+        }, $clean);
+        $clean = preg_replace_callback('/<img\s+[^>]*>/i', function ($m) {
+            $tag = $m[0];
+            if (preg_match('/src\s*=\s*("([^"]*)"|\'([^\']*)\')/i', $tag, $sm)) {
+                $src = $sm[2] ?? $sm[3] ?? '';
+                $ok = preg_match('/^(https?:\/\/|\/)/i', $src) || preg_match('/^data:image\/(png|jpeg|jpg|gif);/i', $src);
+                if (!$ok) return '';
+            }
+            $tag = preg_replace('/on\\w+\s*=\s*("[^"]*"|\'[^\']*\')/i', '', $tag);
+            $tag = preg_replace_callback('/style\s*=\s*("([^"]*)"|\'([^\']*)\')/i', function ($m2) {
+                $style = $m2[2] ?? $m2[3] ?? '';
+                $allowedProps = ['width', 'height'];
+                $rules = array_filter(array_map('trim', explode(';', $style)));
+                $kept = [];
+                foreach ($rules as $r) {
+                    [$prop, $val] = array_map('trim', explode(':', $r, 2));
+                    if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
+                        $kept[] = $prop . ':' . $val;
+                    }
+                }
+                return count($kept) ? 'style="' . implode(';', $kept) . '"' : '';
+            }, $tag);
+            return $tag;
+        }, $clean);
+        return $clean;
     }
 }
