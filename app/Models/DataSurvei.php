@@ -47,4 +47,6 @@ class DataSurvei extends Model
         // Menghubungkan kolom 'diunggah_oleh' di tabel data_survei dengan kolom 'id' di tabel admin
         return $this->belongsTo(Admin::class, 'diunggah_oleh');
     }
+
+    
 }
