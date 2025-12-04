@@ -1,4 +1,4 @@
-/* public/css/admin-dashboard.css */
+/* public/css/admin-dashboard.css - UPDATED */
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +11,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Sidebar */
+/* ====================== SIDEBAR ====================== */
 .sidebar {
     position: fixed;
     left: 0;
@@ -24,21 +24,19 @@ body {
     box-shadow: 4px 0 15px rgba(0,0,0,0.15);
     z-index: 1000;
     overflow-y: auto;
-    transition: width 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
+/* Sidebar Logo - Tata Letak Baru */
 .sidebar-logo {
-    padding: 15px 20px;
+    padding: 20px;
     border-bottom: 2px solid rgba(255,215,0,0.2);
     background: rgba(0, 51, 102, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
 }
 
 .sidebar-logo .logo-content {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
 }
 
@@ -46,46 +44,30 @@ body {
     width: 52px;
     height: auto;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .sidebar-logo .logo-text {
     color: #ffffff;
     font-weight: 700;
-    text-transform: none;
     text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1; /* lebih rapat dari default tapi tidak tabrakan */
+    line-height: 1.4;
 }
 
-
-
-/* Baris pertama */
-.sidebar-logo .logo-text span:first-child {
+.sidebar-logo .logo-text span {
+    display: block;
     font-size: 0.85rem;
-    margin: 0;  /* hilangkan margin bawaan */
-    line-height: 1.1;
 }
 
-
-
-/* Baris kedua — dibuat lebih kecil agar muat 1 baris */
-.sidebar-logo .logo-text span:last-child {
-    font-size: 0.70rem;
-    margin: -2px 0 0 0; /* sedikit naik tapi aman, tidak tabrakan */
-    line-height: 1.1;
-}
-
-
-
-
+/* Sidebar Menu */
 .sidebar-menu {
     list-style: none;
     padding: 10px 0;
 }
 
-.sidebar-menu li { margin: 6px 15px; }
+.sidebar-menu li { 
+    margin: 6px 15px; 
+}
 
 .sidebar-menu a {
     display: flex;
@@ -120,6 +102,7 @@ body {
     fill: currentColor;
 }
 
+/* Logout Button */
 .logout-btn {
     position: absolute;
     bottom: 25px;
@@ -153,13 +136,75 @@ body {
     margin-right: 10px;
 }
 
-/* Main Content */
+/* ====================== HAMBURGER MENU ====================== */
+.hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    background: #003366;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.hamburger-btn:hover {
+    background: #004080;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: #ffd700;
+    margin: 5px auto;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Hamburger Animation */
+.hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ====================== MAIN CONTENT ====================== */
 .main-content {
     margin-left: 260px;
     padding: 30px;
     min-height: 100vh;
     background: #f5f7fa;
     transition: margin-left 0.3s ease;
+    position: relative;
+    z-index: 10;
 }
 
 .page-header {
@@ -181,9 +226,11 @@ body {
     font-size: 16px;
 }
 
-.page-header strong { color: #ffd700; }
+.page-header strong { 
+    color: #ffd700; 
+}
 
-/* Stats & Welcome */
+/* ====================== STATS CARDS ====================== */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -198,79 +245,14 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     border-left: 5px solid #ffd700;
     transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .stat-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 28px rgba(0,0,0,0.15);
-}
-
-.stat-card h3 { font-size: 14.5px; color: #555; margin-bottom: 12px; }
-.stat-card .stat-value { font-size: 36px; font-weight: 800; color: #003366; }
-.stat-card .stat-label { font-size: 13.5px; color: #888; margin-top: 6px; }
-
-.welcome-section {
-    background: white;
-    padding: 35px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-}
-
-.welcome-section h2 {
-    color: #003366;
-    font-size: 24px;
-    margin-bottom: 16px;
-    font-weight: 700;
-}
-
-.quick-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 18px;
-    margin-top: 25px;
-}
-
-.quick-link-btn {
-    padding: 18px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    color: #003366;
-    text-align: center;
-    border-radius: 10px;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(255,215,0,0.3);
-    transition: all 0.3s;
-}
-
-.quick-link-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(255,215,0,0.4);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .sidebar { width: 80px; }
-    .sidebar-logo { justify-content: center; padding: 18px 10px; }
-    .sidebar-logo .logo-content { gap: 0; }
-    .sidebar-logo img { width: 48px; }
-    .sidebar-logo .logo-text,
-    .sidebar-menu a span,
-    .logout-btn span { display: none; }
-    .sidebar-menu a { justify-content: center; padding: 16px; }
-    .sidebar-menu a svg { margin: 0; }
-    .main-content { margin-left: 80px; padding: 20px; }
-}
-
-
-
-/* ====================== DASHBOARD IMPROVEMENTS ====================== */
-
-/* Stats Card dengan Icon */
-.stat-card {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 28px !important;
 }
 
 .stat-icon {
@@ -301,19 +283,18 @@ body {
 }
 
 .stat-info .stat-value {
-    font-size: 36px !important;
-    font-weight: 800 !important;
-    color: #003366 !important;
-    margin: 0 !important;
+    font-size: 36px;
+    font-weight: 800;
+    color: #003366;
 }
 
 .stat-info .stat-label {
-    font-size: 13.5px !important;
-    color: #888 !important;
-    margin-top: 6px !important;
+    font-size: 13.5px;
+    color: #888;
+    margin-top: 6px;
 }
 
-/* Dashboard Row (2 kolom) */
+/* ====================== DASHBOARD CARDS ====================== */
 .dashboard-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -321,7 +302,6 @@ body {
     margin-bottom: 24px;
 }
 
-/* Dashboard Card */
 .dashboard-card {
     background: white;
     border-radius: 12px;
@@ -351,7 +331,7 @@ body {
     padding: 24px;
 }
 
-/* Simple Table */
+/* ====================== TABLES ====================== */
 .simple-table {
     width: 100%;
     border-collapse: collapse;
@@ -385,7 +365,7 @@ body {
     background: #f8f9fa;
 }
 
-/* Badge */
+/* ====================== BADGES ====================== */
 .badge {
     display: inline-block;
     padding: 4px 10px;
@@ -424,7 +404,7 @@ body {
     border-color: #b2dfdb;
 }
 
-/* Activity List */
+/* ====================== ACTIVITY LIST ====================== */
 .activity-list {
     max-height: 400px;
     overflow-y: auto;
@@ -460,7 +440,6 @@ body {
 
 .activity-content {
     flex: 1;
-    min-width: 0;
 }
 
 .activity-title {
@@ -478,7 +457,7 @@ body {
     color: #888;
 }
 
-/* Quick Actions */
+/* ====================== QUICK ACTIONS ====================== */
 .quick-actions {
     background: white;
     padding: 24px;
@@ -532,7 +511,7 @@ body {
     text-align: center;
 }
 
-/* Responsive Dashboard */
+/* ====================== RESPONSIVE ====================== */
 @media (max-width: 1200px) {
     .dashboard-row {
         grid-template-columns: 1fr;
@@ -544,6 +523,31 @@ body {
 }
 
 @media (max-width: 768px) {
+    /* Show Hamburger */
+    .hamburger-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Hide Sidebar by Default */
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    /* Show Sidebar when Active */
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    /* Adjust Main Content */
+    .main-content {
+        margin-left: 0;
+        padding: 80px 20px 20px;
+    }
+    
+    /* Stats */
     .stats-container {
         grid-template-columns: 1fr;
     }
@@ -553,10 +557,12 @@ body {
         text-align: center;
     }
     
+    /* Quick Actions */
     .quick-actions-grid {
         grid-template-columns: 1fr;
     }
     
+    /* Tables */
     .card-body {
         padding: 16px;
         overflow-x: auto;
@@ -572,293 +578,10 @@ body {
     }
 }
 
-/* Dashboard Row (2 kolom) */
-.dashboard-row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-    margin-bottom: 24px;
-}
-
-/* Dashboard Card */
-.dashboard-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #e0e0e0;
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.card-header h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #003366;
-    margin-bottom: 4px;
-}
-
-.card-subtitle {
-    font-size: 13px;
-    color: #888;
-}
-
-.card-body {
-    padding: 24px;
-}
-
-/* Simple Table */
-.simple-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.simple-table thead {
-    background: #f8f9fa;
-}
-
-.simple-table th {
-    padding: 12px;
-    text-align: left;
-    font-size: 13px;
-    font-weight: 600;
-    color: #003366;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.simple-table td {
-    padding: 12px;
-    font-size: 14px;
-    color: #555;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.simple-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.simple-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-/* Badge */
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1px solid;
-}
-
-.badge-sm {
-    padding: 3px 8px;
-    font-size: 11px;
-}
-
-.badge-2d {
-    background: #e3f2fd;
-    color: #1976d2;
-    border-color: #bbdefb;
-}
-
-.badge-3d {
-    background: #f3e5f5;
-    color: #7b1fa2;
-    border-color: #e1bee7;
-}
-
-.badge-hr {
-    background: #fff3e0;
-    color: #f57c00;
-    border-color: #ffe0b2;
-}
-
-.badge-lainnya {
-    background: #e0f2f1;
-    color: #00695c;
-    border-color: #b2dfdb;
-}
-
-/* Activity List */
-.activity-list {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.activity-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    width: 40px;
-    height: 40px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.activity-icon svg {
-    width: 20px;
-    height: 20px;
-    fill: #666;
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #003366;
-    margin-bottom: 4px;
-}
-
-.activity-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    color: #888;
-}
-
-/* Quick Actions */
-.quick-actions {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #e0e0e0;
-}
-
-.quick-actions h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #003366;
-    margin-bottom: 16px;
-}
-
-.quick-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-.quick-action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 20px;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #003366;
-    transition: all 0.2s ease;
-}
-
-.quick-action-btn:hover {
-    background: #ffd700;
-    border-color: #e6c200;
-    transform: translateY(-2px);
-}
-
-.quick-action-btn svg {
-    width: 32px;
-    height: 32px;
-    fill: currentColor;
-}
-
-.quick-action-btn span {
-    font-size: 13px;
-    font-weight: 600;
-    text-align: center;
-}
-
-/* Responsive Dashboard */
-@media (max-width: 1200px) {
-    .dashboard-row {
-        grid-template-columns: 1fr;
+/* Desktop - No Hamburger */
+@media (min-width: 769px) {
+    .hamburger-btn,
+    .sidebar-overlay {
+        display: none !important;
     }
-    
-    .quick-actions-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .quick-actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .card-body {
-        padding: 16px;
-        overflow-x: auto;
-    }
-    
-    .simple-table {
-        font-size: 13px;
-    }
-    
-    .simple-table th,
-    .simple-table td {
-        padding: 8px;
-    }
-}
-
-
-/* ====================== FIX Z-INDEX & DECORATION OVERLAY ====================== */
-
-/* Langkah 1: Pastikan Main Content selalu terlihat di depan */
-.main-content {
-    position: relative; 
-    z-index: 10000 !important; /* Nilai sangat tinggi agar di depan overlay apa pun */
-    background-color: #f5f7fa !important; /* Pastikan tidak ada transparansi */
-}
-
-/* Langkah 2: Menonaktifkan semua Pseudo-element dekoratif yang tidak dikenal */
-/* Target body, html, dan main-content karena ini lokasi favorit elemen dekorasi latar belakang */
-body::before, 
-body::after,
-html::before,
-html::after,
-.main-content::before,
-.main-content::after {
-    /* Ini akan menghapus elemen dekorasi yang dibuat melalui CSS */
-    content: none !important;
-    display: none !important;
-    opacity: 0 !important;
-    z-index: 1 !important;
-}
-
-/* Langkah 3: Jika elemennya berupa DIV dengan nama umum */
-/* Hapus atau sembunyikan DIV yang tampak seperti overlay jika ada di HTML (meski Anda tidak menemukannya) */
-.decor-overlay, 
-.giant-graphic, 
-.decorative-shape {
-    display: none !important;
 }

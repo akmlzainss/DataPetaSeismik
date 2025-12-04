@@ -43,7 +43,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
             'update' => 'data_survei.update',
             'destroy' => 'data_survei.destroy',
         ]);
-        
+
     // Tambahan Route untuk JS (mengembalikan JSON)
     // PENTING: Gunakan URI yang unik (e.g., /data-survei-json/ atau /data-survei/{id}/json)
     // agar TIDAK menimpa route 'show' di atas.
@@ -72,19 +72,31 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
 
     // Laporan
     Route::resource('laporan', LaporanController::class)->names('laporan');
-    
 
-   
+
+
     // Pengaturan
-Route::controller(PengaturanController::class)
-    ->prefix('pengaturan')
-    ->name('pengaturan.')
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::put('/profile', 'updateProfile')->name('update.profile');
-        Route::put('/password', 'updatePassword')->name('update.password');
-        Route::post('/clear-cache', 'clearCache')->name('clear.cache');
-    });
+    Route::controller(PengaturanController::class)
+        ->prefix('pengaturan')
+        ->name('pengaturan.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::put('/profile', 'updateProfile')->name('update.profile');
+            Route::put('/password', 'updatePassword')->name('update.password');
+            Route::post('/clear-cache', 'clearCache')->name('clear.cache');
+        });
+
+
+
+    // routes/web.php atau admin.php
+    Route::post('/admin/upload-tinymce-image', function (Request $request) {
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('tinymce', 'public');
+            return response()->json(['location' => asset('storage/' . $path)]);
+        }
+        return response()->json(['error' => 'No file'], 400);
+    })->middleware('auth:admin');
 
     // Logout
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
