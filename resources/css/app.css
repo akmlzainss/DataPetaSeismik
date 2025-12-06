@@ -1,11 +1,101 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* CRITICAL: Prevent Tailwind from resetting navbar styles */
+@layer base {
+    /* Preserve navbar from Tailwind reset */
+    .navbar,
+    .navbar * {
+        /* Don't let Tailwind reset these elements */
+    }
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* Force navbar to keep its styles */
+nav.navbar {
+    all: unset;
+    /* Then reapply from public-home.css */
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    background: #ffed00 !important;
+    border-bottom: 3px solid #ffd500 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    transition: background 0.4s ease, border-bottom 0.4s ease !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+.navbar-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 24px !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+}
+
+.navbar-logo {
+    display: flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    gap: 15px !important;
+}
+
+.navbar-logo img {
+    height: 70px !important;
+    object-fit: contain !important;
+    max-height: 70px !important;
+    width: auto !important;
+    max-width: 450px !important;
+}
+
+.navbar-menu {
+    display: flex !important;
+    align-items: center !important;
+    gap: 36px !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.navbar-menu li {
+    list-style: none !important;
+}
+
+.navbar-menu a {
+    text-decoration: none !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    transition: color 0.4s ease !important;
+    position: relative !important;
+    padding: 8px 0 !important;
+    display: inline-block !important;
+}
+
+.navbar-toggle {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: none !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    padding: 8px !important;
+}
+
+.navbar-toggle span {
+    width: 25px !important;
+    height: 3px !important;
+    background: #333 !important;
+    display: block !important;
+    transition: all 0.3s !important;
+}
+
+@media (max-width: 968px) {
+    .navbar-menu {
+        display: none !important;
+    }
+    
+    .navbar-toggle {
+        display: flex !important;
+    }
 }

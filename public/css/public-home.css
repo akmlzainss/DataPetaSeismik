@@ -77,14 +77,14 @@ padding: 8px 0;
 }
 
 .navbar-menu a::after {
-content: '';
-position: absolute;
-bottom: 0;
-left: 0;
-width: 0;
-height: 2px;
-background: #fff;
-transition: width 0.3s;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #3779C9;
+    transition: width 0.3s;
 }
 
 .navbar-menu a:hover {

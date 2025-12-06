@@ -1,197 +1,106 @@
-{{-- resources/views/katalog.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Katalog Data Survei Seismik')
+@section('title', 'Katalog Survei Geologi Kelautan')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/public-katalog.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/public-katalog.css') }}">
 @endpush
 
 @section('content')
-
-<section class="katalog-section">
-    <div class="katalog-container">
-        
-        {{-- Page Header --}}
-        <div class="katalog-header">
-            <h1 class="katalog-title">Katalog Data Survei</h1>
-            <p class="katalog-subtitle">
-                Jelajahi, saring, dan unduh data survei geologi kelautan yang tersedia untuk umum.
-            </p>
+    <div class="catalog-container">
+        <!-- Header -->
+        <div class="catalog-header">
+            <h1 class="catalog-title">Katalog Survei Geologi Kelautan</h1>
+            <p class="catalog-subtitle">Koleksi data survei dan pemetaan geologi kelautan BBSPGL</p>
         </div>
 
-        {{-- Search and Filter Bar --}}
-        <div class="search-filter-bar">
-            <div class="search-filter-wrapper">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Cari berdasarkan judul, wilayah, atau tahun..." 
-                    aria-label="Pencarian"
-                >
-                
-                <select class="filter-select" aria-label="Filter Tipe Survei">
-                    <option value="">Filter Tipe Survei</option>
-                    <option value="seismik">Seismik Refleksi</option>
-                    <option value="magnetik">Magnetik</option>
-                    <option value="gravitasi">Gravitasi</option>
-                </select>
-                
-                <button class="search-button">
-                    <i class="fas fa-search"></i>
-                    Cari
-                </button>
-            </div>
+        <!-- Filters -->
+        <div class="filters-section">
+            <h3 class="filters-title">Filter Data</h3>
+            <form method="GET" action="{{ route('katalog') }}">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Tahun</label>
+                        <select name="tahun" class="filter-select">
+                            <option value="">Semua Tahun</option>
+                            @foreach ($tahun_options as $tahun)
+                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Tipe Survei</label>
+                        <select name="tipe" class="filter-select">
+                            <option value="">Semua Tipe</option>
+                            @foreach ($tipe_options as $tipe)
+                                <option value="{{ $tipe }}" {{ request('tipe') == $tipe ? 'selected' : '' }}>
+                                    {{ $tipe }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Wilayah</label>
+                        <select name="wilayah" class="filter-select">
+                            <option value="">Semua Wilayah</option>
+                            @foreach ($wilayah_options as $wilayah)
+                                <option value="{{ $wilayah }}" {{ request('wilayah') == $wilayah ? 'selected' : '' }}>
+                                    {{ $wilayah }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <button type="submit" class="filter-button">Filter</button>
+                    </div>
+                </div>
+            </form>
         </div>
 
-        {{-- Data Cards Grid --}}
-        @if(empty($surveys))
-            <div class="data-cards-grid">
-                
-                {{-- Card Dummy 1 - Seismik --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-seismik">Seismik 2D</span>
-                        <h3 class="data-card-title">Survei Perairan Jawa Barat</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2024</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Laut Jawa</span>
-                        </div>
-                        <p class="data-card-description">
-                            Pengambilan data seismik resolusi tinggi untuk pemetaan struktur geologi dangkal 
-                            di zona subduksi. Data mencakup interpretasi stratigrafi dan identifikasi potensi hidrokarbon.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+        <!-- Results -->
+        @if ($surveys->count() > 0)
+            <div class="surveys-grid">
+                @foreach ($surveys as $survey)
+                    <div class="survey-card">
+                        <div class="survey-content">
+                            <h3 class="survey-title">{{ $survey->judul }}</h3>
 
-                {{-- Card Dummy 2 - Magnetik --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-magnetik">Magnetik</span>
-                        <h3 class="data-card-title">Pemetaan Anomali Sulawesi</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2023</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Sulawesi Tengah</span>
-                        </div>
-                        <p class="data-card-description">
-                            Data anomali magnetik yang digunakan untuk mengidentifikasi batuan dasar dan potensi mineral. 
-                            Survei mencakup area seluas 2.500 km² dengan resolusi tinggi.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+                            <div class="survey-meta">
+                                <span class="meta-badge tipe-{{ strtolower($survey->tipe) }}">{{ $survey->tipe }}</span>
+                                <span class="meta-badge">{{ $survey->wilayah }}</span>
+                            </div>
 
-                {{-- Card Dummy 3 - Gravitasi --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-gravitasi">Gravitasi</span>
-                        <h3 class="data-card-title">Survei Selat Sunda</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2022</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Selat Sunda</span>
-                        </div>
-                        <p class="data-card-description">
-                            Data free-air dan Bouguer anomaly untuk pemodelan densitas bawah permukaan. 
-                            Hasil survei mendukung pemetaan cekungan sedimen dan struktur tektonik regional.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+                            <p class="survey-description">
+                                {{ Str::limit($survey->deskripsi, 150) }}
+                            </p>
 
-                {{-- Card Dummy 4 - Seismik --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-seismik">Seismik 3D</span>
-                        <h3 class="data-card-title">Blok Natuna Timur</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2024</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Laut Natuna</span>
+                            <div class="survey-actions">
+                                <span class="survey-year">{{ $survey->tahun }}</span>
+                                <a href="{{ route('katalog.show', $survey->id) }}" class="view-detail-btn">
+                                    Lihat Detail
+                                </a>
+                            </div>
                         </div>
-                        <p class="data-card-description">
-                            Survei seismik 3D komprehensif mencakup 1.200 km² untuk eksplorasi minyak dan gas bumi. 
-                            Data berkualitas tinggi dengan pengolahan full-stack migration.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
-                </div>
-
-                {{-- Card Dummy 5 - Magnetik --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-magnetik">Magnetik</span>
-                        <h3 class="data-card-title">Eksplorasi Maluku Utara</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2023</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Halmahera</span>
-                        </div>
-                        <p class="data-card-description">
-                            Pemetaan magnetik untuk identifikasi zona mineralisasi dan struktur geologi kompleks 
-                            di wilayah vulkanik aktif dengan potensi deposit logam mulia.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Card Dummy 6 - Gravitasi --}}
-                <div class="data-card">
-                    <div class="data-card-content">
-                        <span class="survey-badge badge-gravitasi">Gravitasi</span>
-                        <h3 class="data-card-title">Cekungan Kalimantan Timur</h3>
-                        <div class="data-card-meta">
-                            <span>Tahun: 2023</span>
-                            <span class="meta-divider"></span>
-                            <span>Area: Kutai Basin</span>
-                        </div>
-                        <p class="data-card-description">
-                            Data gravitasi regional untuk pemodelan cekungan sedimen dan estimasi ketebalan sedimen. 
-                            Mendukung evaluasi potensi hidrokarbon di area prospektif.
-                        </p>
-                        <a href="#" class="data-card-link">
-                            Lihat Detail
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-
+                @endforeach
             </div>
 
-            {{-- Pagination Placeholder --}}
+            <!-- Pagination -->
             <div class="pagination-wrapper">
-                <div class="pagination-placeholder">
-                    Menampilkan 6 dari 150+ data survei tersedia
-                </div>
+                {{ $surveys->links() }}
             </div>
-
         @else
-            {{-- Empty State --}}
-            <div class="empty-state">
-                <i class="fas fa-database empty-state-icon"></i>
-                <p class="empty-state-text">Tidak ada data survei yang ditemukan saat ini.</p>
+            <div class="no-results">
+                <div class="no-results-icon">📋</div>
+                <h3>Tidak ada data survei ditemukan</h3>
+                <p>Silakan ubah filter pencarian Anda</p>
             </div>
         @endif
-
     </div>
-</section>
-
 @endsection
