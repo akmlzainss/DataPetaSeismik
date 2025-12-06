@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataSurveiController;
@@ -115,6 +116,7 @@ Route::get('/', [HomeController::class, 'index'])->name('beranda');
 
 // Katalog Data Survei
 Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog');
+Route::get('/katalog/{id}', [KatalogController::class, 'show'])->name('katalog.show');
 
 // Peta Interaktif
 Route::get('/peta', [PetaController::class, 'index'])->name('peta');

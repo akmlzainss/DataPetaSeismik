@@ -1,158 +1,288 @@
-{{-- resources/views/peta.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Peta Interaktif Sebaran Data - BBSPGL')
+@section('title', 'Peta Interaktif Survei Geologi Kelautan')
 
 @push('styles')
-{{-- Leaflet CSS --}}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miMGUIK2E/Yc6VGxw=" 
-      crossorigin=""/>
-{{-- Custom Map CSS --}}
-<link rel="stylesheet" href="{{ asset('css/public-peta.css') }}">
-{{-- Font Awesome --}}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ asset('css/public-peta.css') }}">
 @endpush
 
 @section('content')
-<section class="map-section">
-    <div class="map-container">
-        
-        {{-- Header --}}
-        <div class="map-header">
-            <h1>Peta Sebaran Data Survei Seismik</h1>
-            <p>Gunakan peta interaktif ini untuk menjelajahi lokasi dan tipe data survei yang tersedia di seluruh Indonesia.</p>
+    <div class="peta-container">
+        <!-- Header -->
+        <div class="peta-header">
+            <h1 class="peta-title">Peta Interaktif Survei Geologi Kelautan</h1>
+            <p class="peta-subtitle">Lokasi real-time survei geologi kelautan BBSPGL di seluruh Indonesia</p>
         </div>
 
-        {{-- Statistics Cards --}}
-        <div class="map-stats-grid">
-            <div class="map-stat-card">
-                <h4>Total Lokasi</h4>
-                <div class="map-stat-value" id="totalLocations">-</div>
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number">{{ $stats['total_marker'] }}</div>
+                <p class="stat-label">Total Marker</p>
             </div>
-            <div class="map-stat-card">
-                <h4>Seismik 2D</h4>
-                <div class="map-stat-value" id="total2D">-</div>
-            </div>
-            <div class="map-stat-card">
-                <h4>Seismik 3D</h4>
-                <div class="map-stat-value" id="total3D">-</div>
-            </div>
-            <div class="map-stat-card">
-                <h4>Lainnya</h4>
-                <div class="map-stat-value" id="totalOther">-</div>
-            </div>
-        </div>
 
-        {{-- Search Box --}}
-        <div class="map-search-box">
-            <i class="fas fa-search map-search-icon"></i>
-            <input 
-                type="text" 
-                id="mapSearch" 
-                class="map-search-input" 
-                placeholder="Cari lokasi survei...">
-        </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ $stats['total_survei'] }}</div>
+                <p class="stat-label">Survei Terdata</p>
+            </div>
 
-        {{-- Map Controls --}}
-        <div class="map-controls-card">
-            <div class="controls-grid">
-                <div class="control-group">
-                    <label for="filterType">
-                        <i class="fas fa-filter"></i> Filter Tipe Survei
-                    </label>
-                    <select id="filterType">
-                        <option value="all">Semua Tipe</option>
-                        <option value="Seismik">Seismik</option>
-                        <option value="Magnetik">Magnetik</option>
-                        <option value="Gravitasi">Gravitasi</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="filterYear">
-                        <i class="fas fa-calendar"></i> Filter Tahun
-                    </label>
-                    <select id="filterYear">
-                        <option value="all">Semua Tahun</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
-                        <option value="2020">2020</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="filterWilayah">
-                        <i class="fas fa-map-marked-alt"></i> Filter Wilayah
-                    </label>
-                    <select id="filterWilayah">
-                        <option value="all">Semua Wilayah</option>
-                        <option value="sumatera">Sumatera</option>
-                        <option value="jawa">Jawa</option>
-                        <option value="kalimantan">Kalimantan</option>
-                        <option value="sulawesi">Sulawesi</option>
-                        <option value="papua">Papua</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>
-                        <i class="fas fa-sync-alt"></i> Aksi
-                    </label>
-                    <button 
-                        id="resetFilters" 
-                        style="padding: 0.625rem 0.875rem; background: linear-gradient(135deg, #003366 0%, #0066cc 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,51,102,0.3)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                        <i class="fas fa-undo"></i> Reset Filter
-                    </button>
+            <div class="stat-card">
+                <div class="stat-number">{{ $stats['tahun_terbaru'] }}</div>
+                <p class="stat-label">Tahun Terakhir</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-breakdown">
+                    <div class="stat-breakdown-item">
+                        <div class="stat-breakdown-number">{{ $stats['tipe_data']['2D'] }}</div>
+                        <div class="stat-breakdown-label">2D</div>
+                    </div>
+                    <div class="stat-breakdown-item">
+                        <div class="stat-breakdown-number">{{ $stats['tipe_data']['3D'] }}</div>
+                        <div class="stat-breakdown-label">3D</div>
+                    </div>
+                    <div class="stat-breakdown-item">
+                        <div class="stat-breakdown-number">{{ $stats['tipe_data']['HR'] }}</div>
+                        <div class="stat-breakdown-label">HR</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- Map Canvas --}}
-        <div class="map-canvas-wrapper">
-            <div id="interactiveMap"></div>
-            {{-- Loading Overlay (initially hidden) --}}
-            <div id="mapLoadingOverlay" class="map-loading-overlay" style="display: none;">
-                <div class="map-loading-spinner"></div>
-                <div class="map-loading-text">Memuat peta...</div>
+        <!-- Map Section -->
+        <div class="map-section">
+            <div class="map-wrapper">
+                <div id="map">
+                    <div class="loading-overlay" id="loading-overlay">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Memuat peta interaktif...</div>
+                    </div>
+                </div>
+
+
             </div>
         </div>
 
-        {{-- Info Alert --}}
-        <div class="map-info-alert">
-            <i class="fas fa-info-circle"></i>
-            <p>
-                <strong>Cara menggunakan:</strong> Klik pada marker untuk melihat detail survei. Gunakan filter di atas untuk mempersempit pencarian. 
-                Zoom in/out menggunakan tombol <strong>+</strong> dan <strong>-</strong> atau scroll mouse.
-            </p>
+        <!-- Info Section -->
+        <div class="info-section">
+            <h3 class="info-title">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                </svg>
+                Panduan Penggunaan
+            </h3>
+            <ul class="info-list">
+                <li><strong>Zoom & Navigasi:</strong> Gunakan scroll mouse atau kontrol zoom untuk memperbesar/memperkecil
+                    peta</li>
+                <li><strong>Filter Marker:</strong> Klik tombol filter (Semua, 2D, 3D, HR) untuk menampilkan jenis survei
+                    tertentu</li>
+                <li><strong>Info Marker:</strong> Klik pada marker untuk melihat detail singkat survei dan akses tombol
+                    "Lihat Detail"</li>
+                <li><strong>View Detail:</strong> Tombol "Lihat Detail" akan mengarahkan ke halaman detail survei dengan
+                    breadcrumb "Peta"</li>
+                <li><strong>Data Real-time:</strong> Marker menampilkan lokasi survei yang telah ditambahkan oleh tim admin
+                    BBSPGL</li>
+            </ul>
         </div>
-
-        {{-- Legend --}}
-        <div class="map-legend-card">
-            <h3>Legenda Tipe Survei</h3>
-            <div class="legend-items">
-                <div class="legend-item">
-                    <div class="legend-icon seismik"></div>
-                    <span class="legend-text">Seismik</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon magnetik"></div>
-                    <span class="legend-text">Magnetik</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon gravitasi"></div>
-                    <span class="legend-text">Gravitasi</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon lainnya"></div>
-                    <span class="legend-text">Lainnya</span>
-                </div>
-            </div>
-        </div>
-
     </div>
-</section>
-@endsection
 
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Create custom blue icon like admin
+                const blueIcon = new L.Icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+                console.log('Blue marker icon configured successfully');
+
+                // Data markers dari database
+                const markersData = @json($markers);
+
+                console.log('Markers data loaded:', markersData);
+                console.log('Markers count:', markersData.length);
+
+                // BATAS PETA INDONESIA
+                const indonesiaBounds = L.latLngBounds(
+                    L.latLng(-11.5, 94.0),
+                    L.latLng(7.0, 142.0)
+                );
+
+                // Initialize map - same as admin
+                const map = L.map('map', {
+                    maxBounds: indonesiaBounds,
+                    maxBoundsViscosity: 1.0,
+                    minZoom: 5,
+                    maxZoom: 18
+                }).fitBounds(indonesiaBounds);
+
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Hide loading overlay after map is initialized
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }, 300);
+
+                // Store markers
+                let allMarkers = [];
+
+                // Create markers
+                function createMarker(markerData) {
+                    const {
+                        pusat_lintang,
+                        pusat_bujur,
+                        judul,
+                        tahun,
+                        tipe,
+                        wilayah,
+                        deskripsi,
+                        gambar_pratinjau,
+                        id_data_survei
+                    } = markerData;
+
+                    // FIXED: Convert string coordinates to numbers
+                    const lat = parseFloat(pusat_lintang);
+                    const lng = parseFloat(pusat_bujur);
+
+                    // Validate coordinates (check after conversion to number)
+                    if (isNaN(lat) || isNaN(lng) || lat === null || lng === null) {
+                        console.error('Invalid coordinates for marker:', markerData);
+                        console.error('Converted values:', {
+                            lat,
+                            lng
+                        });
+                        return null;
+                    }
+
+                    console.log('Creating marker for:', judul, 'at', lat, lng);
+
+                    // Create marker with blue icon
+                    const marker = L.marker([lat, lng], {
+                        icon: blueIcon,
+                        title: judul
+                    });
+
+                    // Create popup content with proper escaping
+                    const safeJudul = judul ? judul.replace(/</g, '&lt;').replace(/>/g, '&gt;') :
+                        'Judul tidak tersedia';
+                    const safeDeskripsi = deskripsi ? deskripsi.substring(0, 150).replace(/</g, '&lt;').replace(/>/g,
+                        '&gt;') : 'Deskripsi tidak tersedia';
+
+                    const popupContent = `
+<div class="popup-content">
+<h4 class="popup-title">${safeJudul}</h4>
+
+<div class="popup-meta">
+<span class="popup-badge tipe-${tipe.toLowerCase()}">${tipe}</span>
+<span class="popup-badge">${tahun}</span>
+</div>
+
+<p class="popup-description">${safeDeskripsi}</p>
+
+<div class="popup-actions">
+<span class="popup-coordinates">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+<a href="/user/katalog/${id_data_survei}?from_peta=1" class="popup-detail-btn" target="_blank">
+Lihat Detail
+</a>
+</div>
+</div>
+`;
+
+                    // Bind popup with options
+                    marker.bindPopup(popupContent, {
+                        maxWidth: 350,
+                        minWidth: 250,
+                        autoPan: true,
+                        closeButton: true,
+                        autoClose: false,
+                        closeOnClick: false
+                    });
+
+                    // Add click event to toggle popup (open/close)
+                    marker.on('click', function(e) {
+                        // Toggle popup: close if open, open if closed
+                        if (this.isPopupOpen()) {
+                            this.closePopup();
+                        } else {
+                            // Close all popups on map first
+                            map.eachLayer(function(layer) {
+                                if (layer instanceof L.Marker && layer.isPopupOpen()) {
+                                    layer.closePopup();
+                                }
+                            });
+                            this.openPopup();
+                        }
+                    });
+
+                    // Add to map immediately
+                    marker.addTo(map);
+
+                    // Add to markers array with filter property
+                    allMarkers.push({
+                        marker: marker,
+                        tipe: tipe,
+                        id: id_data_survei
+                    });
+
+                    console.log('Marker added to map successfully:', judul);
+
+                    return marker;
+                }
+
+                // Create all markers
+                if (markersData.length > 0) {
+                    console.log('Creating markers:', markersData.length);
+
+                    markersData.forEach(markerData => {
+                        try {
+                            const createdMarker = createMarker(markerData);
+                            if (createdMarker) {
+                                console.log('Marker created and added successfully');
+                            } else {
+                                console.error('Failed to create marker');
+                            }
+                        } catch (error) {
+                            console.error('Error creating marker:', error, markerData);
+                        }
+                    });
+
+                    console.log('Total markers created:', allMarkers.length);
+
+                    // TIDAK auto zoom ke marker - biarkan user yang zoom sendiri
+                    // Peta akan tetap menampilkan seluruh Indonesia seperti saat init
+                } else {
+                    console.log('No marker data available');
+                }
+
+
+
+                // Error handling for map
+                map.on('tileerror', function(e) {
+                    console.warn('Map tile error:', e);
+                });
+
+                // Add resize listener for responsive map
+                window.addEventListener('resize', function() {
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                });
+
+                // Additional debug: Check if markers are actually on the map
+                setTimeout(() => {
+                    console.log('All markers array length:', allMarkers.length);
+                    console.log('Markers successfully loaded on map');
+                }, 1000);
+            });
+        </script>
+    @endpush
