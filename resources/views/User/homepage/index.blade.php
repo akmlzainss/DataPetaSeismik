@@ -62,18 +62,24 @@
                 dan kolaborasi dalam bidang eksplorasi sumber daya alam Indonesia.
             </p>
         </div>
-        <div class="about-stats">
-            <div class="stat-item">
-                <div class="stat-number">{{ number_format($totalSurvei ?? 150) }}+</div>
-                <div class="stat-label">Data Survei Tersedia</div>
+        <div class="about-additional-info">
+            <div class="info-card">
+                <h3 class="info-title">Layanan Survei</h3>
+                <ul class="info-list">
+                    <li>Survei Seismik Refleksi 2D & 3D</li>
+                    <li>Pemetaan Geologi & Geofisika Kelautan</li>
+                    <li>Survei Batimetri & Morfologi Dasar Laut</li>
+                    <li>Investigasi Geoteknik Kelautan</li>
+                </ul>
             </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ number_format($totalWilayah ?? 34) }}+</div>
-                <div class="stat-label">Wilayah Provinsi</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ $tahunBeroperasi ?? 38 }}+</div>
-                <div class="stat-label">Tahun Berpengalaman</div>
+            <div class="info-card">
+                <h3 class="info-title">Kegiatan Utama</h3>
+                <ul class="info-list">
+                    <li>Akuisisi & Pengolahan Data Seismik</li>
+                    <li>Interpretasi & Analisis Cekungan Migas</li>
+                    <li>Manajemen Repositori Data Nasional</li>
+                    <li>Layanan Informasi Wilayah Kerja Migas</li>
+                </ul>
             </div>
         </div>
     </div>

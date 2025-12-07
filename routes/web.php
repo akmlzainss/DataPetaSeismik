@@ -126,6 +126,7 @@ Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tent
 
 // Kontak
 Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
+Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit');
 
 // Catatan: Setelah ini didefinisikan, Anda harus mengganti '#' 
 // dengan route() yang sesuai di layouts/app.blade.php.

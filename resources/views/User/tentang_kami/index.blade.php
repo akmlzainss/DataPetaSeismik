@@ -9,13 +9,15 @@
 
 @section('content')
 
-<section class="tentang-section">
+<div class="page-hero">
+    <div class="container-custom">
+        <h1 class="hero-title">Tentang BBSPGL</h1>
+        <p class="hero-subtitle">Profil, Visi Misi, dan Struktur Organisasi Balai Besar Survei dan Pemetaan Geologi Kelautan</p>
+    </div>
+</div>
+
+<section class="tentang-section" style="position: relative; z-index: 2;">
     <div class="tentang-container">
-        
-        {{-- Page Header --}}
-        <div class="tentang-header">
-            <h1 class="tentang-title">Tentang BBSPGL</h1>
-        </div>
         
         {{-- Main Content --}}
         <div class="tentang-content">

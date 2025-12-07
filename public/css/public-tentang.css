@@ -13,19 +13,54 @@
     margin: 0 auto;
 }
 
-/* ====================== PAGE HEADER ====================== */
-.tentang-header {
-    margin-bottom: 50px;
+/* Hero Section */
+.page-hero {
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); /* Deep Ocean Theme */
+    color: white;
+    padding: 4.5rem 1rem 6rem;
+    text-align: center;
+    margin-bottom: -3rem;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
 }
 
-.tentang-title {
-    font-size: 38px;
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 237, 0, 0.18) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-title {
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #003366;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 4px solid #ffd700;
-    display: inline-block;
+    margin-bottom: 0.75rem;
+    text-shadow: none;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+}
+
+.container-custom {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    width: 100%;
 }
 
 /* ====================== CONTENT SECTIONS ====================== */

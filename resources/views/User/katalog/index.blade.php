@@ -7,17 +7,24 @@
 @endpush
 
 @section('content')
-    <div class="catalog-container">
-        <!-- Header -->
-        <div class="catalog-header">
-            <h1 class="catalog-title">Katalog Survei Geologi Kelautan</h1>
-            <p class="catalog-subtitle">Koleksi data survei dan pemetaan geologi kelautan BBSPGL</p>
+    <div class="page-hero">
+        <div class="container-custom">
+            <h1 class="hero-title">Katalog Hasil Survei Geologi Kelautan</h1>
+            <p class="hero-subtitle">Data hasil survei dan pemetaan geologi kelautan BBSPGL</p>
         </div>
+    </div>
 
+    <div class="catalog-container" style="position: relative; z-index: 2;">
         <!-- Filters -->
         <div class="filters-section">
-            <h3 class="filters-title">Filter Data</h3>
+            <h3 class="filters-title">Cari & Filter Data</h3>
             <form method="GET" action="{{ route('katalog') }}">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input type="text" name="search" class="search-input"
+                        placeholder="Cari judul atau deskripsi survei..." value="{{ request('search') }}">
+                </div>
+
                 <div class="filters-grid">
                     <div class="filter-group">
                         <label class="filter-label">Tahun</label>
@@ -55,9 +62,12 @@
                         </select>
                     </div>
 
-                    <div class="filter-group">
+                    <div class="filter-group filter-actions">
                         <label class="filter-label">&nbsp;</label>
-                        <button type="submit" class="filter-button">Filter</button>
+                        <div style="display: flex; gap: 0.5rem; width: 100%;">
+                            <button type="submit" class="filter-button">Filter</button>
+                            <a href="{{ route('katalog') }}" class="reset-button">Reset</a>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -68,6 +78,14 @@
             <div class="surveys-grid">
                 @foreach ($surveys as $survey)
                     <div class="survey-card">
+                        {{-- Conditional Image Display --}}
+                        @if ($survey->gambar_thumbnail || $survey->gambar_pratinjau)
+                            <div class="survey-image-container">
+                                <img src="{{ asset('storage/' . ($survey->gambar_thumbnail ?? $survey->gambar_pratinjau)) }}"
+                                    alt="{{ $survey->judul }}">
+                            </div>
+                        @endif
+
                         <div class="survey-content">
                             <h3 class="survey-title">{{ $survey->judul }}</h3>
 
@@ -77,7 +95,7 @@
                             </div>
 
                             <p class="survey-description">
-                                {{ Str::limit($survey->deskripsi, 150) }}
+                                {!! Str::limit(strip_tags($survey->deskripsi), 150) !!}
                             </p>
 
                             <div class="survey-actions">
@@ -99,7 +117,9 @@
             <div class="no-results">
                 <div class="no-results-icon">📋</div>
                 <h3>Tidak ada data survei ditemukan</h3>
-                <p>Silakan ubah filter pencarian Anda</p>
+                <p>Silakan ubah kata kunci atau filter pencarian Anda</p>
+                <a href="{{ route('katalog') }}" class="reset-button"
+                    style="margin-top: 1rem; display: inline-block;">Reset Filter</a>
             </div>
         @endif
     </div>
