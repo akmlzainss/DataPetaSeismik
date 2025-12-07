@@ -18,6 +18,15 @@ class KatalogController extends Controller
             ->orderBy('tahun', 'desc')
             ->orderBy('created_at', 'desc');
 
+        // Search Keyword (Judul, Deskripsi)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'LIKE', '%' . $search . '%')
+                  ->orWhere('deskripsi', 'LIKE', '%' . $search . '%');
+            });
+        }
+
         // Filter berdasarkan tahun jika ada
         if ($request->filled('tahun')) {
             $query->where('tahun', $request->tahun);
