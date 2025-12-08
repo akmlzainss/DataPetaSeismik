@@ -1045,3 +1045,27 @@
     font-size: 14px;
     font-weight: 600;
 }
+
+
+/* ====================== FILE LINK STYLE ====================== */
+.file-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #3779C9;
+    color: white !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.file-link:hover {
+    background: #2c5aa0;
+    color: white !important;
+    text-decoration: none;
+}
+
+.file-link svg {
+    margin-right: 6px;
+}

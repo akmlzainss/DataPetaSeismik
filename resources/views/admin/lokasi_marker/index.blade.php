@@ -71,9 +71,33 @@
 
                 <!-- Helper Text -->
                 <div class="helper-box">
-                    <strong>Informasi:</strong>
-                    Sistem akan mencari koordinat otomatis berdasarkan nama wilayah survei. Marker preview berwarna orange
-                    akan muncul di peta sebelum Anda menyimpannya secara permanen.
+                    <strong>📍 Tips Pengisian Wilayah untuk Geocoding Otomatis:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li style="margin-bottom: 12px;">
+                            Gunakan format: <strong>Nama Kota/Kabupaten, Provinsi</strong><br>
+                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Bandung, Jawa
+                                Barat" atau "Surabaya, Jawa Timur"</small>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            Untuk wilayah laut: <strong>Nama Laut/Selat + Provinsi Terdekat</strong><br>
+                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Selat Sunda,
+                                Banten" atau "Laut Jawa, Jawa Tengah"</small>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            Untuk blok survei: <strong>Nama Blok + Wilayah Laut</strong><br>
+                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Blok Masela,
+                                Laut Arafura" atau "Blok Cepu, Jawa Timur"</small>
+                        </li>
+                        <li style="margin-bottom: 12px;">
+                            Hindari singkatan atau kode yang tidak umum<br>
+                            <small style="color: #dc3545; margin-top: 2px; display: inline-block;">✗ Contoh: "BDG" atau
+                                "JKT" (gunakan nama lengkap)</small>
+                        </li>
+                        <li>
+                            <strong>Catatan:</strong> Jika geocoding gagal, sistem akan menampilkan peta Indonesia dan Anda
+                            dapat menggunakan Tab Input Manual
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -93,6 +117,19 @@
                         <strong>Petunjuk:</strong> Pilih survei → Isi koordinat manual atau klik di peta → Klik tombol
                         "Simpan Marker Manual Permanen"
                     </div>
+                </div>
+
+                <!-- Tips Koordinat -->
+                <div class="helper-box" style="margin-bottom: 16px;">
+                    <strong>💡 Tips Input Koordinat Manual:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                        <li style="margin-bottom: 8px;"><strong>Lintang (Latitude):</strong> Nilai antara -11 hingga 6 untuk
+                            wilayah Indonesia (negatif = Selatan)</li>
+                        <li style="margin-bottom: 8px;"><strong>Bujur (Longitude):</strong> Nilai antara 95 hingga 141 untuk
+                            wilayah Indonesia (positif = Timur)</li>
+                        <li style="margin-bottom: 8px;">Format desimal: -6.2088, 106.8456 (gunakan titik, bukan koma)</li>
+                        <li>Klik langsung di peta untuk mengisi koordinat secara otomatis</li>
+                    </ul>
                 </div>
 
                 <!-- Form Card: Pilih Survei -->
@@ -181,11 +218,221 @@
             </ul>
         </div>
     </div>
+
+    {{-- Loading Overlay --}}
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loadingText">Memproses...</p>
+        </div>
+    </div>
+
+    {{-- Success Modal --}}
+    <div id="successModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container modal-success">
+            <div class="modal-header modal-header-success">
+                <h3>✓ Geocoding Berhasil</h3>
+                <button class="modal-close" onclick="closeSuccessModal()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-success">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </div>
+                <p class="modal-message-success">Koordinat lokasi berhasil ditemukan!</p>
+                <p class="modal-detail" id="successDetail"></p>
+                <p class="modal-info">Marker preview (orange) telah ditampilkan di peta. Klik tombol "Terapkan Marker
+                    Otomatis" untuk menyimpan.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-success" onclick="closeSuccessModal()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Error Modal --}}
+    <div id="errorModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container modal-error">
+            <div class="modal-header modal-header-error">
+                <h3>⚠ Geocoding Gagal</h3>
+                <button class="modal-close" onclick="closeErrorModal()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-error">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                </div>
+                <p class="modal-message-error">Lokasi tidak ditemukan atau tidak spesifik!</p>
+                <p class="modal-detail" id="errorDetail"></p>
+                <p class="modal-info">Sistem menggunakan koordinat default Indonesia. Silakan gunakan <strong>Tab Input
+                        Manual</strong> untuk memasukkan koordinat yang tepat.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-error" onclick="closeErrorModal()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Delete Confirmation Modal --}}
+    <div id="deleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Konfirmasi Hapus Marker</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-warning">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                    </svg>
+                </div>
+                <p class="modal-message">Apakah Anda yakin ingin menghapus marker survei ini?</p>
+                <p class="modal-title" id="deleteMarkerTitle"></p>
+                <p class="modal-warning">Tindakan ini tidak dapat dibatalkan!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Batal</button>
+                <button class="btn-delete" id="confirmDeleteBtn">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                    Hapus Marker
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Loading Overlay Functions
+        function showLoadingOverlay(message = 'Memproses...') {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Success Modal Functions
+        function showSuccessModal(detail) {
+            document.getElementById('successDetail').textContent = detail;
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        // Error Modal Functions
+        function showErrorModal(detail) {
+            document.getElementById('errorDetail').textContent = detail;
+            document.getElementById('errorModal').style.display = 'flex';
+        }
+
+        function closeErrorModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('successModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeSuccessModal();
+        });
+
+        document.getElementById('errorModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeErrorModal();
+        });
+
+        // Delete Modal Functions
+        let currentDeleteData = null;
+
+        function showDeleteModal(title, surveiId, marker) {
+            currentDeleteData = {
+                title,
+                surveiId,
+                marker
+            };
+            document.getElementById('deleteMarkerTitle').textContent = title;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            currentDeleteData = null;
+        }
+
+        // Confirm Delete Handler
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
+            if (!currentDeleteData) return;
+
+            const {
+                title,
+                surveiId,
+                marker
+            } = currentDeleteData;
+
+            closeDeleteModal();
+            showLoadingOverlay('Menghapus marker...');
+
+            fetch(`/admin/lokasi-marker/${surveiId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            }).then(response => {
+                hideLoadingOverlay();
+                if (response.ok) {
+                    map.removeLayer(marker);
+                    alert('Marker berhasil dihapus! Halaman akan dimuat ulang.');
+                    location.reload();
+                } else {
+                    alert('Gagal menghapus marker!');
+                }
+            }).catch(error => {
+                hideLoadingOverlay();
+                alert('Terjadi error saat menghapus marker!');
+                console.error('Error:', error);
+            });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", function() {
             // BATAS PETA INDONESIA
             const indonesiaBounds = L.latLngBounds(
@@ -240,25 +487,7 @@
                     L.DomEvent.preventDefault(e);
                     if (!surveiId) return;
 
-                    if (confirm(`Yakin ingin menghapus marker survei: ${title} dari peta?`)) {
-                        fetch(`/admin/lokasi-marker/${surveiId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                map.removeLayer(marker);
-                                alert('Marker berhasil dihapus! Halaman akan dimuat ulang.');
-                                location.reload();
-                            } else {
-                                alert('Gagal menghapus marker!');
-                            }
-                        }).catch(error => {
-                            alert('Terjadi error saat menghapus marker!');
-                            console.error('Error:', error);
-                        });
-                    }
+                    showDeleteModal(title, surveiId, marker);
                 });
                 return marker;
             }
@@ -305,33 +534,56 @@
 
                 if (!surveiId) return;
 
-                const geo = await geocodeWilayah(wilayah);
+                // Show loading state
+                showLoadingOverlay('Mencari koordinat lokasi...');
 
-                if (geo.error || geo.fallback) {
-                    alert(geo.message || "Lokasi tidak ditemukan! Silakan gunakan Tab Input Manual.");
-                    if (geo.fallback) map.setView([geo.lat, geo.lon], 5);
-                    return;
+                try {
+                    const geo = await geocodeWilayah(wilayah);
+
+                    hideLoadingOverlay();
+
+                    // Jika geocoding gagal atau fallback
+                    if (geo.error || geo.fallback) {
+                        const errorMessage = `Wilayah: "${wilayah}"`;
+                        showErrorModal(errorMessage);
+
+                        if (geo.fallback) {
+                            map.setView([geo.lat, geo.lon], 5);
+                        }
+                        return;
+                    }
+
+                    // Geocoding berhasil
+                    const lat = parseFloat(geo.lat);
+                    const lng = parseFloat(geo.lon);
+
+                    map.setView([lat, lng], 8);
+
+                    window.autoMarker = L.marker([lat, lng], {
+                            icon: orangeIcon
+                        }).addTo(map)
+                        .bindPopup(`
+                    <b>${judul}</b><br>
+                    Wilayah: ${wilayah}<br>
+                    <hr>
+                    <small>${geo.display_name || 'Lokasi Ditemukan'}</small><br>
+                    <small style="color: #f57c00;"><strong>Preview</strong> - Klik tombol untuk simpan</small>
+                `).openPopup();
+
+                    geoLatInput.value = lat;
+                    geoLngInput.value = lng;
+                    autoApplyBtn.disabled = false;
+
+                    // Show success modal
+                    const successMessage =
+                        `${geo.display_name || wilayah}\nKoordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    showSuccessModal(successMessage);
+
+                } catch (error) {
+                    hideLoadingOverlay();
+                    showErrorModal('Terjadi kesalahan sistem saat mencari lokasi.');
+                    console.error('Geocoding error:', error);
                 }
-
-                const lat = parseFloat(geo.lat);
-                const lng = parseFloat(geo.lon);
-
-                map.setView([lat, lng], 8);
-
-                window.autoMarker = L.marker([lat, lng], {
-                        icon: orangeIcon
-                    }).addTo(map)
-                    .bindPopup(`
-                <b>${judul}</b><br>
-                Wilayah: ${wilayah}<br>
-                <hr>
-                <small>${geo.display_name || 'Lokasi Ditemukan'}</small><br>
-                <small style="color: #f57c00;"><strong>Preview</strong> - Klik tombol untuk simpan</small>
-            `).openPopup();
-
-                geoLatInput.value = lat;
-                geoLngInput.value = lng;
-                autoApplyBtn.disabled = false;
             }
 
             surveiSelect?.addEventListener('change', async function() {

@@ -1,289 +1,296 @@
 {{-- resources/views/admin/pengaturan/index.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Pengaturan Sistem - Admin BBSPGL')
+@section('title', 'Pengaturan - Admin BBSPGL')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/admin-pengaturan.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-pengaturan.css') }}">
 @endpush
 
 @section('content')
-<div class="page-header">
-    <h1>Pengaturan Sistem</h1>
-    <p>Kelola profil, keamanan, dan konfigurasi sistem</p>
-</div>
-
-{{-- Alert Messages --}}
-@if(session('success'))
-<div class="alert-message success">
-    <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-    </svg>
-    <span>{{ session('success') }}</span>
-</div>
-@endif
-
-@if(session('error'))
-<div class="alert-message error">
-    <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-    </svg>
-    <span>{{ session('error') }}</span>
-</div>
-@endif
-
-@if($errors->any())
-<div class="alert-message error">
-    <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-    </svg>
-    <div>
-        <strong>Terjadi kesalahan:</strong>
-        <ul style="margin: 8px 0 0 20px;">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+    <div class="page-header">
+        <h1>Pengaturan</h1>
+        <p>Kelola profil dan keamanan akun administrator</p>
     </div>
-</div>
-@endif
 
-{{-- Tabs Navigation --}}
-<div class="settings-tabs">
-    <button class="settings-tab active" data-tab="profil">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
-        Profil Saya
-    </button>
-    <button class="settings-tab" data-tab="keamanan">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-        </svg>
-        Keamanan
-    </button>
-    <button class="settings-tab" data-tab="sistem">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-        </svg>
-        Informasi Sistem
-    </button>
-</div>
-
-{{-- TAB 1: PROFIL SAYA --}}
-<div id="profil" class="settings-tab-content active">
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Informasi Profil</div>
-            <div class="settings-card-subtitle">Perbarui informasi akun admin Anda</div>
+    {{-- Alert Messages --}}
+    @if (session('success'))
+        <div class="alert-message success">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+            <span>{{ session('success') }}</span>
         </div>
-        <div class="settings-card-body">
-            <!-- Profile Avatar -->
-            <div class="profile-avatar-section">
-                <div class="profile-avatar">
+    @endif
+
+    @if (session('error'))
+        <div class="alert-message error">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert-message error">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <div>
+                <strong>Terjadi kesalahan:</strong>
+                <ul style="margin: 8px 0 0 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+    {{-- Tabs Navigation --}}
+    <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="profil">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+            Profil Saya
+        </button>
+        <button class="settings-tab" data-tab="keamanan">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+            </svg>
+            Keamanan
+        </button>
+    </div>
+
+    {{-- TAB 1: PROFIL SAYA --}}
+    <div id="profil" class="settings-tab-content active">
+        {{-- Profile Header Card --}}
+        <div class="settings-card profile-header-card">
+            <div class="profile-header-content">
+                <div class="profile-avatar-large">
                     {{ strtoupper(substr($admin->nama, 0, 2)) }}
                 </div>
-                <div class="profile-avatar-info">
-                    <h3>{{ $admin->nama }}</h3>
-                    <p>{{ $admin->email }}</p>
-                    <p style="font-size: 12px; color: #999; margin-top: 4px;">
+                <div class="profile-header-info">
+                    <h2 class="profile-name">{{ $admin->nama }}</h2>
+                    <p class="profile-email">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path
+                                d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                        </svg>
+                        {{ $admin->email }}
+                    </p>
+                    <p class="profile-meta">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path
+                                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                        </svg>
                         Terdaftar sejak {{ $admin->created_at->format('d F Y') }}
                     </p>
                 </div>
             </div>
-
-            <!-- Form Edit Profil -->
-            <form action="{{ route('admin.pengaturan.update.profile') }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <div class="form-group">
-                    <label for="nama" class="form-label required">Nama Lengkap</label>
-                    <input 
-                        type="text" 
-                        id="nama" 
-                        name="nama" 
-                        class="form-input" 
-                        value="{{ old('nama', $admin->nama) }}"
-                        required
-                    >
-                    <span class="form-help">Nama lengkap yang akan ditampilkan di sistem</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="email" class="form-label required">Email</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        class="form-input" 
-                        value="{{ old('email', $admin->email) }}"
-                        required
-                    >
-                    <span class="form-help">Email untuk login dan notifikasi sistem</span>
-                </div>
-
-                <div class="button-group">
-                    <button type="submit" class="btn-save">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
-                        </svg>
-                        Simpan Perubahan
-                    </button>
-                </div>
-            </form>
         </div>
-    </div>
-</div>
 
-{{-- TAB 2: KEAMANAN --}}
-<div id="keamanan" class="settings-tab-content">
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Ubah Password</div>
-            <div class="settings-card-subtitle">Perbarui password untuk keamanan akun Anda</div>
-        </div>
-        <div class="settings-card-body">
-            <div class="info-box-settings warning">
-                <p><strong>⚠️ Perhatian:</strong> Pastikan password baru Anda kuat dan berbeda dari password sebelumnya. Password minimal 8 karakter.</p>
+        {{-- Edit Profile Form --}}
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                    Edit Informasi Profil
+                </div>
+                <div class="settings-card-subtitle">Perbarui data akun administrator Anda</div>
             </div>
+            <div class="settings-card-body">
+                <form action="{{ route('admin.pengaturan.update.profile') }}" method="POST">
+                    @csrf
+                    @method('PUT')
 
-            <form action="{{ route('admin.pengaturan.update.password') }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <div class="form-group">
-                    <label for="current_password" class="form-label required">Password Saat Ini</label>
-                    <input 
-                        type="password" 
-                        id="current_password" 
-                        name="current_password" 
-                        class="form-input"
-                        required
-                    >
-                    <span class="form-help">Masukkan password Anda saat ini untuk verifikasi</span>
-                </div>
+                    <div class="form-group">
+                        <label for="nama" class="form-label required">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                            Nama Lengkap
+                        </label>
+                        <input type="text" id="nama" name="nama" class="form-input"
+                            value="{{ old('nama', $admin->nama) }}" placeholder="Masukkan nama lengkap" required>
+                        <span class="form-help">Nama lengkap yang akan ditampilkan di seluruh sistem</span>
+                    </div>
 
-                <div class="form-group">
-                    <label for="new_password" class="form-label required">Password Baru</label>
-                    <input 
-                        type="password" 
-                        id="new_password" 
-                        name="new_password" 
-                        class="form-input"
-                        required
-                    >
-                    <span class="form-help">Minimal 8 karakter, gunakan kombinasi huruf, angka, dan simbol</span>
-                </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label required">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                            </svg>
+                            Alamat Email
+                        </label>
+                        <input type="email" id="email" name="email" class="form-input"
+                            value="{{ old('email', $admin->email) }}" placeholder="admin@bbspgl.esdm.go.id" required>
+                        <span class="form-help">Email untuk login dan menerima notifikasi sistem</span>
+                    </div>
 
-                <div class="form-group">
-                    <label for="new_password_confirmation" class="form-label required">Konfirmasi Password Baru</label>
-                    <input 
-                        type="password" 
-                        id="new_password_confirmation" 
-                        name="new_password_confirmation" 
-                        class="form-input"
-                        required
-                    >
-                    <span class="form-help">Ketik ulang password baru untuk konfirmasi</span>
-                </div>
-
-                <div class="button-group">
-                    <button type="submit" class="btn-save">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                        </svg>
-                        Ubah Password
-                    </button>
-                </div>
-            </form>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    {{-- Security Info --}}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Informasi Keamanan</div>
-            <div class="settings-card-subtitle">Detail sesi dan aktivitas login</div>
-        </div>
-        <div class="settings-card-body">
-            <div class="setting-item">
-                <div class="setting-item-info">
-                    <div class="setting-item-title">Terakhir Login</div>
-                    <div class="setting-item-desc">
-                        {{ $admin->updated_at->diffForHumans() }} 
-                        ({{ $admin->updated_at->format('d F Y, H:i') }})
+    {{-- TAB 2: KEAMANAN --}}
+    <div id="keamanan" class="settings-tab-content">
+        {{-- Change Password Card --}}
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                    </svg>
+                    Ubah Password
+                </div>
+                <div class="settings-card-subtitle">Perbarui password untuk keamanan akun Anda</div>
+            </div>
+            <div class="settings-card-body">
+                <div class="info-box-settings warning">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                    </svg>
+                    <div>
+                        <strong>Perhatian Keamanan</strong>
+                        <p>Pastikan password baru Anda kuat dan berbeda dari password sebelumnya. Minimal 8 karakter dengan
+                            kombinasi huruf, angka, dan simbol.</p>
                     </div>
                 </div>
-            </div>
 
-            <div class="setting-item">
-                <div class="setting-item-info">
-                    <div class="setting-item-title">Browser & Perangkat</div>
-                    <div class="setting-item-desc">{{ request()->userAgent() }}</div>
-                </div>
-            </div>
+                <form action="{{ route('admin.pengaturan.update.password') }}" method="POST">
+                    @csrf
+                    @method('PUT')
 
-            <div class="setting-item">
-                <div class="setting-item-info">
-                    <div class="setting-item-title">Alamat IP</div>
-                    <div class="setting-item-desc">{{ request()->ip() }}</div>
-                </div>
+                    <div class="form-group">
+                        <label for="current_password" class="form-label required">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                            </svg>
+                            Password Saat Ini
+                        </label>
+                        <input type="password" id="current_password" name="current_password" class="form-input"
+                            placeholder="Masukkan password saat ini" required>
+                        <span class="form-help">Masukkan password Anda saat ini untuk verifikasi</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password" class="form-label required">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                            Password Baru
+                        </label>
+                        <input type="password" id="new_password" name="new_password" class="form-input"
+                            placeholder="Masukkan password baru" required>
+                        <span class="form-help">Minimal 8 karakter, gunakan kombinasi huruf, angka, dan simbol</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password_confirmation" class="form-label required">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                            Konfirmasi Password Baru
+                        </label>
+                        <input type="password" id="new_password_confirmation" name="new_password_confirmation"
+                            class="form-input" placeholder="Ketik ulang password baru" required>
+                        <span class="form-help">Ketik ulang password baru untuk konfirmasi</span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                            Ubah Password
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-</div>
 
-{{-- TAB 3: INFORMASI SISTEM --}}
-<div id="sistem" class="settings-tab-content">
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Informasi Aplikasi</div>
-            <div class="settings-card-subtitle">Detail versi dan konfigurasi sistem</div>
-        </div>
-        <div class="settings-card-body">
-            <div class="system-info-grid">
-                <div class="system-info-item">
-                    <div class="system-info-label">Nama Aplikasi</div>
-                    <div class="system-info-value">{{ $systemInfo['app_name'] }}</div>
+        {{-- Security Info Card --}}
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                    </svg>
+                    Informasi Keamanan
                 </div>
+                <div class="settings-card-subtitle">Detail sesi dan aktivitas login</div>
+            </div>
+            <div class="settings-card-body">
+                <div class="security-info-grid">
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Terakhir Login</div>
+                            <div class="security-info-value">
+                                {{ $admin->updated_at->diffForHumans() }}
+                            </div>
+                            <div class="security-info-detail">
+                                {{ $admin->updated_at->format('d F Y, H:i') }} WIB
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="system-info-item">
-                    <div class="system-info-label">Versi Aplikasi</div>
-                    <div class="system-info-value">{{ $systemInfo['app_version'] }}</div>
-                </div>
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Browser & Perangkat</div>
+                            <div class="security-info-value">
+                                {{ request()->userAgent() }}
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="system-info-item">
-                    <div class="system-info-label">Laravel Version</div>
-                    <div class="system-info-value">{{ $systemInfo['laravel_version'] }}</div>
-                </div>
-
-                <div class="system-info-item">
-                    <div class="system-info-label">PHP Version</div>
-                    <div class="system-info-value">{{ $systemInfo['php_version'] }}</div>
-                </div>
-
-                <div class="system-info-item">
-                    <div class="system-info-label">Database</div>
-                    <div class="system-info-value">{{ strtoupper($systemInfo['database']) }}</div>
-                </div>
-
-                <div class="system-info-item">
-                    <div class="system-info-label">Total Admin</div>
-                    <div class="system-info-value">{{ $systemInfo['total_admin'] }} Admin</div>
-                </div>
-
-                <div class="system-info-item">
-                    <div class="system-info-label">Total Data Survei</div>
-                    <div class="system-info-value">{{ number_format($systemInfo['total_survei']) }} Data</div>
-                </div>
-
-                <div class="system-info-item">
-                    <div class="system-info-label">Disk Usage</div>
-                    <div class="system-info-value">
-                        {{ $systemInfo['disk_usage']['used'] }} / {{ $systemInfo['disk_usage']['total'] }}
-                        <div style="font-size: 12px; color: #666; margin-top: 4px;">
-                            ({{ $systemInfo['disk_usage']['percentage'] }}%)
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Alamat IP</div>
+                            <div class="security-info-value">{{ request()->ip() }}</div>
+                            <div class="security-info-detail">Lokasi akses saat ini</div>
                         </div>
                     </div>
                 </div>
@@ -291,78 +298,28 @@
         </div>
     </div>
 
-    {{-- Maintenance Actions --}}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Maintenance & Optimasi</div>
-            <div class="settings-card-subtitle">Tools untuk pemeliharaan sistem</div>
-        </div>
-        <div class="settings-card-body">
-            <div class="info-box-settings">
-                <p><strong>ℹ️ Info:</strong> Fitur maintenance dapat membantu meningkatkan performa sistem. Gunakan dengan bijak.</p>
-            </div>
-
-            <form action="{{ route('admin.pengaturan.clear.cache') }}" method="POST">
-                @csrf
-                <div class="setting-item">
-                    <div class="setting-item-info">
-                        <div class="setting-item-title">Clear Application Cache</div>
-                        <div class="setting-item-desc">Bersihkan cache aplikasi, konfigurasi, route, dan view</div>
-                    </div>
-                    <button type="submit" class="btn-secondary" onclick="return confirm('Yakin ingin membersihkan cache?')">
-                        Bersihkan Cache
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- About Section --}}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <div class="settings-card-title">Tentang Sistem</div>
-            <div class="settings-card-subtitle">Informasi institusi dan hak cipta</div>
-        </div>
-        <div class="settings-card-body">
-            <div style="text-align: center; padding: 20px;">
-                <h3 style="font-size: 20px; font-weight: 700; color: #003366; margin-bottom: 8px;">
-                    Balai Besar Survei dan Pemetaan Geologi
-                </h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 16px;">
-                    Kementerian Energi dan Sumber Daya Mineral
-                </p>
-                <p style="color: #999; font-size: 13px; line-height: 1.6;">
-                    Sistem Informasi Survei Seismik Nasional<br>
-                    © {{ date('Y') }} BBSPGL - Kementerian ESDM<br>
-                    Hak Cipta Dilindungi Undang-Undang
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching
-    const tabs = document.querySelectorAll('.settings-tab');
-    const contents = document.querySelectorAll('.settings-tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const targetTab = this.dataset.tab;
-            
-            // Remove active class from all tabs and contents
-            tabs.forEach(t => t.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding content
-            this.classList.add('active');
-            document.getElementById(targetTab).classList.add('active');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabs = document.querySelectorAll('.settings-tab');
+            const contents = document.querySelectorAll('.settings-tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
         });
-    });
-});
-</script>
+    </script>
 @endpush

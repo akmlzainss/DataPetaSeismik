@@ -7,14 +7,25 @@
     <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}">
     <link href="{{ asset('assets/quill/quill.snow.css') }}" rel="stylesheet">
     <style>
-        #quill-editor { 
-            background: white; 
-            border-radius: 8px; 
+        #quill-editor {
+            background: white;
+            border-radius: 8px;
             min-height: 380px;
         }
-        .ql-container { font-size: 14.5px; }
-        .ql-editor { line-height: 1.7; min-height: 340px; }
-        .ql-toolbar { background: #f8f9fa; border-bottom: 1px solid #ddd; }
+
+        .ql-container {
+            font-size: 14.5px;
+        }
+
+        .ql-editor {
+            line-height: 1.7;
+            min-height: 340px;
+        }
+
+        .ql-toolbar {
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 @endpush
 
@@ -30,20 +41,27 @@
                 <div class="alert-success-form">✓ {{ session('success') }}</div>
             @endif
 
-            <form action="{{ route('admin.data_survei.store') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+            <form action="{{ route('admin.data_survei.store') }}" method="POST" enctype="multipart/form-data"
+                id="uploadForm">
                 @csrf
                 <div class="form-grid">
                     <!-- Field lain tetap sama -->
                     <div class="form-group">
                         <label class="form-label">Judul Survei <span class="required">*</span></label>
-                        <input type="text" name="judul" class="form-input" value="{{ old('judul') }}" placeholder="Contoh: Survei Seismik 2D" required>
-                        @error('judul') <span class="error-message">{{ $message }}</span> @enderror
+                        <input type="text" name="judul" class="form-input" value="{{ old('judul') }}"
+                            placeholder="Contoh: Survei Seismik 2D" required>
+                        @error('judul')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Ketua Tim <span class="required">*</span></label>
-                        <input type="text" name="ketua_tim" class="form-input" value="{{ old('ketua_tim') }}" placeholder="Contoh: Dr. Ahmad Santoso" required>
-                        @error('ketua_tim') <span class="error-message">{{ $message }}</span> @enderror
+                        <input type="text" name="ketua_tim" class="form-input" value="{{ old('ketua_tim') }}"
+                            placeholder="Contoh: Dr. Ahmad Santoso" required>
+                        @error('ketua_tim')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="form-group">
@@ -55,28 +73,28 @@
                             <option value="HR" {{ old('tipe') == 'HR' ? 'selected' : '' }}>HR</option>
                             <option value="Lainnya" {{ old('tipe') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                         </select>
-                        @error('tipe') <span class="error-message">{{ $message }}</span> @enderror
+                        @error('tipe')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Tahun Pelaksanaan <span class="required">*</span></label>
-                        <input 
-    type="number" 
-    name="tahun" 
-    class="form-input" 
-    value="{{ old('tahun') }}" 
-    placeholder="Contoh: 2024" 
-    min="1950" 
-    required
->
+                        <input type="number" name="tahun" class="form-input" value="{{ old('tahun') }}"
+                            placeholder="Contoh: 2024" min="1950" required>
 
-                        @error('tahun') <span class="error-message">{{ $message }}</span> @enderror
+                        @error('tahun')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <div class="form-group full-width">
                         <label class="form-label">Wilayah / Blok <span class="required">*</span></label>
-                        <input type="text" name="wilayah" class="form-input" value="{{ old('wilayah') }}" placeholder="Contoh: Blok Cepu, Jawa Timur" required>
-                        @error('wilayah') <span class="error-message">{{ $message }}</span> @enderror
+                        <input type="text" name="wilayah" class="form-input" value="{{ old('wilayah') }}"
+                            placeholder="Contoh: Blok Cepu, Jawa Timur" required>
+                        @error('wilayah')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <!-- QUILL EDITOR -->
@@ -96,7 +114,21 @@
                         <label class="form-label">Gambar Pratinjau (Opsional)</label>
                         <input type="file" name="gambar_pratinjau" class="form-file" accept="image/*">
                         <span class="help-text">Format: JPG, PNG, TIFF • Maksimal <strong>500MB</strong></span>
-                        @error('gambar_pratinjau') <span class="error-message">{{ $message }}</span> @enderror
+                        @error('gambar_pratinjau')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <!-- Tautan File -->
+                    <div class="form-group full-width">
+                        <label class="form-label">Tautan File Survei (Opsional)</label>
+                        <input type="url" name="tautan_file" class="form-input" value="{{ old('tautan_file') }}"
+                            placeholder="Contoh: https://drive.google.com/file/d/xxx atau https://dropbox.com/xxx">
+                        <span class="help-text">Masukkan link Google Drive, Dropbox, atau layanan cloud storage
+                            lainnya</span>
+                        @error('tautan_file')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -113,35 +145,47 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/quill/quill.js') }}"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const quill = new Quill('#quill-editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, 3, 4, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ color: [] }, { background: [] }],
-                [{ align: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
-                ['blockquote', 'code-block'],
-                ['clean']
-            ]
-        },
-        placeholder: 'Penjelasan untuk hasil survei ini...'
-    });
+    <script src="{{ asset('assets/quill/quill.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{
+                            header: [1, 2, 3, 4, false]
+                        }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{
+                            color: []
+                        }, {
+                            background: []
+                        }],
+                        [{
+                            align: []
+                        }],
+                        [{
+                            list: 'ordered'
+                        }, {
+                            list: 'bullet'
+                        }],
+                        ['link', 'image'],
+                        ['blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Penjelasan untuk hasil survei ini...'
+            });
 
-    // Submit: masukkan HTML ke textarea tersembunyi
-    document.getElementById('uploadForm').onsubmit = function() {
-        document.getElementById('quill-hidden').value = quill.root.innerHTML;
-        
-        // Loading button
-        document.getElementById('submitText').style.display = 'none';
-        document.getElementById('loadingText').style.display = 'inline';
-        document.getElementById('submitBtn').disabled = true;
-    };
-});
-</script>
+            // Submit: masukkan HTML ke textarea tersembunyi
+            document.getElementById('uploadForm').onsubmit = function() {
+                document.getElementById('quill-hidden').value = quill.root.innerHTML;
+
+                // Loading button
+                document.getElementById('submitText').style.display = 'none';
+                document.getElementById('loadingText').style.display = 'inline';
+                document.getElementById('submitBtn').disabled = true;
+            };
+        });
+    </script>
 @endpush
