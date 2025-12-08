@@ -77,31 +77,41 @@
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
-        |--------------------------------------------------------------------------
-        | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
-        | yang dihasilkan Quill dapat ditampilkan dengan benar.
-        */
+            |--------------------------------------------------------------------------
+            | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
+            |--------------------------------------------------------------------------
+            | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
+            | yang dihasilkan Quill dapat ditampilkan dengan benar.
+            */
         .quill-content {
             /* Agar style tidak bocor keluar */
             line-height: 1.6;
             font-size: 1em;
             color: #333;
         }
-        
+
         /* Text Alignment */
-        .quill-content .ql-align-center { text-align: center; }
-        .quill-content .ql-align-right { text-align: right; }
-        .quill-content .ql-align-justify { text-align: justify; }
+        .quill-content .ql-align-center {
+            text-align: center;
+        }
+
+        .quill-content .ql-align-right {
+            text-align: right;
+        }
+
+        .quill-content .ql-align-justify {
+            text-align: justify;
+        }
 
         /* List Styling */
-        .quill-content ul, .quill-content ol { 
-            padding-left: 2em; 
-            margin: 0.5em 0; 
+        .quill-content ul,
+        .quill-content ol {
+            padding-left: 2em;
+            margin: 0.5em 0;
         }
-        .quill-content li { 
-            margin: 0.2em 0; 
+
+        .quill-content li {
+            margin: 0.2em 0;
             padding-left: 0.3em;
         }
 
@@ -113,7 +123,7 @@
             font-style: italic;
             color: #666;
         }
-        
+
         /* Code Block */
         .quill-content pre {
             background-color: #f4f4f4;
@@ -124,19 +134,42 @@
             overflow-x: auto;
             margin: 1em 0;
         }
-        
+
         /* Header Styles (agar terlihat seperti header) */
-        .quill-content h1, .quill-content h2, .quill-content h3, .quill-content h4, .quill-content h5, .quill-content h6 {
+        .quill-content h1,
+        .quill-content h2,
+        .quill-content h3,
+        .quill-content h4,
+        .quill-content h5,
+        .quill-content h6 {
             font-weight: bold;
             margin: 1em 0 0.5em;
             line-height: 1.2;
         }
-        .quill-content h1 { font-size: 2em; }
-        .quill-content h2 { font-size: 1.5em; }
-        .quill-content h3 { font-size: 1.17em; }
-        .quill-content h4 { font-size: 1em; }
-        .quill-content h5 { font-size: 0.83em; }
-        .quill-content h6 { font-size: 0.67em; }
+
+        .quill-content h1 {
+            font-size: 2em;
+        }
+
+        .quill-content h2 {
+            font-size: 1.5em;
+        }
+
+        .quill-content h3 {
+            font-size: 1.17em;
+        }
+
+        .quill-content h4 {
+            font-size: 1em;
+        }
+
+        .quill-content h5 {
+            font-size: 0.83em;
+        }
+
+        .quill-content h6 {
+            font-size: 0.67em;
+        }
 
         /* Style untuk coretan (strikethrough) - sudah ada di kode lama, tidak diubah */
         .quill-content s,
@@ -220,6 +253,23 @@
                         <div class="quill-content">
                             {!! $safeDeskripsi ?? '-' !!}
                         </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tautan File Survei</td>
+                    <td>
+                        @if ($dataSurvei->tautan_file)
+                            <a href="{{ $dataSurvei->tautan_file }}" target="_blank" class="file-link">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"
+                                    style="vertical-align: middle; margin-right: 4px;">
+                                    <path
+                                        d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                                </svg>
+                                Buka File
+                            </a>
+                        @else
+                            <span style="color: #6c757d;">Tidak ada tautan file</span>
+                        @endif
                     </td>
                 </tr>
             </table>
