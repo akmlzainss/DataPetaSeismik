@@ -125,9 +125,9 @@
         </ul>
 
         <div class="logout-btn">
-            <form action="{{ route('admin.logout') }}" method="POST" onsubmit="return confirm('Yakin ingin keluar?')">
+            <form action="{{ route('admin.logout') }}" method="POST" id="logoutFormAdmin">
                 @csrf
-                <button type="submit">
+                <button type="button" onclick="showLogoutModalAdmin()">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
@@ -137,6 +137,41 @@
             </form>
         </div>
     </aside>
+
+    {{-- Logout Confirmation Modal --}}
+    <div id="logoutModalAdmin" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Konfirmasi Logout</h3>
+                <button class="modal-close" onclick="closeLogoutModalAdmin()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-warning">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                    </svg>
+                </div>
+                <p class="modal-message">Apakah Anda yakin ingin keluar dari sistem?</p>
+                <p class="modal-warning">Anda akan diarahkan ke halaman login.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeLogoutModalAdmin()">Batal</button>
+                <button class="btn-delete" onclick="confirmLogoutAdmin()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                    </svg>
+                    Ya, Keluar
+                </button>
+            </div>
+        </div>
+    </div>
 
     {{-- Main Content --}}
     <main class="main-content">
@@ -176,6 +211,35 @@
                 hamburgerBtn.classList.remove('active');
                 sidebar.classList.remove('active');
                 sidebarOverlay.classList.remove('active');
+            }
+        });
+
+        // Logout Modal Functions
+        function showLogoutModalAdmin() {
+            document.getElementById('logoutModalAdmin').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('#logoutModalAdmin .modal-container').style.animation =
+                    'slideUp 0.3s ease-out';
+            }, 10);
+        }
+
+        function closeLogoutModalAdmin() {
+            const modal = document.getElementById('logoutModalAdmin');
+            const container = modal.querySelector('.modal-container');
+            container.style.animation = 'slideDown 0.3s ease-out';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function confirmLogoutAdmin() {
+            document.getElementById('logoutFormAdmin').submit();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('logoutModalAdmin')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLogoutModalAdmin();
             }
         });
     </script>

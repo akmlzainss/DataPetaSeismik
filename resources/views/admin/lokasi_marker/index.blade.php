@@ -5,6 +5,8 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    {{-- Select2 CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/admin-marker.css') }}">
 @endpush
 
@@ -334,6 +336,10 @@
 
 @push('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {{-- jQuery (required for Select2) --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    {{-- Select2 JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         // Loading Overlay Functions
         function showLoadingOverlay(message = 'Memproses...') {
@@ -434,6 +440,39 @@
         });
 
         document.addEventListener("DOMContentLoaded", function() {
+            // ============================================================
+            // INITIALIZE SELECT2 - Modern Dropdown with Search
+            // ============================================================
+            $('#surveiSelect').select2({
+                placeholder: '🔍 Cari atau pilih survei yang akan ditandai di peta...',
+                allowClear: true,
+                width: '100%',
+                theme: 'default',
+                language: {
+                    noResults: function() {
+                        return "Tidak ada data survei yang ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            $('#manualSurveiSelect').select2({
+                placeholder: '🔍 Cari atau pilih survei yang akan ditandai manual...',
+                allowClear: true,
+                width: '100%',
+                theme: 'default',
+                language: {
+                    noResults: function() {
+                        return "Tidak ada data survei yang ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
             // BATAS PETA INDONESIA
             const indonesiaBounds = L.latLngBounds(
                 L.latLng(-11.5, 94.0),
@@ -586,17 +625,18 @@
                 }
             }
 
-            surveiSelect?.addEventListener('change', async function() {
-                const surveiId = this.value;
-                const selectedOption = this.options[this.selectedIndex];
+            // Event handler untuk Select2 Auto Geocoding
+            $('#surveiSelect').on('change', async function() {
+                const surveiId = $(this).val();
 
                 if (!surveiId) {
                     clearAutoMarker();
                     return;
                 }
 
-                const wilayah = selectedOption.dataset.wilayah;
-                const judul = selectedOption.dataset.judul;
+                const selectedOption = $(this).find('option:selected');
+                const wilayah = selectedOption.data('wilayah');
+                const judul = selectedOption.data('judul');
 
                 if (!wilayah) {
                     alert("Data survei tidak memiliki wilayah!");
@@ -643,12 +683,16 @@
                         if (data.success) {
                             map.removeLayer(newMarker);
                             createPermanentMarker(lat, lng, title, surveiId);
-                            surveiSelect.remove(selectedOption.index);
-                            const manualOption = manualSurveiSelect.querySelector(
-                                `option[value="${surveiId}"]`);
-                            if (manualOption) manualSurveiSelect.remove(manualOption.index);
+
+                            // Remove option from both Select2 dropdowns
+                            $('#surveiSelect option[value="' + surveiId + '"]').remove();
+                            $('#manualSurveiSelect option[value="' + surveiId + '"]').remove();
+
+                            // Trigger change to update Select2
+                            $('#surveiSelect').val(null).trigger('change');
+                            $('#manualSurveiSelect').val(null).trigger('change');
+
                             alert(data.message);
-                            surveiSelect.value = "";
                         } else {
                             map.removeLayer(newMarker);
                             alert('Gagal menyimpan: ' + data.message);
@@ -763,12 +807,16 @@
                         if (data.success) {
                             map.removeLayer(newMarker);
                             createPermanentMarker(latFloat, lngFloat, title, surveiId);
-                            manualSurveiSelect.remove(selectedOption.index);
-                            const autoOption = surveiSelect.querySelector(
-                                `option[value="${surveiId}"]`);
-                            if (autoOption) surveiSelect.remove(autoOption.index);
+
+                            // Remove option from both Select2 dropdowns
+                            $('#surveiSelect option[value="' + surveiId + '"]').remove();
+                            $('#manualSurveiSelect option[value="' + surveiId + '"]').remove();
+
+                            // Clear and trigger change to update Select2
+                            $('#surveiSelect').val(null).trigger('change');
+                            $('#manualSurveiSelect').val(null).trigger('change');
+
                             alert(data.message);
-                            manualSurveiSelect.value = "";
                             manualLatInput.value = "";
                             manualLngInput.value = "";
                             manualJudulInput.value = "";
@@ -819,7 +867,8 @@
                 });
             });
 
-            manualSurveiSelect.addEventListener('change', () => {
+            // Event handler untuk Select2 Manual Input
+            $('#manualSurveiSelect').on('change', function() {
                 manualLatInput.value = "";
                 manualLngInput.value = "";
                 clearManualPreview();
