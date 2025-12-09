@@ -191,11 +191,11 @@
                 <div class="footer-section">
                     <h3>Sumber Daya</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Panduan Pengguna</a></li>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Kebijakan Privasi</a></li>
-                        <li><a href="#">Syarat & Ketentuan</a></li>
-                        <li><a href="#">Bantuan</a></li>
+                        <li><a href="{{ route('panduan') }}">Panduan Pengguna</a></li>
+                        <li><a href="{{ route('faq') }}">FAQ</a></li>
+                        <li><a href="{{ route('privasi') }}">Kebijakan Privasi</a></li>
+                        <li><a href="{{ route('syarat') }}">Syarat & Ketentuan</a></li>
+                        <li><a href="{{ route('bantuan') }}">Bantuan</a></li>
                     </ul>
                 </div>
 

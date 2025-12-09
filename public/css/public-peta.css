@@ -2,6 +2,16 @@
    PETA SEBARAN SURVEI - PROFESSIONAL STYLES
    ======================================== */
 
+/* --- CRITICAL: Ensure Navbar is Always Visible --- */
+body .navbar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+}
+
 /* --- Leaflet Overrides --- */
 .leaflet-container img { max-width: none !important; }
 .leaflet-container { height: 100%; width: 100%; font-family: inherit; }

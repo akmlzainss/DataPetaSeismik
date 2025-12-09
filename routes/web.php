@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\LokasiMarkerController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\User\HomeController;
+use App\Http\Controllers\User\InfoController;
 use App\Http\Controllers\User\KatalogController;
 use App\Http\Controllers\User\KontakController;
 use App\Http\Controllers\User\PetaController;
@@ -127,6 +128,13 @@ Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tent
 // Kontak
 Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
 Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit');
+
+// Halaman Informasi (Footer Links)
+Route::get('/panduan-pengguna', [InfoController::class, 'panduan'])->name('panduan');
+Route::get('/faq', [InfoController::class, 'faq'])->name('faq');
+Route::get('/kebijakan-privasi', [InfoController::class, 'privasi'])->name('privasi');
+Route::get('/syarat-ketentuan', [InfoController::class, 'syarat'])->name('syarat');
+Route::get('/bantuan', [InfoController::class, 'bantuan'])->name('bantuan');
 
 // Catatan: Setelah ini didefinisikan, Anda harus mengganti '#' 
 // dengan route() yang sesuai di layouts/app.blade.php.
