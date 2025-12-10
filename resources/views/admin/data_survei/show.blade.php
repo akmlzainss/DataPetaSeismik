@@ -77,12 +77,12 @@
         }
 
         /*
-            |--------------------------------------------------------------------------
-            | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
-            |--------------------------------------------------------------------------
-            | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
-            | yang dihasilkan Quill dapat ditampilkan dengan benar.
-            */
+                |--------------------------------------------------------------------------
+                | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
+                |--------------------------------------------------------------------------
+                | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
+                | yang dihasilkan Quill dapat ditampilkan dengan benar.
+                */
         .quill-content {
             /* Agar style tidak bocor keluar */
             line-height: 1.6;
@@ -193,116 +193,141 @@
     </div>
 
     <div class="welcome-section">
-        <div class="detail-container">
-            <div class="detail-header">
-                <h2 class="detail-title">{{ $dataSurvei->judul }}</h2>
+        <!-- Header Section -->
+        <div class="detail-header-section">
+            <h2 class="detail-main-title">{{ $dataSurvei->judul }}</h2>
+            <div class="detail-meta-badges">
                 <span class="detail-badge">{{ $dataSurvei->tipe }}</span>
+                <span class="detail-badge secondary">{{ $dataSurvei->tahun }}</span>
+                <span class="detail-badge secondary">{{ $dataSurvei->wilayah }}</span>
+            </div>
+        </div>
+
+        <!-- Main Content Layout -->
+        <div class="admin-article-layout">
+            <!-- Left Column: Main Content -->
+            <div class="admin-article-main">
+                @php
+                    // Gunakan gambar medium, jika tidak ada, fallback ke gambar pratinjau (original)
+                    $imageViewerUrl = null;
+                    if ($dataSurvei->gambar_medium && Storage::disk('public')->exists($dataSurvei->gambar_medium)) {
+                        $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_medium);
+                    } elseif (
+                        $dataSurvei->gambar_pratinjau &&
+                        Storage::disk('public')->exists($dataSurvei->gambar_pratinjau)
+                    ) {
+                        $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_pratinjau);
+                    }
+                @endphp
+
+                @if ($imageViewerUrl)
+                    <div class="admin-image-viewer-section">
+                        <h3 class="admin-section-title">Pratinjau Gambar</h3>
+                        <div style="position: relative;">
+                            <div id="openseadragon-viewer"></div>
+                            <div class="osd-toolbar">
+                                <button class="osd-btn" id="zoomIn" title="Zoom In">+</button>
+                                <button class="osd-btn" id="zoomOut" title="Zoom Out">−</button>
+                                <button class="osd-btn" id="home" title="Reset View">⟳</button>
+                                <button class="osd-btn" id="fullPage" title="Fullscreen">⛶</button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($safeDeskripsi)
+                    <div class="admin-description-section">
+                        <h3 class="admin-section-title">Deskripsi Survei</h3>
+                        <div class="admin-content-box">
+                            <div class="quill-content">
+                                {!! $safeDeskripsi !!}
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
-            @php
-                // Gunakan gambar medium, jika tidak ada, fallback ke gambar pratinjau (original)
-                $imageViewerUrl = null;
-                if ($dataSurvei->gambar_medium && Storage::disk('public')->exists($dataSurvei->gambar_medium)) {
-                    $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_medium);
-                } elseif (
-                    $dataSurvei->gambar_pratinjau &&
-                    Storage::disk('public')->exists($dataSurvei->gambar_pratinjau)
-                ) {
-                    $imageViewerUrl = asset('storage/' . $dataSurvei->gambar_pratinjau);
-                }
-            @endphp
+            <!-- Right Column: Sidebar -->
+            <aside class="admin-article-sidebar">
+                <div class="admin-meta-card">
+                    <h3 class="admin-card-title">Informasi Detail</h3>
 
-            @if ($imageViewerUrl)
-                <div style="position: relative;">
-                    <div id="openseadragon-viewer"></div>
-                    <div class="osd-toolbar">
-                        <button class="osd-btn" id="zoomIn" title="Zoom In">+</button>
-                        <button class="osd-btn" id="zoomOut" title="Zoom Out">−</button>
-                        <button class="osd-btn" id="home" title="Reset View">⟳</button>
-                        <button class="osd-btn" id="fullPage" title="Fullscreen">⛶</button>
-                    </div>
-                </div>
-            @else
-                <div class="empty-state" style="padding: 60px 0;">
-                    <p>Tidak ada gambar pratinjau yang tersedia untuk ditampilkan.</p>
-                </div>
-            @endif
-
-            <table class="detail-table">
-                <tr>
-                    <td>Ketua Tim</td>
-                    <td>{{ $dataSurvei->ketua_tim }}</td>
-                </tr>
-                <tr>
-                    <td>Tahun Pelaksanaan</td>
-                    <td>{{ $dataSurvei->tahun }}</td>
-                </tr>
-                <tr>
-                    <td>Wilayah / Blok</td>
-                    <td>{{ $dataSurvei->wilayah }}</td>
-                </tr>
-                <tr>
-                    <td>Deskripsi</td>
-                    {{--
-                    |--------------------------------------------------------------------------
-                    | BAGIAN 2: MEMBUNGKUS OUTPUT DESKRIPSI DENGAN CLASS 'quill-content'
-                    |--------------------------------------------------------------------------
-                    | Class ini akan menggunakan CSS yang ditambahkan di Bagian 1.
-                    --}}
-                    <td>
-                        <div class="quill-content">
-                            {!! $safeDeskripsi ?? '-' !!}
+                    <div class="admin-meta-list">
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Ketua Tim</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->ketua_tim }}</span>
                         </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Tautan File Survei</td>
-                    <td>
-                        @if ($dataSurvei->tautan_file)
-                            <a href="{{ $dataSurvei->tautan_file }}" target="_blank" class="file-link">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"
-                                    style="vertical-align: middle; margin-right: 4px;">
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Tahun Pelaksanaan</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->tahun }}</span>
+                        </div>
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Tipe Survei</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->tipe }}</span>
+                        </div>
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Wilayah / Blok</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->wilayah }}</span>
+                        </div>
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Diunggah oleh</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->pengunggah->nama ?? 'Admin' }}</span>
+                        </div>
+                        <div class="admin-meta-item">
+                            <span class="admin-meta-label">Tanggal Upload</span>
+                            <span class="admin-meta-value">{{ $dataSurvei->created_at->format('d M Y H:i') }}</span>
+                        </div>
+                    </div>
+
+                    @if ($dataSurvei->tautan_file)
+                        <div class="admin-file-section">
+                            <h4 class="admin-file-title">File Survei</h4>
+                            <a href="{{ $dataSurvei->tautan_file }}" target="_blank" class="admin-file-link">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                     <path
                                         d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
                                 </svg>
                                 Buka File
                             </a>
-                        @else
-                            <span style="color: #6c757d;">Tidak ada tautan file</span>
-                        @endif
-                    </td>
-                </tr>
-            </table>
+                        </div>
+                    @endif
 
-            <div class="detail-metadata">
-                <div class="detail-metadata-item">
-                    <span class="detail-metadata-label">Diunggah oleh:</span>
-                    <span>{{ $dataSurvei->pengunggah->nama ?? 'Admin' }}</span>
+                    <div class="admin-actions-section">
+                        <h4 class="admin-actions-title">Aksi</h4>
+                        <div class="admin-action-buttons">
+                            <a href="{{ route('admin.data_survei.edit', $dataSurvei) }}" class="admin-btn admin-btn-edit">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path
+                                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                </svg>
+                                Edit Data
+                            </a>
+                            <button type="button" class="admin-btn admin-btn-delete" id="triggerDeleteModal"
+                                data-judul="{{ $dataSurvei->judul }}"
+                                data-action="{{ route('admin.data_survei.destroy', $dataSurvei) }}">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path
+                                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                </svg>
+                                Hapus Data
+                            </button>
+                            <a href="{{ route('admin.data_survei.index') }}" class="admin-btn admin-btn-back">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                                </svg>
+                                Kembali
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="detail-metadata-item">
-                    <span class="detail-metadata-label">Tanggal Upload:</span>
-                    <span>{{ $dataSurvei->created_at->format('d M Y H:i') }}</span>
-                </div>
-            </div>
-
-            <div class="detail-actions">
-                <a href="{{ route('admin.data_survei.edit', $dataSurvei) }}" class="btn-edit-detail">Edit Data</a>
-                <a href="{{ route('admin.data_survei.index') }}" class="btn-back-detail">Kembali</a>
-
-                {{-- Tombol Hapus: Sekarang akan memicu modal --}}
-                <button type="button" class="btn-delete-detail" id="triggerDeleteModal"
-                    data-judul="{{ $dataSurvei->judul }}"
-                    data-action="{{ route('admin.data_survei.destroy', $dataSurvei) }}">
-                    Hapus Data
-                </button>
-            </div>
-
-            {{-- Form Hapus yang disembunyikan, akan disubmit oleh JavaScript --}}
-            <form id="deleteForm" action="{{ route('admin.data_survei.destroy', $dataSurvei) }}" method="POST"
-                style="display:none;">
-                @csrf @method('DELETE')
-            </form>
+            </aside>
         </div>
+
+        {{-- Form Hapus yang disembunyikan, akan disubmit oleh JavaScript --}}
+        <form id="deleteForm" action="{{ route('admin.data_survei.destroy', $dataSurvei) }}" method="POST"
+            style="display:none;">
+            @csrf @method('DELETE')
+        </form>
     </div>
 
     {{-- MODAL DAN OVERLAY DITAMBAHKAN DI SINI (TIDAK BERUBAH) --}}

@@ -74,25 +74,25 @@
                 <!-- Helper Text -->
                 <div class="helper-box">
                     <strong>📍 Tips Pengisian Wilayah untuk Geocoding Otomatis:</strong>
-                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                        <li style="margin-bottom: 12px;">
+                    <ul>
+                        <li>
                             Gunakan format: <strong>Nama Kota/Kabupaten, Provinsi</strong><br>
-                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Bandung, Jawa
+                            <small style="color: #28a745;">✓ Contoh: "Bandung, Jawa
                                 Barat" atau "Surabaya, Jawa Timur"</small>
                         </li>
-                        <li style="margin-bottom: 12px;">
+                        <li>
                             Untuk wilayah laut: <strong>Nama Laut/Selat + Provinsi Terdekat</strong><br>
-                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Selat Sunda,
+                            <small style="color: #28a745;">✓ Contoh: "Selat Sunda,
                                 Banten" atau "Laut Jawa, Jawa Tengah"</small>
                         </li>
-                        <li style="margin-bottom: 12px;">
+                        <li>
                             Untuk blok survei: <strong>Nama Blok + Wilayah Laut</strong><br>
-                            <small style="color: #28a745; margin-top: 2px; display: inline-block;">✓ Contoh: "Blok Masela,
+                            <small style="color: #28a745;">✓ Contoh: "Blok Masela,
                                 Laut Arafura" atau "Blok Cepu, Jawa Timur"</small>
                         </li>
-                        <li style="margin-bottom: 12px;">
+                        <li>
                             Hindari singkatan atau kode yang tidak umum<br>
-                            <small style="color: #dc3545; margin-top: 2px; display: inline-block;">✗ Contoh: "BDG" atau
+                            <small style="color: #dc3545;">✗ Contoh: "BDG" atau
                                 "JKT" (gunakan nama lengkap)</small>
                         </li>
                         <li>
@@ -116,21 +116,24 @@
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                     </svg>
                     <div>
-                        <strong>Petunjuk:</strong> Pilih survei → Isi koordinat manual atau klik di peta → Klik tombol
-                        "Simpan Marker Manual Permanen"
+                        <strong>Petunjuk:</strong> Pilih survei → Isi koordinat manual atau klik di peta → Klik "Cari
+                        Koordinat" untuk preview (marker orange) → Klik "Simpan Marker Manual Permanen" untuk menyimpan
+                        (marker biru)
                     </div>
                 </div>
 
                 <!-- Tips Koordinat -->
                 <div class="helper-box" style="margin-bottom: 16px;">
                     <strong>💡 Tips Input Koordinat Manual:</strong>
-                    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                        <li style="margin-bottom: 8px;"><strong>Lintang (Latitude):</strong> Nilai antara -11 hingga 6 untuk
+                    <ul>
+                        <li><strong>Lintang (Latitude):</strong> Nilai antara -11 hingga 6 untuk
                             wilayah Indonesia (negatif = Selatan)</li>
-                        <li style="margin-bottom: 8px;"><strong>Bujur (Longitude):</strong> Nilai antara 95 hingga 141 untuk
+                        <li><strong>Bujur (Longitude):</strong> Nilai antara 95 hingga 141 untuk
                             wilayah Indonesia (positif = Timur)</li>
-                        <li style="margin-bottom: 8px;">Format desimal: -6.2088, 106.8456 (gunakan titik, bukan koma)</li>
-                        <li>Klik langsung di peta untuk mengisi koordinat secara otomatis</li>
+                        <li>Format desimal: -6.2088, 106.8456 (gunakan titik, bukan koma)</li>
+                        <li><strong>Alur Kerja:</strong> Isi koordinat → Klik "Cari Koordinat"
+                            untuk preview → Klik "Simpan" untuk permanen</li>
+                        <li>Klik langsung di peta untuk mengisi koordinat secara otomatis (akan reset status preview)</li>
                     </ul>
                 </div>
 
@@ -168,9 +171,19 @@
                         </div>
                     </div>
 
-                    <p class="text-muted text-small">
-                        💡 Anda dapat mengklik langsung di peta untuk mengisi koordinat secara otomatis
-                    </p>
+                    <div class="coordinate-actions">
+                        <button type="button" id="searchCoordinateBtn" class="btn-secondary" disabled>
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <path
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                            Cari Koordinat
+                        </button>
+                        <p class="text-muted text-small">
+                            💡 <strong>Langkah:</strong> 1) Isi koordinat → 2) Klik "Cari Koordinat" untuk preview → 3) Klik
+                            "Simpan Marker Manual Permanen"
+                        </p>
+                    </div>
 
                     <!-- Button Simpan -->
                     <button type="button" id="saveManualBtn" class="btn-primary mt-3" disabled>
@@ -207,12 +220,14 @@
             <ul>
                 <li><strong>Tab Auto Geocoding:</strong> Pilih survei dari dropdown, sistem akan mencari koordinat otomatis
                     berdasarkan wilayah, lalu klik tombol "Terapkan Marker Otomatis" untuk menyimpan</li>
-                <li><strong>Tab Input Manual:</strong> Pilih survei, isi koordinat manual atau klik di peta, lalu klik
-                    tombol "Simpan Marker Manual Permanen"</li>
+                <li><strong>Tab Input Manual:</strong> Pilih survei → Isi koordinat → Klik "Cari Koordinat" untuk preview →
+                    Klik "Simpan Marker Manual Permanen" untuk menyimpan</li>
                 <li><strong>Marker Preview:</strong> Marker berwarna orange adalah preview sementara yang belum tersimpan
-                </li>
+                    (muncul setelah klik "Cari Koordinat")</li>
                 <li><strong>Marker Permanen:</strong> Marker berwarna biru adalah marker yang sudah tersimpan dan tidak
                     dapat dipindahkan</li>
+                <li><strong>Tombol "Simpan":</strong> Hanya aktif setelah tombol "Cari Koordinat" diklik dan marker preview
+                    ditampilkan</li>
                 <li><strong>Menghapus Marker:</strong> Klik kanan pada marker permanen (biru) untuk menghapusnya dari peta
                 </li>
                 <li><strong>Batasan Peta:</strong> Peta dibatasi hanya menampilkan wilayah Indonesia (zoom minimum level 5)
@@ -384,13 +399,34 @@
         let currentDeleteData = null;
 
         function showDeleteModal(title, surveiId, marker) {
+            // Validate input parameters
+            if (!title || !surveiId || !marker) {
+                alert('Data marker tidak lengkap untuk dihapus!');
+                console.error('Invalid delete modal data:', {
+                    title,
+                    surveiId,
+                    marker
+                });
+                return;
+            }
+
+            // Ensure surveiId is valid
+            if (surveiId === 'undefined' || surveiId === 'null' || surveiId === '') {
+                alert('ID survei tidak valid!');
+                console.error('Invalid surveiId:', surveiId);
+                return;
+            }
+
             currentDeleteData = {
-                title,
-                surveiId,
+                title: title || 'Unknown Survey',
+                surveiId: String(surveiId), // Ensure it's a string
                 marker
             };
-            document.getElementById('deleteMarkerTitle').textContent = title;
+
+            document.getElementById('deleteMarkerTitle').textContent = title || 'Unknown Survey';
             document.getElementById('deleteModal').style.display = 'flex';
+
+            console.log('Delete modal opened for:', currentDeleteData);
         }
 
         function closeDeleteModal() {
@@ -399,8 +435,11 @@
         }
 
         // Confirm Delete Handler
-        document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
-            if (!currentDeleteData) return;
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', async function() {
+            if (!currentDeleteData) {
+                alert('Data marker tidak ditemukan!');
+                return;
+            }
 
             const {
                 title,
@@ -408,28 +447,94 @@
                 marker
             } = currentDeleteData;
 
+            // Validate surveiId
+            if (!surveiId || surveiId === 'undefined' || surveiId === 'null') {
+                alert('ID survei tidak valid!');
+                closeDeleteModal();
+                return;
+            }
+
             closeDeleteModal();
             showLoadingOverlay('Menghapus marker...');
 
-            fetch(`/admin/lokasi-marker/${surveiId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            }).then(response => {
+            try {
+                const response = await fetch(`/admin/lokasi-marker/${surveiId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
                 hideLoadingOverlay();
+
                 if (response.ok) {
-                    map.removeLayer(marker);
-                    alert('Marker berhasil dihapus! Halaman akan dimuat ulang.');
-                    location.reload();
+                    // Try to parse JSON response
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (e) {
+                        // If not JSON, assume success
+                        data = {
+                            success: true,
+                            message: 'Marker berhasil dihapus!'
+                        };
+                    }
+
+                    if (data.success !== false) {
+                        // Remove marker from map using tracking
+                        const trackedMarker = permanentMarkers.get(String(surveiId));
+                        if (trackedMarker) {
+                            try {
+                                map.removeLayer(trackedMarker);
+                                permanentMarkers.delete(String(surveiId));
+                                console.log('Marker removed successfully from map');
+                            } catch (e) {
+                                console.log('Error removing tracked marker:', e);
+                            }
+                        }
+
+                        // Also try to remove the original marker if different
+                        if (marker && marker !== trackedMarker) {
+                            try {
+                                map.removeLayer(marker);
+                            } catch (e) {
+                                console.log('Error removing original marker:', e);
+                            }
+                        }
+
+                        // Add options back to Select2 dropdowns
+                        const optionText = title || 'Data Survei';
+                        $('#surveiSelect').append(new Option(optionText, surveiId));
+                        $('#manualSurveiSelect').append(new Option(optionText, surveiId));
+
+                        alert(data.message || 'Marker berhasil dihapus!');
+
+                        // No need to reload since we properly removed the marker
+                        console.log('Delete operation completed successfully');
+                    } else {
+                        alert('Gagal menghapus marker: ' + (data.message || 'Unknown error'));
+                    }
                 } else {
-                    alert('Gagal menghapus marker!');
+                    // Handle HTTP error status
+                    let errorMessage = 'Gagal menghapus marker!';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
+                    }
+                    alert(errorMessage);
                 }
-            }).catch(error => {
+            } catch (error) {
                 hideLoadingOverlay();
-                alert('Terjadi error saat menghapus marker!');
-                console.error('Error:', error);
-            });
+                alert('Terjadi error saat menghapus marker: ' + error.message);
+                console.error('Delete marker error:', error);
+            }
+
+            // Reset currentDeleteData
+            currentDeleteData = null;
         });
 
         // Close modal when clicking outside
@@ -438,6 +543,51 @@
                 closeDeleteModal();
             }
         });
+
+        // GLOBAL VARIABLES - Accessible to all functions
+        let map, permanentMarkers, orangeIcon;
+        let surveiSelect, autoApplyBtn, geoLatInput, geoLngInput;
+        let manualSurveiSelect, manualJudulInput, manualLatInput, manualLngInput, saveManualBtn, searchCoordinateBtn;
+        let coordinateSearched = false; // Flag to track if "Cari Koordinat" has been clicked
+
+        // GLOBAL FUNCTION - Create Permanent Marker
+        function createPermanentMarker(lat, lng, title, surveiId) {
+            // Validate input parameters
+            if (!lat || !lng || !title || !surveiId) {
+                console.error('Invalid marker data:', {
+                    lat,
+                    lng,
+                    title,
+                    surveiId
+                });
+                return null;
+            }
+
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<b>${title}</b><br><small>Klik kanan untuk hapus</small>`);
+
+            marker.on('contextmenu', (e) => {
+                L.DomEvent.preventDefault(e);
+
+                // Double check surveiId before showing delete modal
+                if (!surveiId || surveiId === 'undefined' || surveiId === 'null') {
+                    alert('Marker ini tidak dapat dihapus karena ID tidak valid!');
+                    console.error('Invalid surveiId for delete:', surveiId);
+                    return;
+                }
+
+                showDeleteModal(title, surveiId, marker);
+            });
+
+            // Store surveiId in marker for reference
+            marker.surveiId = surveiId;
+            marker.surveyTitle = title;
+
+            // Track this marker
+            permanentMarkers.set(String(surveiId), marker);
+
+            return marker;
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
             // ============================================================
@@ -479,7 +629,7 @@
                 L.latLng(7.0, 142.0)
             );
 
-            const map = L.map('map', {
+            map = L.map('map', {
                 maxBounds: indonesiaBounds,
                 maxBoundsViscosity: 1.0,
                 minZoom: 5,
@@ -493,7 +643,7 @@
             const markersData = @json($markers);
 
             // Marker Icon untuk Geocoding Preview (Orange)
-            const orangeIcon = new L.Icon({
+            orangeIcon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
                 iconSize: [25, 41],
@@ -503,34 +653,33 @@
             });
 
             // Elemen Global
-            const surveiSelect = document.getElementById('surveiSelect');
-            const autoApplyBtn = document.getElementById('autoApplyBtn');
-            const geoLatInput = document.getElementById('geoLat');
-            const geoLngInput = document.getElementById('geoLng');
+            surveiSelect = document.getElementById('surveiSelect');
+            autoApplyBtn = document.getElementById('autoApplyBtn');
+            geoLatInput = document.getElementById('geoLat');
+            geoLngInput = document.getElementById('geoLng');
 
             // Elemen Manual
-            const manualSurveiSelect = document.getElementById('manualSurveiSelect');
-            const manualJudulInput = document.getElementById('manualJudul');
-            const manualLatInput = document.getElementById('manualLat');
-            const manualLngInput = document.getElementById('manualLng');
-            const saveManualBtn = document.getElementById('saveManualBtn');
+            manualSurveiSelect = document.getElementById('manualSurveiSelect');
+            manualJudulInput = document.getElementById('manualJudul');
+            manualLatInput = document.getElementById('manualLat');
+            manualLngInput = document.getElementById('manualLng');
+            saveManualBtn = document.getElementById('saveManualBtn');
+            searchCoordinateBtn = document.getElementById('searchCoordinateBtn');
+
+            // Debug: Check if elements are found
+            console.log('Elements found:', {
+                manualLatInput: !!manualLatInput,
+                manualLngInput: !!manualLngInput,
+                searchCoordinateBtn: !!searchCoordinateBtn,
+                saveManualBtn: !!saveManualBtn
+            });
+
+            // Track all permanent markers for easier management
+            permanentMarkers = new Map(); // surveiId -> marker
 
             /* ============================================================
-                1. LOAD MARKER DARI DATABASE & EVENT HAPUS (CONTEXTMENU)
+                1. LOAD MARKER DARI DATABASE
                 ============================================================ */
-            function createPermanentMarker(lat, lng, title, surveiId) {
-                const marker = L.marker([lat, lng]).addTo(map);
-                marker.bindPopup(`<b>${title}</b><br><small>Klik kanan untuk hapus</small>`);
-
-                marker.on('contextmenu', (e) => {
-                    L.DomEvent.preventDefault(e);
-                    if (!surveiId) return;
-
-                    showDeleteModal(title, surveiId, marker);
-                });
-                return marker;
-            }
-
             markersData.forEach(m => {
                 createPermanentMarker(m.pusat_lintang, m.pusat_bujur, m.survei.judul, m.id_data_survei);
             });
@@ -707,17 +856,60 @@
             });
 
             /* ============================================================
-                5. UPDATE STATUS TOMBOL SIMPAN MANUAL
+                5. UPDATE STATUS TOMBOL SIMPAN MANUAL & SEARCH COORDINATE
                 ============================================================ */
             const updateManualSaveButtonState = () => {
                 const surveiSelected = !!manualSurveiSelect.value;
-                const latValid = !isNaN(parseFloat(manualLatInput.value)) && manualLatInput.value.trim() !== "";
-                const lngValid = !isNaN(parseFloat(manualLngInput.value)) && manualLngInput.value.trim() !== "";
 
-                if (surveiSelected && latValid && lngValid) {
+                // Debug input values
+                const latValue = manualLatInput.value;
+                const lngValue = manualLngInput.value;
+                const latTrimmed = latValue.trim().replace(/[^\d.-]/g,
+                    ''); // Remove non-numeric chars except . and -
+                const lngTrimmed = lngValue.trim().replace(/[^\d.-]/g,
+                    ''); // Remove non-numeric chars except . and -
+                const latParsed = parseFloat(latTrimmed);
+                const lngParsed = parseFloat(lngTrimmed);
+
+                console.log('Input debug:', {
+                    latValue: `"${latValue}"`,
+                    lngValue: `"${lngValue}"`,
+                    latTrimmed: `"${latTrimmed}"`,
+                    lngTrimmed: `"${lngTrimmed}"`,
+                    latParsed,
+                    lngParsed,
+                    latIsNaN: isNaN(latParsed),
+                    lngIsNaN: isNaN(lngParsed)
+                });
+
+                const latValid = !isNaN(latParsed) && latTrimmed !== "";
+                const lngValid = !isNaN(lngParsed) && lngTrimmed !== "";
+
+                console.log('Button state update:', {
+                    surveiSelected,
+                    latValid,
+                    lngValid,
+                    coordinateSearched
+                });
+
+                // Save button only enabled if survei selected, coordinates valid, AND "Cari Koordinat" has been clicked
+                if (surveiSelected && latValid && lngValid && coordinateSearched) {
                     saveManualBtn.disabled = false;
                 } else {
                     saveManualBtn.disabled = true;
+                }
+
+                // Update search coordinate button state
+                if (searchCoordinateBtn) {
+                    if (latValid && lngValid) {
+                        searchCoordinateBtn.disabled = false;
+                        console.log('Search coordinate button enabled');
+                    } else {
+                        searchCoordinateBtn.disabled = true;
+                        console.log('Search coordinate button disabled');
+                    }
+                } else {
+                    console.error('searchCoordinateBtn not found!');
                 }
             };
 
@@ -834,7 +1026,53 @@
             });
 
             /* ============================================================
-                8. EVENT: KLIK PADA PETA
+                8. SEARCH COORDINATE BUTTON HANDLER
+                ============================================================ */
+            searchCoordinateBtn?.addEventListener('click', function() {
+                const latStr = manualLatInput.value.trim().replace(/[^\d.-]/g, ''); // Clean input
+                const lngStr = manualLngInput.value.trim().replace(/[^\d.-]/g, ''); // Clean input
+
+                if (!latStr || !lngStr) {
+                    alert('Harap isi koordinat Lintang dan Bujur terlebih dahulu!');
+                    return;
+                }
+
+                const lat = parseFloat(latStr);
+                const lng = parseFloat(lngStr);
+
+                if (isNaN(lat) || isNaN(lng)) {
+                    alert(
+                        'Format koordinat tidak valid! Gunakan format desimal (contoh: -6.2088, 106.8456)'
+                    );
+                    return;
+                }
+
+                // Validate coordinates are within Indonesia bounds
+                if (lat < -11.5 || lat > 7.0 || lng < 94.0 || lng > 142.0) {
+                    alert(
+                        'Koordinat di luar batas Indonesia!\nLintang: -11.5 hingga 7.0\nBujur: 94.0 hingga 142.0'
+                    );
+                    return;
+                }
+
+                // Set flag that coordinate search has been performed
+                coordinateSearched = true;
+
+                // Move map to coordinates and show preview
+                map.setView([lat, lng], 12);
+                showManualPreview();
+
+                // Update button states after successful search
+                updateManualSaveButtonState();
+
+                // Show success message
+                alert(
+                    `Peta berhasil diarahkan ke koordinat:\nLintang: ${lat.toFixed(6)}\nBujur: ${lng.toFixed(6)}\n\nSekarang Anda dapat menyimpan marker dengan tombol "Simpan Marker Manual Permanen"`
+                );
+            });
+
+            /* ============================================================
+                9. EVENT: KLIK PADA PETA
                 ============================================================ */
             map.on('click', function(e) {
                 const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
@@ -851,19 +1089,47 @@
                     const surveiId = manualSurveiSelect.value;
                     if (!surveiId) return alert('Pilih Data Survei terlebih dahulu!');
 
-                    manualLatInput.value = e.latlng.lat.toFixed(6);
-                    manualLngInput.value = e.latlng.lng.toFixed(6);
-                    showManualPreview();
+                    // Check if coordinates are already filled
+                    const currentLat = manualLatInput.value.trim();
+                    const currentLng = manualLngInput.value.trim();
+
+                    if (currentLat && currentLng) {
+                        // If coordinates are filled, ask user if they want to replace
+                        if (confirm(
+                                'Koordinat sudah diisi. Apakah Anda ingin mengganti dengan koordinat dari klik peta?'
+                            )) {
+                            manualLatInput.value = e.latlng.lat.toFixed(6);
+                            manualLngInput.value = e.latlng.lng.toFixed(6);
+                            coordinateSearched = false; // Reset flag when coordinates change
+                            showManualPreview();
+                        }
+                    } else {
+                        // If empty, set coordinates from map click
+                        manualLatInput.value = e.latlng.lat.toFixed(6);
+                        manualLngInput.value = e.latlng.lng.toFixed(6);
+                        coordinateSearched = false; // Reset flag when coordinates change
+                        showManualPreview();
+                    }
                     return;
                 }
             });
 
             /* ============================================================
-                9. EVENT LISTENERS
+                10. EVENT LISTENERS
                 ============================================================ */
             [manualLatInput, manualLngInput].forEach(element => {
-                element.addEventListener('input', () => {
-                    showManualPreview();
+                // Multiple event listeners to catch all changes
+                ['input', 'keyup', 'change', 'paste'].forEach(eventType => {
+                    element.addEventListener(eventType, () => {
+                        // Reset flag when coordinates are manually changed
+                        coordinateSearched = false;
+
+                        // Small delay to allow paste to complete
+                        setTimeout(() => {
+                            showManualPreview();
+                            updateManualSaveButtonState();
+                        }, 10);
+                    });
                 });
             });
 
@@ -871,6 +1137,7 @@
             $('#manualSurveiSelect').on('change', function() {
                 manualLatInput.value = "";
                 manualLngInput.value = "";
+                coordinateSearched = false; // Reset flag when survei changes
                 clearManualPreview();
                 updateManualSaveButtonState();
             });

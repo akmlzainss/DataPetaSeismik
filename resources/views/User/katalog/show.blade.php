@@ -19,7 +19,7 @@
                 @else
                     <li class="breadcrumb-item"><a href="{{ route('katalog') }}">Katalog</a></li>
                 @endif
-                <li class="breadcrumb-item active" aria-current="page">Detail Survei</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($survey->judul, 40) }}</li>
             </ol>
         </nav>
 
@@ -38,8 +38,17 @@
                 <!-- Image Viewer Section -->
                 @if ($survey->gambar_pratinjau)
                     <div class="image-viewer-box">
-                        <div class="image-viewer-container">
+                        <div class="image-viewer-container" style="position: relative;">
                             <div id="image-viewer"></div>
+
+                            <!-- Custom Toolbar -->
+                            <div class="osd-toolbar">
+                                <button class="osd-btn" id="zoomIn" title="Zoom In">+</button>
+                                <button class="osd-btn" id="zoomOut" title="Zoom Out">−</button>
+                                <button class="osd-btn" id="home" title="Reset View">⟳</button>
+                                <button class="osd-btn" id="fullPage" title="Fullscreen">⛶</button>
+                            </div>
+
                             <div class="loading-overlay" id="loading-overlay">
                                 <div class="loading-spinner"></div>
                                 <div class="loading-text">Memuat gambar...</div>
@@ -125,9 +134,7 @@
                         type: 'image',
                         url: "{{ asset('storage/' . $survey->gambar_pratinjau) }}"
                     },
-                    showNavigator: true,
-                    navigatorPosition: "BOTTOM_RIGHT",
-                    showRotationControl: true,
+                    showNavigationControl: false,
                     // Animation settings
                     animationTime: 1.2,
                     blendTime: 0.1,
@@ -137,6 +144,14 @@
                     visibilityRatio: 1,
                     zoomPerScroll: 1.2
                 });
+
+                // Custom Toolbar Events
+                document.getElementById('zoomIn')?.addEventListener('click', () => viewer.viewport.zoomBy(1.5));
+                document.getElementById('zoomOut')?.addEventListener('click', () => viewer.viewport.zoomBy(1 /
+                1.5));
+                document.getElementById('home')?.addEventListener('click', () => viewer.viewport.goHome());
+                document.getElementById('fullPage')?.addEventListener('click', () => viewer.setFullPage(!viewer
+                    .isFullPage()));
 
                 // Handle loading state
                 viewer.addHandler('open', function() {

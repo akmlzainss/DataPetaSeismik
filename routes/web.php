@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataSurveiController;
 use App\Http\Controllers\Admin\LokasiMarkerController;
 use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\InfoController;
@@ -74,6 +75,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
 
     // Laporan
     Route::resource('laporan', LaporanController::class)->names('laporan');
+
+    // Export Routes
+    Route::get('/export/excel', [ExportController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf', [ExportController::class, 'exportPdf'])->name('export.pdf');
 
 
 
