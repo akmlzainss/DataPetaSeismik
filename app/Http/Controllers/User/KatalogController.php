@@ -21,9 +21,9 @@ class KatalogController extends Controller
         // Search Keyword (Judul, Deskripsi)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('judul', 'LIKE', '%' . $search . '%')
-                  ->orWhere('deskripsi', 'LIKE', '%' . $search . '%');
+                    ->orWhere('deskripsi', 'LIKE', '%' . $search . '%');
             });
         }
 
@@ -42,7 +42,7 @@ class KatalogController extends Controller
             $query->where('wilayah', 'LIKE', '%' . $request->wilayah . '%');
         }
 
-        $surveys = $query->paginate(12);
+        $surveys = $query->paginate(12)->withQueryString();
 
         // Ambil data unik untuk filter dropdown
         $tahun_options = DataSurvei::distinct()->orderBy('tahun', 'desc')->pluck('tahun');
@@ -50,9 +50,9 @@ class KatalogController extends Controller
         $wilayah_options = DataSurvei::distinct()->orderBy('wilayah')->pluck('wilayah');
 
         return view('User.katalog.index', compact(
-            'surveys', 
-            'tahun_options', 
-            'tipe_options', 
+            'surveys',
+            'tahun_options',
+            'tipe_options',
             'wilayah_options'
         ));
     }

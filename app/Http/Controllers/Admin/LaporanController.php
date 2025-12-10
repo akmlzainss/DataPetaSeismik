@@ -23,7 +23,7 @@ class LaporanController extends Controller
         $tipe = $request->input('tipe');
 
         // ========== LAPORAN PER TIPE SURVEI ==========
-        
+
         $laporanPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
             ->when($tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
@@ -35,22 +35,22 @@ class LaporanController extends Controller
             ->get();
 
         // ========== LAPORAN PER TAHUN (5 Tahun Terakhir) ==========
-        
+
         $laporanPerTahun = DataSurvei::select(
-                DB::raw('YEAR(created_at) as tahun'),
-                DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN tipe = "2D" THEN 1 ELSE 0 END) as tipe_2d'),
-                DB::raw('SUM(CASE WHEN tipe = "3D" THEN 1 ELSE 0 END) as tipe_3d'),
-                DB::raw('SUM(CASE WHEN tipe = "HR" THEN 1 ELSE 0 END) as tipe_hr'),
-                DB::raw('SUM(CASE WHEN tipe = "Lainnya" THEN 1 ELSE 0 END) as tipe_lainnya')
-            )
+            DB::raw('YEAR(created_at) as tahun'),
+            DB::raw('COUNT(*) as total'),
+            DB::raw('SUM(CASE WHEN tipe = "2D" THEN 1 ELSE 0 END) as tipe_2d'),
+            DB::raw('SUM(CASE WHEN tipe = "3D" THEN 1 ELSE 0 END) as tipe_3d'),
+            DB::raw('SUM(CASE WHEN tipe = "HR" THEN 1 ELSE 0 END) as tipe_hr'),
+            DB::raw('SUM(CASE WHEN tipe = "Lainnya" THEN 1 ELSE 0 END) as tipe_lainnya')
+        )
             ->whereYear('created_at', '>=', date('Y') - 4)
             ->groupBy(DB::raw('YEAR(created_at)'))
             ->orderBy('tahun', 'DESC')
             ->get();
 
         // ========== LAPORAN PER WILAYAH ==========
-        
+
         $laporanPerWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
             ->when($tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
@@ -67,20 +67,20 @@ class LaporanController extends Controller
             ->get();
 
         // ========== LAPORAN AKTIVITAS ADMIN ==========
-        
+
         $aktivitasAdmin = Admin::select(
-                'admin.id',
-                'admin.nama',
-                'admin.email',
-                DB::raw('COUNT(data_survei.id) as total_upload')
-            )
+            'admin.id',
+            'admin.nama',
+            'admin.email',
+            DB::raw('COUNT(data_survei.id) as total_upload')
+        )
             ->leftJoin('data_survei', 'admin.id', '=', 'data_survei.diunggah_oleh')
             ->groupBy('admin.id', 'admin.nama', 'admin.email')
             ->orderBy('total_upload', 'DESC')
             ->get();
 
-        // ========== LAPORAN SURVEI TERBARU ==========
-        
+        // ========== LAPORAN SURVEI TERBARU (DENGAN PAGINATION) ==========
+
         $surveiTerbaru = DataSurvei::with(['pengunggah', 'lokasi'])
             ->when($tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
@@ -92,18 +92,17 @@ class LaporanController extends Controller
                 return $query->where('tipe', $tipe);
             })
             ->orderBy('created_at', 'DESC')
-            ->limit(10)
-            ->get();
+            ->paginate(8, ['*'], 'survei_page');
 
         // ========== STATISTIK BULANAN (12 Bulan Terakhir) ==========
-        
+
         $statistikBulanan = [];
         for ($i = 11; $i >= 0; $i--) {
             $tanggal = Carbon::now()->subMonths($i);
             $jumlah = DataSurvei::whereYear('created_at', $tanggal->year)
                 ->whereMonth('created_at', $tanggal->month)
                 ->count();
-            
+
             $statistikBulanan[] = [
                 'bulan' => $tanggal->format('M Y'),
                 'jumlah' => $jumlah
@@ -111,19 +110,27 @@ class LaporanController extends Controller
         }
 
         // ========== SURVEI DENGAN MARKER vs TANPA MARKER ==========
-        
+
         $totalSurvei = DataSurvei::count(); // Digunakan untuk perhitungan persentase
         $surveiDenganMarker = DataSurvei::has('lokasi')->count();
         $surveiTanpaMarker = DataSurvei::doesntHave('lokasi')->count();
 
         // ========== DATA UNTUK FILTER ==========
-        
+
         $tahunTersedia = DataSurvei::select(DB::raw('YEAR(created_at) as tahun'))
             ->distinct()
             ->orderBy('tahun', 'DESC')
             ->pluck('tahun');
-            
+
         $tipeSurvei = ['2D', '3D', 'HR', 'Lainnya'];
+
+        // Jika request AJAX untuk pagination survei terbaru
+        if ($request->ajax() && $request->has('survei_page')) {
+            return response()->json([
+                'html' => view('admin.partials.survei-terbaru-table', compact('surveiTerbaru'))->render(),
+                'pagination' => view('admin.partials.pagination-controls', ['paginator' => $surveiTerbaru, 'pageParam' => 'survei_page'])->render()
+            ]);
+        }
 
         return view('admin.laporan.index', compact(
             'laporanPerTipe',

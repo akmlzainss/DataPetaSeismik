@@ -30,44 +30,47 @@
             <section class="info-section">
                 <h2 class="section-title">Fitur Utama</h2>
 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                        </svg>
+                <div class="features-container">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Peta Interaktif</h3>
+                            <p>Visualisasi lokasi survei seismik di peta Indonesia dengan marker interaktif. Klik marker
+                                untuk
+                                melihat detail survei.</p>
+                        </div>
                     </div>
-                    <div class="feature-content">
-                        <h3>Peta Interaktif</h3>
-                        <p>Visualisasi lokasi survei seismik di peta Indonesia dengan marker interaktif. Klik marker untuk
-                            melihat detail survei.</p>
-                    </div>
-                </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
-                        </svg>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Katalog Data Survei</h3>
+                            <p>Daftar lengkap data survei dengan fitur pencarian dan filter berdasarkan tahun, tipe, dan
+                                wilayah.</p>
+                        </div>
                     </div>
-                    <div class="feature-content">
-                        <h3>Katalog Data Survei</h3>
-                        <p>Daftar lengkap data survei dengan fitur pencarian dan filter berdasarkan tahun, tipe, dan
-                            wilayah.</p>
-                    </div>
-                </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                        </svg>
-                    </div>
-                    <div class="feature-content">
-                        <h3>Gambar Pratinjau</h3>
-                        <p>Lihat gambar hasil survei dengan viewer interaktif yang mendukung zoom dan pan.</p>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Gambar Pratinjau</h3>
+                            <p>Lihat gambar hasil survei dengan viewer interaktif yang mendukung zoom dan pan.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -76,39 +79,43 @@
             <section class="info-section">
                 <h2 class="section-title">Cara Menggunakan</h2>
 
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Akses Halaman Beranda</h3>
-                        <p>Buka website dan Anda akan melihat halaman beranda dengan informasi umum tentang BBSPGL dan
-                            statistik data survei.</p>
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Akses Halaman Beranda</h3>
+                            <p>Buka website dan Anda akan melihat halaman beranda dengan informasi umum tentang BBSPGL dan
+                                statistik data survei.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Jelajahi Katalog</h3>
-                        <p>Klik menu "Katalog" untuk melihat daftar semua data survei. Gunakan fitur pencarian dan filter
-                            untuk menemukan data yang Anda butuhkan.</p>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Jelajahi Katalog</h3>
+                            <p>Klik menu "Katalog" untuk melihat daftar semua data survei. Gunakan fitur pencarian dan
+                                filter
+                                untuk menemukan data yang Anda butuhkan.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Lihat Detail Survei</h3>
-                        <p>Klik tombol "Lihat Detail" pada kartu survei untuk melihat informasi lengkap, gambar pratinjau,
-                            dan mengakses file survei.</p>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Lihat Detail Survei</h3>
+                            <p>Klik tombol "Lihat Detail" pada kartu survei untuk melihat informasi lengkap, gambar
+                                pratinjau,
+                                dan mengakses file survei.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Gunakan Peta Interaktif</h3>
-                        <p>Klik menu "Peta" untuk melihat visualisasi lokasi survei di peta Indonesia. Klik marker untuk
-                            melihat informasi survei.</p>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Gunakan Peta Interaktif</h3>
+                            <p>Klik menu "Peta" untuk melihat visualisasi lokasi survei di peta Indonesia. Klik marker untuk
+                                melihat informasi survei.</p>
+                        </div>
                     </div>
                 </div>
             </section>

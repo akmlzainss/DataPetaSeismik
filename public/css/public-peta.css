@@ -2,6 +2,24 @@
    PETA SEBARAN SURVEI - PROFESSIONAL STYLES
    ======================================== */
 
+/* ====================== CUSTOM SCROLLBAR - YELLOW THEME ====================== */
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #ffed00; /* Yellow matching navbar */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #ffd500; /* Slightly darker yellow on hover */
+}
+
 /* --- CRITICAL: Ensure Navbar is Always Visible --- */
 body .navbar {
     display: block !important;
@@ -361,6 +379,50 @@ body .navbar {
     overflow: hidden;
 }
 
+/* Support for Quill editor content in popup description */
+.popup-description p {
+    margin: 0 0 0.5rem 0;
+    color: inherit;
+}
+
+.popup-description strong {
+    font-weight: 600;
+    color: #495057;
+}
+
+.popup-description em {
+    font-style: italic;
+}
+
+.popup-description ul,
+.popup-description ol {
+    margin: 0.5rem 0;
+    padding-left: 1.2rem;
+}
+
+.popup-description li {
+    margin-bottom: 0.25rem;
+}
+
+.popup-description h1,
+.popup-description h2,
+.popup-description h3,
+.popup-description h4,
+.popup-description h5,
+.popup-description h6 {
+    margin: 0.5rem 0 0.25rem 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+.popup-description blockquote {
+    margin: 0.5rem 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid #dee2e6;
+    color: #6c757d;
+    font-style: italic;
+}
+
 .popup-actions {
     display: flex;
     justify-content: space-between;
@@ -377,21 +439,31 @@ body .navbar {
 
 .popup-detail-btn {
     padding: 0.5rem 1rem;
-    background: #3779C9;
-    color: white;
-    text-decoration: none;
+    background: #3779C9 !important;
+    color: white !important;
+    text-decoration: none !important;
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(55, 121, 201, 0.2);
+    border: none;
+    outline: none;
 }
 
 .popup-detail-btn:hover {
-    background: #2c5aa0;
+    background: #2c5aa0 !important;
     box-shadow: 0 4px 8px rgba(55, 121, 201, 0.3);
     transform: translateY(-1px);
-    color: white;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.popup-detail-btn:visited,
+.popup-detail-btn:focus,
+.popup-detail-btn:active {
+    color: white !important;
+    text-decoration: none !important;
 }
 
 /* --- Responsive --- */

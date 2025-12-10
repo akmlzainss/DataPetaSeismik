@@ -94,9 +94,9 @@
                                 <span class="meta-badge">{{ $survey->wilayah }}</span>
                             </div>
 
-                            <p class="survey-description">
-                                {!! Str::limit(strip_tags($survey->deskripsi), 150) !!}
-                            </p>
+                            <div class="survey-description">
+                                {!! Str::limit($survey->deskripsi, 200) !!}
+                            </div>
 
                             <div class="survey-actions">
                                 <span class="survey-year">{{ $survey->tahun }}</span>
@@ -112,6 +112,12 @@
             <!-- Pagination -->
             <div class="pagination-wrapper">
                 {{ $surveys->links() }}
+                @if ($surveys->hasPages())
+                    <div class="pagination-info">
+                         {{ $surveys->firstItem() }} - {{ $surveys->lastItem() }} dari {{ $surveys->total() }}
+                        survei
+                    </div>
+                @endif
             </div>
         @else
             <div class="no-results">

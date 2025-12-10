@@ -47,7 +47,7 @@
                     </div>
                     <div class="stat-info">
                         <div class="stat-value">{{ $stats['tahun_terbaru'] }}</div>
-                        <div class="stat-label">Pembaruan Terakhir</div>
+                        <div class="stat-label">Data Tahun Terakhir</div>
                     </div>
                 </div>
             </div>
@@ -133,8 +133,8 @@
             // BATAS PETA INDONESIA (DIPERLUAS)
             // Diperluas agar wilayah laut (terutama Aceh/Barat dan Utara) tidak terpotong
             const indonesiaBounds = L.latLngBounds(
-                L.latLng(-15.0, 90.0),  // South-West (Lebih ke barat dan selatan)
-                L.latLng(10.0, 145.0)   // North-East (Lebih ke utara dan timur)
+                L.latLng(-15.0, 90.0), // South-West (Lebih ke barat dan selatan)
+                L.latLng(10.0, 145.0) // North-East (Lebih ke utara dan timur)
             );
 
             // Initialize map - same as admin
@@ -194,11 +194,22 @@
                     title: judul
                 });
 
-                // Create popup content with proper escaping
+                // Create popup content with Quill editor support
                 const safeJudul = judul ? judul.replace(/</g, '&lt;').replace(/>/g, '&gt;') :
                     'Judul tidak tersedia';
-                const safeDeskripsi = deskripsi ? deskripsi.substring(0, 150).replace(/</g, '&lt;').replace(/>/g,
-                    '&gt;') : 'Deskripsi tidak tersedia';
+
+                // Process deskripsi to support Quill HTML content
+                let processedDeskripsi = 'Deskripsi tidak tersedia';
+                if (deskripsi) {
+                    // Create a temporary div to parse HTML and extract text preview
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = deskripsi;
+
+                    // Get text content and limit to 150 characters
+                    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                    processedDeskripsi = textContent.length > 150 ?
+                        textContent.substring(0, 150) + '...' : textContent;
+                }
 
                 const popupContent = `
 <div class="popup-content">
@@ -209,7 +220,7 @@
 <span class="popup-badge">${tahun}</span>
 </div>
 
-<p class="popup-description">${safeDeskripsi}</p>
+<p class="popup-description">${processedDeskripsi}</p>
 
 <div class="popup-actions">
 <span class="popup-coordinates">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
