@@ -73,13 +73,14 @@ class DashboardController extends Controller
             ->get();
 
         // ========== PERBANDINGAN BULAN INI VS BULAN LALU ==========
-        $surveiBulanLalu = DataSurvei::whereMonth('created_at', now()->subMonth()->month)
-            ->whereYear('created_at', now()->subMonth()->year)
+        $bulanLalu = now()->subMonth();
+        $surveiBulanLalu = DataSurvei::whereMonth('created_at', $bulanLalu->month)
+            ->whereYear('created_at', $bulanLalu->year)
             ->count();
 
         $pertumbuhanBulanan = $surveiBulanLalu > 0
             ? round((($surveiBulanIni - $surveiBulanLalu) / $surveiBulanLalu) * 100, 1)
-            : 0;
+            : ($surveiBulanIni > 0 ? 100 : 0);
 
         // ========== STATUS MARKER (QUICK INFO) ==========
         $surveiDenganMarker = DataSurvei::has('lokasi')->count();

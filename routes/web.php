@@ -54,22 +54,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
         ->name('data_survei.show_json');
 
 
-    // Lokasi Marker — DIPERBAIKI: nama route jadi sesuai yang dipakai di controller & view
-    Route::resource('lokasi-marker', LokasiMarkerController::class)
-        ->parameters(['lokasi-marker' => 'id'])  // pakai id langsung, lebih simpel
-        ->except(['show'])                    // tidak perlu show
-        ->names([
-            'index'   => 'lokasi_marker.index',
-            'store'   => 'lokasi_marker.store',
-            'destroy' => 'lokasi_marker.destroy',
-        ]);
-
-    // Alternatif: Kalau mau pakai route manual (lebih aman & jelas)
+    // Lokasi Marker
     Route::get('/lokasi-marker', [LokasiMarkerController::class, 'index'])->name('lokasi_marker.index');
     Route::post('/lokasi-marker', [LokasiMarkerController::class, 'store'])->name('lokasi_marker.store');
     Route::delete('/lokasi-marker/{id}', [LokasiMarkerController::class, 'destroy'])->name('lokasi_marker.destroy');
-
-    // Route untuk API Geocoding (dengan Server-side Cache)
     Route::get('/geocode', [LokasiMarkerController::class, 'geocode'])->name('geocode');
 
 
@@ -79,8 +67,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
     // Export Routes
     Route::get('/export/excel', [ExportController::class, 'exportExcel'])->name('export.excel');
     Route::get('/export/pdf', [ExportController::class, 'exportPdf'])->name('export.pdf');
-
-
 
     // Pengaturan
     Route::controller(PengaturanController::class)
@@ -92,18 +78,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
             Route::put('/password', 'updatePassword')->name('update.password');
             Route::post('/clear-cache', 'clearCache')->name('clear.cache');
         });
-
-
-
-    // routes/web.php atau admin.php
-    Route::post('/admin/upload-tinymce-image', function (Request $request) {
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('tinymce', 'public');
-            return response()->json(['location' => asset('storage/' . $path)]);
-        }
-        return response()->json(['error' => 'No file'], 400);
-    })->middleware('auth:admin');
 
     // Logout
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');

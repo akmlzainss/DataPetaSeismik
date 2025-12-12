@@ -3,15 +3,14 @@
 namespace App\Jobs;
 
 use App\Models\DataSurvei;
+use App\Services\ImageOptimizationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage; // Pastikan ini ada
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessSurveiImage implements ShouldQueue
 {
@@ -35,58 +34,50 @@ class ProcessSurveiImage implements ShouldQueue
 
         $originalPath = $survei->gambar_pratinjau;
         // Ganti ke cara Laravel Storage
-        $fullPath = Storage::disk('public')->path($originalPath); 
-        
+        $fullPath = Storage::disk('public')->path($originalPath);
+
         if (!Storage::disk('public')->exists($originalPath)) {
-             Log::warning("File gambar asli tidak ditemukan: {$originalPath}");
-             return;
+            Log::warning("File gambar asli tidak ditemukan: {$originalPath}");
+            return;
         }
 
         $fileName = pathinfo($originalPath, PATHINFO_FILENAME);
-        $manager = new ImageManager(new Driver());
+        $imageService = new ImageOptimizationService();
 
         try {
-            // --- 1. PROSES THUMBNAIL (400x300, cepat load di Index) ---
+            // Create thumbnail path
             $thumbDir = 'gambar_pratinjau/thumb/';
-            Storage::disk('public')->makeDirectory($thumbDir); // Pastikan folder ada
-            $thumbPath = $thumbDir . "{$fileName}_thumb.webp"; // Ganti ke WEBP agar lebih kecil
-            $thumbFullPath = Storage::disk('public')->path($thumbPath);
+            $thumbPath = $thumbDir . "{$fileName}_thumb.webp";
 
-            $thumb = $manager->read($fullPath);
-            // Resize ke max 400x300, lalu di-canvas. Ini sudah OK.
-            $thumb->resize(380, 280, fn($c) => $c->aspectRatio()->upsize());
-            $thumb->resizeCanvas(400, 300, 'center', false, '#0f172a');
-            $thumb->toWebp(75)->save($thumbFullPath); // Kompresi WEBP 75
-
-            // --- 2. PROSES MEDIUM (Untuk OpenSeadragon: Max Height 5000px, Max Quality) ---
+            // Create medium path
             $mediumDir = 'gambar_pratinjau/medium/';
-            Storage::disk('public')->makeDirectory($mediumDir); // Pastikan folder ada
-            $mediumPath = $mediumDir . "{$fileName}_medium.jpg"; // Tetap JPG agar lebih kompatibel dengan OSD
-            $mediumFullPath = Storage::disk('public')->path($mediumPath);
+            $mediumPath = $mediumDir . "{$fileName}_medium.jpg";
 
-            $medium = $manager->read($fullPath);
+            // Process thumbnail using service
+            $thumbSuccess = $imageService->createThumbnail($originalPath, $thumbPath, 400, 300, 80);
 
-            // Perbaikan: Batasi TINGGI maksimal 5000px DAN LEBAR maksimal 4000px (atau sesuaikan)
-            // Tujuannya agar gambar tidak terlalu tinggi/lebar sehingga OpenSeadragon bisa memprosesnya
-            $medium->resize(4000, 5000, function ($constraint) {
-                 $constraint->aspectRatio();
-                 $constraint->upsize(); // Jangan pernah naikkan ukuran
-            });
+            // Process medium image using service
+            $mediumSuccess = $imageService->createMedium($originalPath, $mediumPath, 4000, 5000, 85);
 
-            // Kompresi JPEG dengan kualitas 80 (cukup baik, tapi ukuran file lebih kecil)
-            $medium->toJpeg(80)->save($mediumFullPath); 
+            // Update database only if both processes succeeded
+            if ($thumbSuccess && $mediumSuccess) {
+                $survei->update([
+                    'gambar_thumbnail' => $thumbPath,
+                    'gambar_medium' => $mediumPath,
+                ]);
 
-            $survei->update([
-                'gambar_thumbnail' => $thumbPath,
-                'gambar_medium'    => $mediumPath,
-            ]);
-
-            Log::info("Sukses proses gambar ID {$this->surveiId}. Thumbnail: {$thumbPath}, Medium: {$mediumPath}");
-
+                Log::info("Successfully processed images for survey ID {$this->surveiId}. Thumbnail: {$thumbPath}, Medium: {$mediumPath}");
+            } else {
+                Log::warning("Partial failure processing images for survey ID {$this->surveiId}. Thumb: " . ($thumbSuccess ? 'OK' : 'FAILED') . ", Medium: " . ($mediumSuccess ? 'OK' : 'FAILED'));
+            }
         } catch (\Exception $e) {
-            Log::error("Gagal proses gambar ID {$this->surveiId}: " . $e->getMessage());
-            // Optional: Hapus file yang mungkin setengah jadi jika terjadi error
-             Storage::disk('public')->delete([$thumbPath ?? null, $mediumPath ?? null]);
+            Log::error("Failed to process images for survey ID {$this->surveiId}: " . $e->getMessage());
+
+            // Clean up any partial files
+            Storage::disk('public')->delete([
+                $thumbPath ?? null,
+                $mediumPath ?? null
+            ]);
         }
     }
 }

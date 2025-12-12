@@ -21,14 +21,22 @@ class LaporanController extends Controller
         $tahun = $request->input('tahun', date('Y'));
         $bulan = $request->input('bulan');
         $tipe = $request->input('tipe');
+        $exportRange = $request->input('export_range');
 
         // ========== LAPORAN PER TIPE SURVEI ==========
 
         $laporanPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
-            ->when($tahun, function ($query) use ($tahun) {
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
             })
-            ->when($bulan, function ($query) use ($bulan) {
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
                 return $query->whereMonth('created_at', $bulan);
             })
             ->groupBy('tipe')
@@ -52,10 +60,17 @@ class LaporanController extends Controller
         // ========== LAPORAN PER WILAYAH ==========
 
         $laporanPerWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
-            ->when($tahun, function ($query) use ($tahun) {
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
             })
-            ->when($bulan, function ($query) use ($bulan) {
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
                 return $query->whereMonth('created_at', $bulan);
             })
             ->when($tipe, function ($query) use ($tipe) {
@@ -82,10 +97,17 @@ class LaporanController extends Controller
         // ========== LAPORAN SURVEI TERBARU (DENGAN PAGINATION) ==========
 
         $surveiTerbaru = DataSurvei::with(['pengunggah', 'lokasi'])
-            ->when($tahun, function ($query) use ($tahun) {
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
             })
-            ->when($bulan, function ($query) use ($bulan) {
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
                 return $query->whereMonth('created_at', $bulan);
             })
             ->when($tipe, function ($query) use ($tipe) {
@@ -111,9 +133,27 @@ class LaporanController extends Controller
 
         // ========== SURVEI DENGAN MARKER vs TANPA MARKER ==========
 
-        $totalSurvei = DataSurvei::count(); // Digunakan untuk perhitungan persentase
-        $surveiDenganMarker = DataSurvei::has('lokasi')->count();
-        $surveiTanpaMarker = DataSurvei::doesntHave('lokasi')->count();
+        $totalSurveiQuery = DataSurvei::query()
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            });
+
+        $totalSurvei = $totalSurveiQuery->count();
+        $surveiDenganMarker = (clone $totalSurveiQuery)->has('lokasi')->count();
+        $surveiTanpaMarker = (clone $totalSurveiQuery)->doesntHave('lokasi')->count();
 
         // ========== DATA UNTUK FILTER ==========
 
@@ -146,7 +186,8 @@ class LaporanController extends Controller
             'tipeSurvei',
             'tahun',
             'bulan',
-            'tipe'
+            'tipe',
+            'exportRange'
         ));
     }
 
@@ -160,5 +201,88 @@ class LaporanController extends Controller
             'message' => 'Fitur export sedang dalam pengembangan',
             'status' => 'coming_soon'
         ]);
+    }
+
+    /**
+     * Convert export range string to date range
+     */
+    private function getDateRangeFromString($rangeString)
+    {
+        $now = Carbon::now();
+        $start = null;
+        $end = $now->copy();
+
+        switch ($rangeString) {
+            // Weeks
+            case '1_week':
+                $start = $now->copy()->subWeek();
+                break;
+            case '2_weeks':
+                $start = $now->copy()->subWeeks(2);
+                break;
+            case '3_weeks':
+                $start = $now->copy()->subWeeks(3);
+                break;
+
+            // Months
+            case '1_month':
+                $start = $now->copy()->subMonth();
+                break;
+            case '2_months':
+                $start = $now->copy()->subMonths(2);
+                break;
+            case '3_months':
+                $start = $now->copy()->subMonths(3);
+                break;
+            case '4_months':
+                $start = $now->copy()->subMonths(4);
+                break;
+            case '5_months':
+                $start = $now->copy()->subMonths(5);
+                break;
+            case '6_months':
+                $start = $now->copy()->subMonths(6);
+                break;
+            case '7_months':
+                $start = $now->copy()->subMonths(7);
+                break;
+            case '8_months':
+                $start = $now->copy()->subMonths(8);
+                break;
+            case '9_months':
+                $start = $now->copy()->subMonths(9);
+                break;
+            case '10_months':
+                $start = $now->copy()->subMonths(10);
+                break;
+            case '11_months':
+                $start = $now->copy()->subMonths(11);
+                break;
+
+            // Years
+            case '1_year':
+                $start = $now->copy()->subYear();
+                break;
+            case '2_years':
+                $start = $now->copy()->subYears(2);
+                break;
+            case '3_years':
+                $start = $now->copy()->subYears(3);
+                break;
+            case '4_years':
+                $start = $now->copy()->subYears(4);
+                break;
+            case '5_years':
+                $start = $now->copy()->subYears(5);
+                break;
+
+            default:
+                return null;
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end
+        ];
     }
 }
