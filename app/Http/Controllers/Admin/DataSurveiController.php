@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
 use App\Http\Requests\DataSurveiRequest;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -74,7 +75,7 @@ class DataSurveiController extends Controller
         $data['diunggah_oleh'] = Auth::guard('admin')->id();
 
         if (isset($data['deskripsi'])) {
-            $data['deskripsi'] = $this->sanitizeHtml($data['deskripsi']);
+            $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
         }
 
         // Handle upload gambar pratinjau (original)
@@ -106,7 +107,7 @@ class DataSurveiController extends Controller
     {
         // Pastikan relasi pengunggah dan lokasi dimuat
         $dataSurvei->load('pengunggah', 'lokasi');
-        $safeDeskripsi = $this->sanitizeHtml($dataSurvei->deskripsi);
+        $safeDeskripsi = HtmlSanitizerService::sanitize($dataSurvei->deskripsi);
         return view('admin.data_survei.show', compact('dataSurvei', 'safeDeskripsi'));
     }
 
@@ -135,7 +136,7 @@ class DataSurveiController extends Controller
         $data = $request->validated();
 
         if (isset($data['deskripsi'])) {
-            $data['deskripsi'] = $this->sanitizeHtml($data['deskripsi']);
+            $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
         }
 
         if ($request->hasFile('gambar_pratinjau')) {
@@ -188,93 +189,19 @@ class DataSurveiController extends Controller
             ->with('success', 'Data survei berhasil dihapus!');
     }
 
-    private function sanitizeHtml(?string $html): ?string
-{
-    if ($html === null) return null;
+    /**
+     * Generate search-friendly excerpt from survey description
+     */
+    private function generateExcerpt(DataSurvei $survei): ?string
+    {
+        return HtmlSanitizerService::excerpt($survei->deskripsi, 200);
+    }
 
-    // Izinkan semua tag yang dihasilkan Quill
-    $allowedTags = '<div><p><br><strong><b><em><i><u><s><strike><span><ul><li><ol><blockquote><h1><h2><h3><h4><h5><h6><a><table><thead><tbody><tr><td><th><code><pre><img>';
-    
-    // Hapus tag yang tidak diizinkan
-    $clean = strip_tags($html, $allowedTags);
-
-    // Hapus event handlers (XSS prevention) dan javascript links
-    $clean = preg_replace('/on\w+\s*=\s*(".*?"|\'.*?\')/i', '', $clean);
-    $clean = preg_replace('/href\s*=\s*("|\')\s*javascript:[^"\']*(\1)/i', 'href="#"', $clean);
-    
-    // Perbaikan PENTING: Proses atribut CLASS, STYLE, SRC, ALT, dan HREF.
-    // Quill.js sangat bergantung pada CLASS (misalnya ql-align-center, ql-syntax)
-    
-    // Regex callback untuk memproses atribut hanya pada tag yang relevan
-    $clean = preg_replace_callback('/<(\w+)\s*([^>]*?)>/i', function ($m) {
-        $tag = $m[1];
-        $attributes = $m[2]; 
-
-        // Tag yang atributnya harus diperiksa
-        $tagsToCheck = ['div', 'p', 'span', 'img', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote', 'pre', 'code'];
-        if (!in_array(strtolower($tag), $tagsToCheck)) {
-            return "<$tag>"; // Kembali tanpa atribut (kecuali sudah di-strip_tags)
-        }
-        
-        $new_attributes = [];
-        // Regex untuk menangkap atribut yang diizinkan (class, style, href, src, alt, width, height)
-        if (preg_match_all('/(class|style|href|src|alt|width|height)\s*=\s*("([^"]*)"|\'([^\']*)\')/i', $attributes, $matches, PREG_SET_ORDER)) {
-            
-            foreach ($matches as $match) {
-                $attr_name = strtolower($match[1]);
-                // Ambil nilai dari double quote (match[3]) atau single quote (match[4])
-                $attr_value = $match[3] ?? $match[4] ?? ''; 
-
-                if ($attr_name === 'style') {
-                    // Sanitasi properti CSS yang diizinkan (penting untuk warna dan alignment)
-                    $allowedProps = ['color', 'background-color', 'text-align', 'font-size', 'line-height', 'width', 'height', 'border', 'padding', 'margin']; 
-                    $rules = array_filter(array_map('trim', explode(';', $attr_value)));
-                    $kept = [];
-                    foreach ($rules as $r) {
-                        if (strpos($r, ':') !== false) {
-                            [$prop, $val] = array_map('trim', explode(':', $r, 2));
-                            if (in_array(strtolower($prop), $allowedProps) && $val !== '') {
-                                $kept[] = $prop . ':' . $val;
-                            }
-                        }
-                    }
-                    if (count($kept)) {
-                        $new_attributes[] = 'style="' . implode(';', $kept) . '"';
-                    }
-                } elseif (in_array($attr_name, ['class', 'src', 'alt', 'width', 'height'])) {
-                    // Izinkan class (untuk Quill styles), src/alt (untuk image)
-                    $new_attributes[] = $match[0];
-                } elseif ($attr_name === 'href') {
-                    // Izinkan href
-                    $new_attributes[] = $match[0];
-                }
-            }
-        }
-        
-        // Tambah target blank ke tag <a> jika ada href, atau jika belum ada
-        if (strtolower($tag) === 'a') {
-            if (!preg_match('/target=["\']_blank["\']/i', $attributes)) {
-                 $new_attributes[] = 'target="_blank"';
-            }
-            if (!preg_match('/rel=["\']noopener noreferrer["\']/i', $attributes)) {
-                 $new_attributes[] = 'rel="noopener noreferrer"';
-            }
-        }
-        
-        // Gabungkan kembali tag dengan atribut yang aman
-        if (empty($new_attributes)) {
-            return "<$tag>";
-        } else {
-            // Hapus duplikasi atribut dan gabungkan
-            $new_attributes = array_unique($new_attributes);
-            return "<$tag " . implode(' ', $new_attributes) . ">";
-        }
-    }, $clean);
-
-
-    // Hapus tag yang kosong, kecuali <br> dan <img>
-    $clean = preg_replace('/<(\w+)\s*(?:\/|[^>]*?)>[\s|&nbsp;]*<\/\1>/', '', $clean);
-
-    return $clean;
-}
+    /**
+     * Get plain text version of description for meta tags
+     */
+    private function getPlainDescription(DataSurvei $survei): ?string
+    {
+        return HtmlSanitizerService::toPlainText($survei->deskripsi, 160);
+    }
 }

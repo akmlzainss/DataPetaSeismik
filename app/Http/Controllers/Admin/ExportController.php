@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
-use App\Models\Admin;
+use App\Services\HtmlSanitizerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -23,23 +23,40 @@ class ExportController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        // Handle new export range parameters
+        $exportRange = $request->input('export_range');
+        $exportTipe = $request->input('export_tipe');
+
+        // Legacy parameters for backward compatibility
         $tahun = $request->input('tahun');
         $bulan = $request->input('bulan');
-        $tipe = $request->input('tipe');
+        $tipe = $request->input('tipe') ?: $exportTipe;
 
-        // Ambil data survei dengan filter
-        $surveiData = DataSurvei::with(['pengunggah', 'lokasi'])
-            ->when($tahun, function ($query) use ($tahun) {
-                return $query->whereYear('created_at', $tahun);
+        // Build query with time range filter
+        $query = DataSurvei::with(['pengunggah', 'lokasi']);
+
+        // Apply time range filter
+        if ($exportRange) {
+            $dateRange = $this->getDateRangeFromString($exportRange);
+            if ($dateRange) {
+                $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            }
+        } else {
+            // Legacy filters
+            $query->when($tahun, function ($q) use ($tahun) {
+                return $q->whereYear('created_at', $tahun);
             })
-            ->when($bulan, function ($query) use ($bulan) {
-                return $query->whereMonth('created_at', $bulan);
-            })
-            ->when($tipe, function ($query) use ($tipe) {
-                return $query->where('tipe', $tipe);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+                ->when($bulan, function ($q) use ($bulan) {
+                    return $q->whereMonth('created_at', $bulan);
+                });
+        }
+
+        // Apply type filter
+        $query->when($tipe, function ($q) use ($tipe) {
+            return $q->where('tipe', $tipe);
+        });
+
+        $surveiData = $query->orderBy('created_at', 'desc')->get();
 
         // Statistik
         $totalSurvei = $surveiData->count();
@@ -54,8 +71,12 @@ class ExportController extends Controller
         // Header perusahaan
         $this->addCompanyHeader($sheet);
 
-        // Judul laporan
-        $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        // Generate filter text
+        if ($exportRange) {
+            $filterText = $this->getExportRangeDescription($exportRange, $tipe);
+        } else {
+            $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        }
         $sheet->setCellValue('A8', 'LAPORAN DATA SURVEI SEISMIK');
         $sheet->setCellValue('A9', $filterText);
         $sheet->mergeCells('A8:H8');
@@ -175,22 +196,40 @@ class ExportController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Handle new export range parameters
+        $exportRange = $request->input('export_range');
+        $exportTipe = $request->input('export_tipe');
+
+        // Legacy parameters for backward compatibility
         $tahun = $request->input('tahun');
         $bulan = $request->input('bulan');
-        $tipe = $request->input('tipe');
+        $tipe = $request->input('tipe') ?: $exportTipe;
 
-        // Ambil data survei dengan filter dan pagination untuk PDF
-        $surveiData = DataSurvei::with(['pengunggah', 'lokasi'])
-            ->when($tahun, function ($query) use ($tahun) {
-                return $query->whereYear('created_at', $tahun);
+        // Build query with time range filter
+        $query = DataSurvei::with(['pengunggah', 'lokasi']);
+
+        // Apply time range filter
+        if ($exportRange) {
+            $dateRange = $this->getDateRangeFromString($exportRange);
+            if ($dateRange) {
+                $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            }
+        } else {
+            // Legacy filters
+            $query->when($tahun, function ($q) use ($tahun) {
+                return $q->whereYear('created_at', $tahun);
             })
-            ->when($bulan, function ($query) use ($bulan) {
-                return $query->whereMonth('created_at', $bulan);
-            })
-            ->when($tipe, function ($query) use ($tipe) {
-                return $query->where('tipe', $tipe);
-            })
-            ->orderBy('created_at', 'desc')
+                ->when($bulan, function ($q) use ($bulan) {
+                    return $q->whereMonth('created_at', $bulan);
+                });
+        }
+
+        // Apply type filter
+        $query->when($tipe, function ($q) use ($tipe) {
+            return $q->where('tipe', $tipe);
+        });
+
+        $surveiData = $query->orderBy('created_at', 'desc')
             ->limit(100) // Batasi untuk PDF
             ->get();
 
@@ -229,7 +268,12 @@ class ExportController extends Controller
                 return $query->where('tipe', $tipe);
             })->count();
 
-        $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        // Generate filter text
+        if ($exportRange) {
+            $filterText = $this->getExportRangeDescription($exportRange, $tipe);
+        } else {
+            $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        }
 
         $data = [
             'surveiData' => $surveiData,
@@ -305,5 +349,124 @@ class ExportController extends Controller
         }
 
         return empty($filters) ? 'Semua Data' : implode(' | ', $filters);
+    }
+
+    /**
+     * Convert export range string to date range
+     */
+    private function getDateRangeFromString($rangeString)
+    {
+        $now = Carbon::now();
+        $start = null;
+        $end = $now->copy();
+
+        switch ($rangeString) {
+            // Weeks
+            case '1_week':
+                $start = $now->copy()->subWeek();
+                break;
+            case '2_weeks':
+                $start = $now->copy()->subWeeks(2);
+                break;
+            case '3_weeks':
+                $start = $now->copy()->subWeeks(3);
+                break;
+
+            // Months
+            case '1_month':
+                $start = $now->copy()->subMonth();
+                break;
+            case '2_months':
+                $start = $now->copy()->subMonths(2);
+                break;
+            case '3_months':
+                $start = $now->copy()->subMonths(3);
+                break;
+            case '4_months':
+                $start = $now->copy()->subMonths(4);
+                break;
+            case '5_months':
+                $start = $now->copy()->subMonths(5);
+                break;
+            case '6_months':
+                $start = $now->copy()->subMonths(6);
+                break;
+            case '7_months':
+                $start = $now->copy()->subMonths(7);
+                break;
+            case '8_months':
+                $start = $now->copy()->subMonths(8);
+                break;
+            case '9_months':
+                $start = $now->copy()->subMonths(9);
+                break;
+            case '10_months':
+                $start = $now->copy()->subMonths(10);
+                break;
+            case '11_months':
+                $start = $now->copy()->subMonths(11);
+                break;
+
+            // Years
+            case '1_year':
+                $start = $now->copy()->subYear();
+                break;
+            case '2_years':
+                $start = $now->copy()->subYears(2);
+                break;
+            case '3_years':
+                $start = $now->copy()->subYears(3);
+                break;
+            case '4_years':
+                $start = $now->copy()->subYears(4);
+                break;
+            case '5_years':
+                $start = $now->copy()->subYears(5);
+                break;
+
+            default:
+                return null;
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end
+        ];
+    }
+
+    /**
+     * Get human readable description for export range
+     */
+    private function getExportRangeDescription($rangeString, $tipe = null)
+    {
+        $descriptions = [
+            '1_week' => '1 Minggu Terakhir',
+            '2_weeks' => '2 Minggu Terakhir',
+            '3_weeks' => '3 Minggu Terakhir',
+            '1_month' => '1 Bulan Terakhir',
+            '2_months' => '2 Bulan Terakhir',
+            '3_months' => '3 Bulan Terakhir',
+            '4_months' => '4 Bulan Terakhir',
+            '5_months' => '5 Bulan Terakhir',
+            '6_months' => '6 Bulan Terakhir',
+            '7_months' => '7 Bulan Terakhir',
+            '8_months' => '8 Bulan Terakhir',
+            '9_months' => '9 Bulan Terakhir',
+            '10_months' => '10 Bulan Terakhir',
+            '11_months' => '11 Bulan Terakhir',
+            '1_year' => '1 Tahun Terakhir',
+            '2_years' => '2 Tahun Terakhir',
+            '3_years' => '3 Tahun Terakhir',
+            '4_years' => '4 Tahun Terakhir',
+            '5_years' => '5 Tahun Terakhir'
+        ];
+
+        $description = $descriptions[$rangeString] ?? 'Semua Data';
+
+        if ($tipe) {
+            $description .= " - Tipe: $tipe";
+        }
+
+        return $description;
     }
 }

@@ -93,6 +93,137 @@
             color: #999;
             background: #f8f9fa;
         }
+
+        /* Period Button Styles */
+        .period-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .period-btn:hover {
+            background: #f8f9fa;
+            border-color: #003366;
+        }
+
+        .period-btn.active {
+            background: #003366;
+            color: white;
+            border-color: #003366;
+        }
+
+        .period-details {
+            margin-top: 8px;
+        }
+
+        .period-details summary {
+            padding: 4px 0;
+            font-weight: 500;
+        }
+
+        .period-details summary:hover {
+            color: #003366;
+        }
+
+        .period-details[open] summary {
+            margin-bottom: 8px;
+            color: #003366;
+        }
+
+        /* Export Period Button Styles */
+        .export-period-btn {
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #333;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .export-period-btn:hover {
+            background: #f8f9fa;
+            border-color: #003366;
+        }
+
+        .export-period-btn.active {
+            background: #003366;
+            color: white;
+            border-color: #003366;
+        }
+
+        /* Period Tab Styles */
+        .period-tab-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            color: #666;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .period-tab-btn:hover {
+            background: #f8f9fa;
+            border-color: #003366;
+            color: #003366;
+        }
+
+        .period-tab-btn.active {
+            background: #003366;
+            color: white;
+            border-color: #003366;
+            box-shadow: 0 2px 4px rgba(0, 51, 102, 0.2);
+        }
+
+        .period-dropdown {
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .period-dropdown:focus {
+            border-color: #003366;
+            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.1);
+        }
+
+        /* Export Tab Styles */
+        .export-tab-btn {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #666;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .export-tab-btn:hover {
+            background: #f8f9fa;
+            border-color: #003366;
+            color: #003366;
+        }
+
+        .export-tab-btn.active {
+            background: #003366;
+            color: white;
+            border-color: #003366;
+        }
+
+        .export-dropdown {
+            width: 100%;
+            font-size: 12px;
+        }
     </style>
 @endpush
 
@@ -109,9 +240,96 @@
 
         <form method="GET" action="{{ route('admin.laporan.index') }}">
             <div class="filter-grid">
+                <div class="filter-item" style="grid-column: span 2;">
+                    <label>Periode Waktu</label>
+
+                    {{-- Period Category Tabs --}}
+                    <div class="period-tabs" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px;">
+                        <button type="button" class="period-tab-btn" data-category="all"
+                            onclick="setPeriodCategory('all')">
+                            Semua
+                        </button>
+                        <button type="button" class="period-tab-btn" data-category="weekly"
+                            onclick="setPeriodCategory('weekly')">
+                            Mingguan
+                        </button>
+                        <button type="button" class="period-tab-btn" data-category="monthly"
+                            onclick="setPeriodCategory('monthly')">
+                            Bulanan
+                        </button>
+                        <button type="button" class="period-tab-btn" data-category="yearly"
+                            onclick="setPeriodCategory('yearly')">
+                            Tahunan
+                        </button>
+                        <button type="button" class="period-tab-btn" data-category="manual"
+                            onclick="setPeriodCategory('manual')">
+                            Manual
+                        </button>
+                    </div>
+
+                    {{-- Contextual Period Dropdown --}}
+                    <div id="periodDropdownContainer" style="margin-bottom: 8px;">
+                        {{-- Weekly Options --}}
+                        <select name="export_range" id="weeklyPeriod" class="form-select period-dropdown"
+                            style="display: none;">
+                            <option value="1_week" {{ request('export_range') == '1_week' ? 'selected' : '' }}>1 Minggu
+                                Terakhir</option>
+                            <option value="2_weeks" {{ request('export_range') == '2_weeks' ? 'selected' : '' }}>2 Minggu
+                                Terakhir</option>
+                            <option value="3_weeks" {{ request('export_range') == '3_weeks' ? 'selected' : '' }}>3 Minggu
+                                Terakhir</option>
+                        </select>
+
+                        {{-- Monthly Options --}}
+                        <select name="export_range" id="monthlyPeriod" class="form-select period-dropdown"
+                            style="display: none;">
+                            <option value="1_month" {{ request('export_range') == '1_month' ? 'selected' : '' }}>1 Bulan
+                                Terakhir</option>
+                            <option value="2_months" {{ request('export_range') == '2_months' ? 'selected' : '' }}>2 Bulan
+                                Terakhir</option>
+                            <option value="3_months" {{ request('export_range') == '3_months' ? 'selected' : '' }}>3 Bulan
+                                Terakhir</option>
+                            <option value="4_months" {{ request('export_range') == '4_months' ? 'selected' : '' }}>4 Bulan
+                                Terakhir</option>
+                            <option value="5_months" {{ request('export_range') == '5_months' ? 'selected' : '' }}>5 Bulan
+                                Terakhir</option>
+                            <option value="6_months" {{ request('export_range') == '6_months' ? 'selected' : '' }}>6 Bulan
+                                Terakhir</option>
+                            <option value="7_months" {{ request('export_range') == '7_months' ? 'selected' : '' }}>7 Bulan
+                                Terakhir</option>
+                            <option value="8_months" {{ request('export_range') == '8_months' ? 'selected' : '' }}>8 Bulan
+                                Terakhir</option>
+                            <option value="9_months" {{ request('export_range') == '9_months' ? 'selected' : '' }}>9 Bulan
+                                Terakhir</option>
+                            <option value="10_months" {{ request('export_range') == '10_months' ? 'selected' : '' }}>10
+                                Bulan Terakhir</option>
+                            <option value="11_months" {{ request('export_range') == '11_months' ? 'selected' : '' }}>11
+                                Bulan Terakhir</option>
+                        </select>
+
+                        {{-- Yearly Options --}}
+                        <select name="export_range" id="yearlyPeriod" class="form-select period-dropdown"
+                            style="display: none;">
+                            <option value="1_year" {{ request('export_range') == '1_year' ? 'selected' : '' }}>1 Tahun
+                                Terakhir</option>
+                            <option value="2_years" {{ request('export_range') == '2_years' ? 'selected' : '' }}>2 Tahun
+                                Terakhir</option>
+                            <option value="3_years" {{ request('export_range') == '3_years' ? 'selected' : '' }}>3 Tahun
+                                Terakhir</option>
+                            <option value="4_years" {{ request('export_range') == '4_years' ? 'selected' : '' }}>4 Tahun
+                                Terakhir</option>
+                            <option value="5_years" {{ request('export_range') == '5_years' ? 'selected' : '' }}>5 Tahun
+                                Terakhir</option>
+                        </select>
+                    </div>
+
+                    {{-- Hidden input for form submission --}}
+                    <input type="hidden" name="export_range" id="selectedPeriod" value="{{ request('export_range') }}">
+                </div>
+
                 <div class="filter-item">
                     <label>Tahun</label>
-                    <select name="tahun" class="form-select">
+                    <select name="tahun" class="form-select" {{ request('export_range') ? 'disabled' : '' }}>
                         <option value="">Semua Tahun</option>
                         @foreach ($tahunTersedia as $t)
                             <option value="{{ $t }}" {{ $tahun == $t ? 'selected' : '' }}>{{ $t }}
@@ -122,7 +340,7 @@
 
                 <div class="filter-item">
                     <label>Bulan</label>
-                    <select name="bulan" class="form-select">
+                    <select name="bulan" class="form-select" {{ request('export_range') ? 'disabled' : '' }}>
                         <option value="">Semua Bulan</option>
                         @for ($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
@@ -160,37 +378,140 @@
     {{-- ========== EXPORT SECTION ========== --}}
     <div class="filter-section" style="background: #f8f9fa; border: 1px solid #e9ecef;">
         <h3 style="font-size: 16px; font-weight: 700; color: #003366; margin-bottom: 4px;">Export Laporan</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Download laporan dalam format Excel atau PDF</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pilih periode waktu dan format export yang diinginkan
+        </p>
 
-        <div style="display: flex; gap: 12px;">
-            <a href="{{ route('admin.export.excel', request()->query()) }}" class="btn-export"
-                style="text-decoration: none;">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 6px;">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                </svg>
-                Export Excel
-            </a>
-            <a href="{{ route('admin.export.pdf', request()->query()) }}" class="btn-export"
-                style="text-decoration: none; background: #dc3545; border-color: #dc3545;">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 6px;">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                </svg>
-                Export PDF
-            </a>
+        <form id="exportForm" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+            {{-- Periode Export --}}
+            <div style="min-width: 250px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px;">Periode
+                    Data</label>
+
+                {{-- Export Category Tabs --}}
+                <div class="export-tabs" style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px;">
+                    <button type="button" class="export-tab-btn" data-export-category="all"
+                        onclick="setExportCategory('all')">Semua</button>
+                    <button type="button" class="export-tab-btn" data-export-category="weekly"
+                        onclick="setExportCategory('weekly')">Mingguan</button>
+                    <button type="button" class="export-tab-btn" data-export-category="monthly"
+                        onclick="setExportCategory('monthly')">Bulanan</button>
+                    <button type="button" class="export-tab-btn" data-export-category="yearly"
+                        onclick="setExportCategory('yearly')">Tahunan</button>
+                </div>
+
+                {{-- Contextual Export Dropdown --}}
+                <div id="exportDropdownContainer">
+                    {{-- Weekly Export Options --}}
+                    <select name="export_range" id="exportWeekly" class="form-select export-dropdown"
+                        style="display: none; font-size: 12px;">
+                        <option value="1_week">1 Minggu Terakhir</option>
+                        <option value="2_weeks">2 Minggu Terakhir</option>
+                        <option value="3_weeks">3 Minggu Terakhir</option>
+                    </select>
+
+                    {{-- Monthly Export Options --}}
+                    <select name="export_range" id="exportMonthly" class="form-select export-dropdown"
+                        style="display: none; font-size: 12px;">
+                        <option value="1_month">1 Bulan Terakhir</option>
+                        <option value="2_months">2 Bulan Terakhir</option>
+                        <option value="3_months">3 Bulan Terakhir</option>
+                        <option value="6_months">6 Bulan Terakhir</option>
+                        <option value="9_months">9 Bulan Terakhir</option>
+                        <option value="11_months">11 Bulan Terakhir</option>
+                    </select>
+
+                    {{-- Yearly Export Options --}}
+                    <select name="export_range" id="exportYearly" class="form-select export-dropdown"
+                        style="display: none; font-size: 12px;">
+                        <option value="1_year">1 Tahun Terakhir</option>
+                        <option value="2_years">2 Tahun Terakhir</option>
+                        <option value="3_years">3 Tahun Terakhir</option>
+                        <option value="5_years">5 Tahun Terakhir</option>
+                    </select>
+
+                    {{-- Hidden input for export range --}}
+                    <input type="hidden" id="exportRange" value="">
+                </div>
+            </div>
+
+            {{-- Tipe Survei untuk Export --}}
+            <div style="min-width: 150px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px;">Tipe
+                    Survei</label>
+                <select name="export_tipe" id="exportTipe" class="form-select" style="width: 100%;">
+                    <option value="">Semua Tipe</option>
+                    @foreach ($tipeSurvei as $t)
+                        <option value="{{ $t }}">{{ $t }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Export Buttons --}}
+            <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="exportData('excel')" class="btn-export"
+                    style="border: none; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"
+                        style="margin-right: 6px;">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                    Export Excel
+                </button>
+                <button type="button" onclick="exportData('pdf')" class="btn-export"
+                    style="border: none; cursor: pointer; background: #dc3545; border-color: #dc3545;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"
+                        style="margin-right: 6px;">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                    </svg>
+                    Export PDF
+                </button>
+            </div>
+        </form>
+
+        {{-- Preview Info --}}
+        <div id="exportPreview"
+            style="margin-top: 12px; padding: 10px; background: #e3f2fd; border-radius: 6px; font-size: 13px; display: none;">
+            <strong>Preview Export:</strong> <span id="previewText"></span>
         </div>
     </div>
 
     {{-- ========== INFO BANNER ========== --}}
-    @if ($bulan || $tipe)
+    @if ($bulan || $tipe || request('export_range'))
         <div class="info-banner">
             <h3>Filter Aktif</h3>
             <p>
                 Menampilkan data untuk
-                @if ($bulan)
-                    <strong>{{ DateTime::createFromFormat('!m', $bulan)->format('F') }}</strong>
-                @endif
-                @if ($tahun)
-                    <strong>{{ $tahun }}</strong>
+                @if (request('export_range'))
+                    @php
+                        $rangeTexts = [
+                            '1_week' => '1 Minggu Terakhir',
+                            '2_weeks' => '2 Minggu Terakhir',
+                            '3_weeks' => '3 Minggu Terakhir',
+                            '1_month' => '1 Bulan Terakhir',
+                            '2_months' => '2 Bulan Terakhir',
+                            '3_months' => '3 Bulan Terakhir',
+                            '4_months' => '4 Bulan Terakhir',
+                            '5_months' => '5 Bulan Terakhir',
+                            '6_months' => '6 Bulan Terakhir',
+                            '7_months' => '7 Bulan Terakhir',
+                            '8_months' => '8 Bulan Terakhir',
+                            '9_months' => '9 Bulan Terakhir',
+                            '10_months' => '10 Bulan Terakhir',
+                            '11_months' => '11 Bulan Terakhir',
+                            '1_year' => '1 Tahun Terakhir',
+                            '2_years' => '2 Tahun Terakhir',
+                            '3_years' => '3 Tahun Terakhir',
+                            '4_years' => '4 Tahun Terakhir',
+                            '5_years' => '5 Tahun Terakhir',
+                        ];
+                    @endphp
+                    <strong>{{ $rangeTexts[request('export_range')] ?? request('export_range') }}</strong>
+                @else
+                    @if ($bulan)
+                        <strong>{{ DateTime::createFromFormat('!m', $bulan)->format('F') }}</strong>
+                    @endif
+                    @if ($tahun)
+                        <strong>{{ $tahun }}</strong>
+                    @endif
                 @endif
                 @if ($tipe)
                     - Tipe: <strong>{{ $tipe }}</strong>
@@ -529,8 +850,264 @@
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // Export functionality
+        function exportData(format) {
+            const exportRange = document.getElementById('exportRange').value;
+            const exportTipe = document.getElementById('exportTipe').value;
+
+            // Build URL with parameters
+            const params = new URLSearchParams();
+            if (exportRange) params.append('export_range', exportRange);
+            if (exportTipe) params.append('export_tipe', exportTipe);
+
+            // Add legacy parameters for backward compatibility
+            const currentParams = new URLSearchParams(window.location.search);
+            if (currentParams.get('tahun')) params.append('tahun', currentParams.get('tahun'));
+            if (currentParams.get('bulan')) params.append('bulan', currentParams.get('bulan'));
+            if (currentParams.get('tipe')) params.append('tipe', currentParams.get('tipe'));
+
+            const baseUrl = format === 'excel' ?
+                '{{ route('admin.export.excel') }}' :
+                '{{ route('admin.export.pdf') }}';
+
+            const fullUrl = baseUrl + (params.toString() ? '?' + params.toString() : '');
+
+            // Open in new window/tab for download
+            window.open(fullUrl, '_blank');
+        }
+
+        // Handle export category selection
+        function setExportCategory(category) {
+            // Update tab states
+            document.querySelectorAll('.export-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activate selected tab
+            const activeTab = document.querySelector(`[data-export-category="${category}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+
+            // Hide all export dropdowns
+            document.querySelectorAll('.export-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+
+            // Show relevant dropdown and set value
+            let selectedValue = '';
+
+            switch (category) {
+                case 'all':
+                    selectedValue = '';
+                    break;
+                case 'weekly':
+                    document.getElementById('exportWeekly').style.display = 'block';
+                    selectedValue = document.getElementById('exportWeekly').value || '1_week';
+                    break;
+                case 'monthly':
+                    document.getElementById('exportMonthly').style.display = 'block';
+                    selectedValue = document.getElementById('exportMonthly').value || '1_month';
+                    break;
+                case 'yearly':
+                    document.getElementById('exportYearly').style.display = 'block';
+                    selectedValue = document.getElementById('exportYearly').value || '1_year';
+                    break;
+            }
+
+            // Update hidden input
+            document.getElementById('exportRange').value = selectedValue;
+
+            // Update preview
+            updateExportPreview();
+        }
+
+        // Handle export dropdown changes
+        function handleExportDropdownChange(dropdown) {
+            document.getElementById('exportRange').value = dropdown.value;
+            updateExportPreview();
+        }
+
+        // Update preview when selection changes
+        function updateExportPreview() {
+            const exportRange = document.getElementById('exportRange').value;
+            const exportTipe = document.getElementById('exportTipe').value;
+            const preview = document.getElementById('exportPreview');
+            const previewText = document.getElementById('previewText');
+
+            if (exportRange || exportTipe) {
+                let text = '';
+
+                if (exportRange) {
+                    const rangeTexts = {
+                        '1_week': '1 Minggu Terakhir',
+                        '2_weeks': '2 Minggu Terakhir',
+                        '3_weeks': '3 Minggu Terakhir',
+                        '1_month': '1 Bulan Terakhir',
+                        '2_months': '2 Bulan Terakhir',
+                        '3_months': '3 Bulan Terakhir',
+                        '4_months': '4 Bulan Terakhir',
+                        '5_months': '5 Bulan Terakhir',
+                        '6_months': '6 Bulan Terakhir',
+                        '7_months': '7 Bulan Terakhir',
+                        '8_months': '8 Bulan Terakhir',
+                        '9_months': '9 Bulan Terakhir',
+                        '10_months': '10 Bulan Terakhir',
+                        '11_months': '11 Bulan Terakhir',
+                        '1_year': '1 Tahun Terakhir',
+                        '2_years': '2 Tahun Terakhir',
+                        '3_years': '3 Tahun Terakhir',
+                        '4_years': '4 Tahun Terakhir',
+                        '5_years': '5 Tahun Terakhir'
+                    };
+                    text += rangeTexts[exportRange] || exportRange;
+                }
+
+                if (exportTipe) {
+                    text += (text ? ' - ' : '') + 'Tipe: ' + exportTipe;
+                }
+
+                previewText.textContent = text;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Handle period category selection
+        function setPeriodCategory(category) {
+            // Update tab states
+            document.querySelectorAll('.period-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activate selected tab
+            const activeTab = document.querySelector(`[data-category="${category}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+
+            // Hide all dropdowns
+            document.querySelectorAll('.period-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+
+            // Show relevant dropdown and set value
+            let selectedValue = '';
+
+            switch (category) {
+                case 'all':
+                    selectedValue = '';
+                    break;
+                case 'weekly':
+                    document.getElementById('weeklyPeriod').style.display = 'block';
+                    selectedValue = document.getElementById('weeklyPeriod').value || '1_week';
+                    document.getElementById('weeklyPeriod').value = selectedValue;
+                    break;
+                case 'monthly':
+                    document.getElementById('monthlyPeriod').style.display = 'block';
+                    selectedValue = document.getElementById('monthlyPeriod').value || '1_month';
+                    document.getElementById('monthlyPeriod').value = selectedValue;
+                    break;
+                case 'yearly':
+                    document.getElementById('yearlyPeriod').style.display = 'block';
+                    selectedValue = document.getElementById('yearlyPeriod').value || '1_year';
+                    document.getElementById('yearlyPeriod').value = selectedValue;
+                    break;
+                case 'manual':
+                    selectedValue = '';
+                    break;
+            }
+
+            // Update hidden input
+            document.getElementById('selectedPeriod').value = selectedValue;
+
+            // Toggle manual filters
+            toggleManualFilters();
+        }
+
+        // Handle dropdown changes
+        function handlePeriodDropdownChange(dropdown) {
+            const value = dropdown.value;
+            document.getElementById('selectedPeriod').value = value;
+        }
+
+        // Initialize period category based on current selection
+        function initializePeriodCategory() {
+            const currentValue = document.getElementById('selectedPeriod').value;
+
+            if (!currentValue) {
+                setPeriodCategory('all');
+                return;
+            }
+
+            // Determine category based on current value
+            if (currentValue.includes('week')) {
+                setPeriodCategory('weekly');
+            } else if (currentValue.includes('month')) {
+                setPeriodCategory('monthly');
+            } else if (currentValue.includes('year')) {
+                setPeriodCategory('yearly');
+            } else {
+                setPeriodCategory('manual');
+            }
+        }
+
+        // Handle filter form interactions
+        function toggleManualFilters() {
+            const selectedPeriod = document.getElementById('selectedPeriod').value;
+            const tahunFilter = document.querySelector('select[name="tahun"]');
+            const bulanFilter = document.querySelector('select[name="bulan"]');
+
+            if (tahunFilter && bulanFilter) {
+                const isRangeSelected = selectedPeriod !== '';
+                tahunFilter.disabled = isRangeSelected;
+                bulanFilter.disabled = isRangeSelected;
+
+                if (isRangeSelected) {
+                    tahunFilter.style.opacity = '0.5';
+                    bulanFilter.style.opacity = '0.5';
+                } else {
+                    tahunFilter.style.opacity = '1';
+                    bulanFilter.style.opacity = '1';
+                }
+            }
+        }
+
         // Dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize filter state
+            toggleManualFilters();
+
+            // Add event listeners for period dropdowns
+            document.getElementById('weeklyPeriod').addEventListener('change', function() {
+                handlePeriodDropdownChange(this);
+            });
+            document.getElementById('monthlyPeriod').addEventListener('change', function() {
+                handlePeriodDropdownChange(this);
+            });
+            document.getElementById('yearlyPeriod').addEventListener('change', function() {
+                handlePeriodDropdownChange(this);
+            });
+
+            // Initialize period category based on current selection
+            initializePeriodCategory();
+
+            // Add event listeners for export dropdowns
+            document.getElementById('exportWeekly').addEventListener('change', function() {
+                handleExportDropdownChange(this);
+            });
+            document.getElementById('exportMonthly').addEventListener('change', function() {
+                handleExportDropdownChange(this);
+            });
+            document.getElementById('exportYearly').addEventListener('change', function() {
+                handleExportDropdownChange(this);
+            });
+            document.getElementById('exportTipe').addEventListener('change', updateExportPreview);
+
+            // Initialize export category
+            setExportCategory('all');
+
             const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
             dropdownToggles.forEach(toggle => {

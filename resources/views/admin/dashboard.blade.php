@@ -210,9 +210,15 @@
                 <h3>Survei Bulan Ini</h3>
                 <div class="stat-value">{{ number_format($surveiBulanIni ?? 0) }}</div>
                 <div class="stat-label">
-                    <span style="color: {{ $pertumbuhanBulanan >= 0 ? '#28a745' : '#dc3545' }}; font-weight: 600;">
-                        {{ $pertumbuhanBulanan >= 0 ? '↑' : '↓' }} {{ abs($pertumbuhanBulanan) }}%
-                    </span> vs bulan lalu
+                    @if ($pertumbuhanBulanan == 0)
+                        <span style="color: #6c757d; font-weight: 600;">
+                            = 0% vs bulan lalu
+                        </span>
+                    @else
+                        <span style="color: {{ $pertumbuhanBulanan >= 0 ? '#28a745' : '#dc3545' }}; font-weight: 600;">
+                            {{ $pertumbuhanBulanan >= 0 ? '↑' : '↓' }} {{ abs($pertumbuhanBulanan) }}%
+                        </span> vs bulan lalu
+                    @endif
                 </div>
             </div>
         </div>
