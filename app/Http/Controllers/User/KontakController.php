@@ -38,8 +38,7 @@ class KontakController extends Controller
         try {
             // Daftar penerima email
             $recipients = [
-                'bbspgl@esdm.go.id',
-                'akmalzains01@gmail.com'
+                'petadata55@gmail.com',
             ];
 
             // Kirim email

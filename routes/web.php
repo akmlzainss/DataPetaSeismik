@@ -26,6 +26,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest:admin')->group(function () {
     Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/admin/login', [AdminAuthController::class, 'login']);
+
+    // Forgot Password Routes
+    Route::get('/admin/forgot-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
+    Route::post('/admin/forgot-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('admin.password.email');
+    Route::get('/admin/reset-password/{token}', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetForm'])->name('admin.password.reset');
+    Route::post('/admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->name('admin.password.update');
 });
 
 // Authenticated Admin

@@ -13,7 +13,7 @@
 <section class="hero-section">
     <div class="hero-content-wrapper">
         <div class="hero-content">
-            <div class="hero-badge">Balai Besar Survei dan Pemetaan Geologi</div>
+            <div class="hero-badge">Balai Besar Survei dan Pemetaan Geologi Kelautan</div>
             <h1 class="hero-title">Sistem Informasi</h1>
             <h1 class="hero-title">Hasil Survei Seismik</h1>
             <p class="hero-description">
@@ -47,7 +47,7 @@
         <div class="about-text">
             <h2>Tentang BBSPGL</h2>
             <p>
-                Balai Besar Survei dan Pemetaan Geologi (BBSPGL) merupakan unit pelaksana teknis di bawah 
+                Balai Besar Survei dan Pemetaan Geologi Kelautan(BBSPGL) merupakan unit pelaksana teknis di bawah 
                 Badan Geologi, Kementerian Energi dan Sumber Daya Mineral Republik Indonesia yang bertanggung jawab 
                 dalam kegiatan survei dan pemetaan geologi di wilayah Indonesia.
             </p>

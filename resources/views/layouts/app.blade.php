@@ -138,7 +138,7 @@
                     <div class="footer-logo">
                         <img src="{{ asset('storage/blubbspgl.jpg') }}" alt="BBSPGL Logo">
                     </div>
-                    <p>Balai Besar Survei dan Pemetaan Geologi adalah unit pelaksana teknis yang bertanggung jawab dalam
+                    <p>Balai Besar Survei dan Pemetaan Geologi Kelautan adalah unit pelaksana teknis yang bertanggung jawab dalam
                         survei dan pemetaan geologi kelautan Indonesia untuk mendukung pengembangan sumber daya mineral
                         nasional.</p>
                     <div class="social-links">
