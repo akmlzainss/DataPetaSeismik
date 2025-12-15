@@ -77,7 +77,7 @@ class HtmlSanitizerService
     /**
      * Extract plain text from HTML (for search indexing, meta descriptions, etc.)
      */
-    public static function toPlainText(?string $html, int $maxLength = null): ?string
+    public static function toPlainText(?string $html, ?int $maxLength = null): ?string
     {
         if ($html === null || trim($html) === '') {
             return null;

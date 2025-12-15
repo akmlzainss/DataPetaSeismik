@@ -24,18 +24,18 @@ use Illuminate\Support\Facades\Route;
 
 // Guest Admin (belum login)
 Route::middleware('guest:admin')->group(function () {
-    Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/admin/login', [AdminAuthController::class, 'login']);
+    Route::get('/bbspgl-admin/masuk', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/bbspgl-admin/masuk', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
 
     // Forgot Password Routes
-    Route::get('/admin/forgot-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
-    Route::post('/admin/forgot-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('admin.password.email');
-    Route::get('/admin/reset-password/{token}', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetForm'])->name('admin.password.reset');
-    Route::post('/admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->name('admin.password.update');
+    Route::get('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
+    Route::post('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,1');
+    Route::get('/bbspgl-admin/reset-password/{token}', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetForm'])->name('admin.password.reset');
+    Route::post('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->middleware('throttle:3,1');
 });
 
 // Authenticated Admin
-Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function () {
+Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth.admin')->group(function
     // Lokasi Marker
     Route::get('/lokasi-marker', [LokasiMarkerController::class, 'index'])->name('lokasi_marker.index');
     Route::post('/lokasi-marker', [LokasiMarkerController::class, 'store'])->name('lokasi_marker.store');
+    Route::put('/lokasi-marker/{id}', [LokasiMarkerController::class, 'update'])->name('lokasi_marker.update');
     Route::delete('/lokasi-marker/{id}', [LokasiMarkerController::class, 'destroy'])->name('lokasi_marker.destroy');
     Route::get('/geocode', [LokasiMarkerController::class, 'geocode'])->name('geocode');
 
@@ -112,7 +113,7 @@ Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tent
 
 // Kontak
 Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
-Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit');
+Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit')->middleware('throttle:5,1');
 
 // Halaman Informasi (Footer Links)
 Route::get('/panduan-pengguna', [InfoController::class, 'panduan'])->name('panduan');

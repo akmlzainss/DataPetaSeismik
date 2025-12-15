@@ -95,7 +95,7 @@
                             </div>
 
                             <div class="survey-description">
-                                {!! Str::limit($survey->deskripsi, 200) !!}
+                                {{ Str::limit(strip_tags($survey->deskripsi), 200) }}
                             </div>
 
                             <div class="survey-actions">
@@ -114,7 +114,7 @@
                 {{ $surveys->links() }}
                 @if ($surveys->hasPages())
                     <div class="pagination-info">
-                         {{ $surveys->firstItem() }} - {{ $surveys->lastItem() }} dari {{ $surveys->total() }}
+                        {{ $surveys->firstItem() }} - {{ $surveys->lastItem() }} dari {{ $surveys->total() }}
                         survei
                     </div>
                 @endif

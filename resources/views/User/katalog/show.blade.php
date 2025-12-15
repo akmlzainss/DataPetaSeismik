@@ -62,7 +62,7 @@
                     <div class="article-content">
                         <h2 class="article-section-title">Keterangan</h2>
                         <div class="article-text">
-                            {!! $survey->deskripsi !!}
+                            {!! strip_tags($survey->deskripsi, '<p><br><strong><em><ul><ol><li><h1><h2><h3>') !!}
                         </div>
                     </div>
                 @else
@@ -148,7 +148,7 @@
                 // Custom Toolbar Events
                 document.getElementById('zoomIn')?.addEventListener('click', () => viewer.viewport.zoomBy(1.5));
                 document.getElementById('zoomOut')?.addEventListener('click', () => viewer.viewport.zoomBy(1 /
-                1.5));
+                    1.5));
                 document.getElementById('home')?.addEventListener('click', () => viewer.viewport.goHome());
                 document.getElementById('fullPage')?.addEventListener('click', () => viewer.setFullPage(!viewer
                     .isFullPage()));
