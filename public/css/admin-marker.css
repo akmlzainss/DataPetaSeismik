@@ -1501,3 +1501,110 @@
 .select2-dropdown {
     animation: select2FadeIn 0.2s ease !important;
 }
+
+/* ====================== EDIT MODAL STYLES ====================== */
+
+.modal-icon-edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 51, 102, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    color: #003366;
+}
+
+.edit-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #003366;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #003366;
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.helper-text {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #ffd700;
+}
+
+.helper-text small {
+    color: #666;
+    font-size: 13px;
+}
+
+/* Edit button in marker popup */
+.marker-edit-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: background 0.3s ease;
+}
+
+.marker-edit-btn:hover {
+    background: #218838;
+}
+
+.marker-edit-btn svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+/* Delete button in marker popup */
+.marker-delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.marker-delete-btn:hover {
+    background: #c82333;
+}
+
+.marker-delete-btn svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}

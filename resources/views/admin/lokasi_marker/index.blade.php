@@ -347,14 +347,66 @@
             </div>
         </div>
     </div>
+
+    {{-- Edit Marker Modal --}}
+    <div id="editModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Edit Lokasi Marker</h3>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-edit">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                </div>
+                <p class="modal-message">Edit koordinat untuk survei:</p>
+                <p class="modal-warning" id="editMarkerTitle">Loading...</p>
+
+                <div class="edit-form">
+                    <div class="form-group">
+                        <label for="editLatitude">Latitude (Lintang)</label>
+                        <input type="number" id="editLatitude" step="any" placeholder="Contoh: -6.2088"
+                            class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLongitude">Longitude (Bujur)</label>
+                        <input type="number" id="editLongitude" step="any" placeholder="Contoh: 106.8456"
+                            class="form-input">
+                    </div>
+                    <div class="helper-text">
+                        <small>💡 Tip: Klik pada peta untuk mendapatkan koordinat, atau masukkan koordinat manual</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                <button class="btn-primary" id="confirmEditBtn">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    {{-- jQuery (required for Select2) --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    {{-- jQuery FIRST (required for Select2) --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     {{-- Select2 JS --}}
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    {{-- Leaflet JS --}}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Loading Overlay Functions
         function showLoadingOverlay(message = 'Memproses...') {
@@ -397,6 +449,10 @@
 
         // Delete Modal Functions
         let currentDeleteData = null;
+
+        // Edit Modal Functions
+        let currentEditData = null;
+        let editMarkerPreview = null;
 
         function showDeleteModal(title, surveiId, marker) {
             // Validate input parameters
@@ -544,6 +600,174 @@
             }
         });
 
+        // ============================================================
+        // EDIT MODAL FUNCTIONS
+        // ============================================================
+
+        function showEditModal(title, surveiId, marker, currentLat, currentLng) {
+            // Validate input parameters
+            if (!title || !surveiId || !marker) {
+                alert('Data marker tidak lengkap untuk diedit!');
+                console.error('Invalid edit modal data:', {
+                    title,
+                    surveiId,
+                    marker
+                });
+                return;
+            }
+
+            currentEditData = {
+                title: title || 'Unknown Survey',
+                surveiId: String(surveiId),
+                marker,
+                originalLat: currentLat,
+                originalLng: currentLng
+            };
+
+            // Set modal content
+            document.getElementById('editMarkerTitle').textContent = title || 'Unknown Survey';
+            document.getElementById('editLatitude').value = currentLat || '';
+            document.getElementById('editLongitude').value = currentLng || '';
+
+            // Show modal
+            document.getElementById('editModal').style.display = 'flex';
+
+            console.log('Edit modal opened for:', currentEditData);
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+
+            // Remove edit preview marker if exists
+            if (editMarkerPreview) {
+                map.removeLayer(editMarkerPreview);
+                editMarkerPreview = null;
+            }
+
+            currentEditData = null;
+        }
+
+        // Confirm Edit Handler
+        document.getElementById('confirmEditBtn')?.addEventListener('click', async function() {
+            if (!currentEditData) {
+                alert('Data marker tidak ditemukan!');
+                return;
+            }
+
+            const newLat = parseFloat(document.getElementById('editLatitude').value);
+            const newLng = parseFloat(document.getElementById('editLongitude').value);
+
+            // Validate coordinates
+            if (isNaN(newLat) || isNaN(newLng)) {
+                alert('Koordinat tidak valid! Pastikan latitude dan longitude berupa angka.');
+                return;
+            }
+
+            if (newLat < -11 || newLat > 6 || newLng < 95 || newLng > 141) {
+                alert(
+                    'Koordinat berada di luar wilayah Indonesia! Pastikan koordinat berada dalam batas Indonesia.'
+                );
+                return;
+            }
+
+            const {
+                title,
+                surveiId,
+                marker
+            } = currentEditData;
+
+            closeEditModal();
+            showLoadingOverlay('Mengupdate marker...');
+
+            try {
+                const response = await fetch(`/admin/lokasi-marker/${surveiId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pusat_lintang: newLat,
+                        pusat_bujur: newLng
+                    })
+                });
+
+                hideLoadingOverlay();
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.success !== false) {
+                        // Update marker position on map
+                        const trackedMarker = permanentMarkers.get(String(surveiId));
+                        if (trackedMarker) {
+                            trackedMarker.setLatLng([newLat, newLng]);
+                        }
+
+                        // Update original marker if different
+                        if (marker && marker !== trackedMarker) {
+                            marker.setLatLng([newLat, newLng]);
+                        }
+
+                        // Center map on updated marker
+                        map.setView([newLat, newLng], 8);
+
+                        alert('✓ Marker berhasil diupdate!');
+                        console.log('Marker updated successfully');
+                    } else {
+                        throw new Error(data.message || 'Update gagal');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                hideLoadingOverlay();
+                console.error('Error updating marker:', error);
+                alert('❌ Gagal mengupdate marker: ' + error.message);
+            }
+
+            // Reset currentEditData
+            currentEditData = null;
+        });
+
+        // Close edit modal when clicking outside
+        document.getElementById('editModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // Map click handler for edit modal coordinate selection
+        function enableEditMapClick() {
+            if (!currentEditData) return;
+
+            map.on('click', function(e) {
+                if (currentEditData) {
+                    const lat = e.latlng.lat.toFixed(6);
+                    const lng = e.latlng.lng.toFixed(6);
+
+                    // Update input fields
+                    document.getElementById('editLatitude').value = lat;
+                    document.getElementById('editLongitude').value = lng;
+
+                    // Remove previous preview
+                    if (editMarkerPreview) {
+                        map.removeLayer(editMarkerPreview);
+                    }
+
+                    // Add preview marker
+                    editMarkerPreview = L.marker([lat, lng], {
+                        icon: orangeIcon
+                    }).addTo(map).bindPopup(`
+                        <strong>Preview Lokasi Baru</strong><br>
+                        Lat: ${lat}<br>
+                        Lng: ${lng}
+                    `);
+                }
+            });
+        }
+
         // GLOBAL VARIABLES - Accessible to all functions
         let map, permanentMarkers, orangeIcon;
         let surveiSelect, autoApplyBtn, geoLatInput, geoLngInput;
@@ -552,8 +776,12 @@
 
         // GLOBAL FUNCTION - Create Permanent Marker
         function createPermanentMarker(lat, lng, title, surveiId) {
+            // Convert to numbers
+            lat = parseFloat(lat);
+            lng = parseFloat(lng);
+
             // Validate input parameters
-            if (!lat || !lng || !title || !surveiId) {
+            if (isNaN(lat) || isNaN(lng) || !title || !surveiId) {
                 console.error('Invalid marker data:', {
                     lat,
                     lng,
@@ -564,19 +792,36 @@
             }
 
             const marker = L.marker([lat, lng]).addTo(map);
-            marker.bindPopup(`<b>${title}</b><br><small>Klik kanan untuk hapus</small>`);
 
-            marker.on('contextmenu', (e) => {
-                L.DomEvent.preventDefault(e);
+            // Create popup with edit and delete buttons
+            const popupContent = `
+                <div style="text-align: center; min-width: 200px;">
+                    <b>${title}</b><br>
+                    <small>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</small><br><br>
+                    <button class="marker-edit-btn" onclick="showEditModal('${title.replace(/'/g, "\\'")}', '${surveiId}', this.marker, ${lat}, ${lng}); enableEditMapClick();">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                        Edit
+                    </button>
+                    <button class="marker-delete-btn" onclick="showDeleteModal('${title.replace(/'/g, "\\'")}', '${surveiId}', this.marker);">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                        Hapus
+                    </button>
+                </div>
+            `;
 
-                // Double check surveiId before showing delete modal
-                if (!surveiId || surveiId === 'undefined' || surveiId === 'null') {
-                    alert('Marker ini tidak dapat dihapus karena ID tidak valid!');
-                    console.error('Invalid surveiId for delete:', surveiId);
-                    return;
-                }
+            marker.bindPopup(popupContent);
 
-                showDeleteModal(title, surveiId, marker);
+            // Store reference to marker in popup buttons
+            marker.on('popupopen', function() {
+                const popup = marker.getPopup();
+                const editBtn = popup.getElement().querySelector('.marker-edit-btn');
+                const deleteBtn = popup.getElement().querySelector('.marker-delete-btn');
+                if (editBtn) editBtn.marker = marker;
+                if (deleteBtn) deleteBtn.marker = marker;
             });
 
             // Store surveiId in marker for reference
@@ -593,35 +838,54 @@
             // ============================================================
             // INITIALIZE SELECT2 - Modern Dropdown with Search
             // ============================================================
-            $('#surveiSelect').select2({
-                placeholder: '🔍 Cari atau pilih survei yang akan ditandai di peta...',
-                allowClear: true,
-                width: '100%',
-                theme: 'default',
-                language: {
-                    noResults: function() {
-                        return "Tidak ada data survei yang ditemukan";
-                    },
-                    searching: function() {
-                        return "Mencari...";
-                    }
-                }
-            });
 
-            $('#manualSurveiSelect').select2({
-                placeholder: '🔍 Cari atau pilih survei yang akan ditandai manual...',
-                allowClear: true,
-                width: '100%',
-                theme: 'default',
-                language: {
-                    noResults: function() {
-                        return "Tidak ada data survei yang ditemukan";
-                    },
-                    searching: function() {
-                        return "Mencari...";
-                    }
+            // Wait for jQuery and Select2 to be fully loaded
+            function initializeSelect2() {
+                if (typeof $ === 'undefined' || typeof $.fn.select2 === 'undefined') {
+                    console.log('jQuery or Select2 not loaded yet, retrying...');
+                    setTimeout(initializeSelect2, 100);
+                    return;
                 }
-            });
+
+                try {
+                    $('#surveiSelect').select2({
+                        placeholder: '🔍 Cari atau pilih survei yang akan ditandai di peta...',
+                        allowClear: true,
+                        width: '100%',
+                        theme: 'default',
+                        language: {
+                            noResults: function() {
+                                return "Tidak ada data survei yang ditemukan";
+                            },
+                            searching: function() {
+                                return "Mencari...";
+                            }
+                        }
+                    });
+
+                    $('#manualSurveiSelect').select2({
+                        placeholder: '🔍 Cari atau pilih survei yang akan ditandai manual...',
+                        allowClear: true,
+                        width: '100%',
+                        theme: 'default',
+                        language: {
+                            noResults: function() {
+                                return "Tidak ada data survei yang ditemukan";
+                            },
+                            searching: function() {
+                                return "Mencari...";
+                            }
+                        }
+                    });
+
+                    console.log('Select2 initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing Select2:', error);
+                }
+            }
+
+            // Initialize Select2 with retry mechanism
+            initializeSelect2();
 
             // BATAS PETA INDONESIA
             const indonesiaBounds = L.latLngBounds(

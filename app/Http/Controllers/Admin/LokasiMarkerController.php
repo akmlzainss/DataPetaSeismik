@@ -15,13 +15,13 @@ class LokasiMarkerController extends Controller
     {
         // 1. Ambil SEMUA marker yang sudah ada untuk ditampilkan di peta
         $markers = LokasiMarker::with('survei')->get();
-        
+
         // 2. Filter data survei: Hanya ambil yang BELUM punya lokasi marker
         // Menggunakan whereDoesntHave('lokasi')
         $surveis = DataSurvei::whereDoesntHave('lokasi')
             ->orderByDesc('created_at')
-            ->get(); 
-        
+            ->get();
+
         // Catatan: Variabel $surveis sekarang hanya berisi data yang BELUM ditandai.
         // Option disabled di blade akan dihapus.
 
@@ -46,6 +46,35 @@ class LokasiMarkerController extends Controller
         );
 
         return response()->json(['success' => true, 'message' => 'Marker berhasil disimpan!']);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'pusat_lintang' => 'required|numeric|between:-11,6',
+            'pusat_bujur'   => 'required|numeric|between:95,141',
+        ], [
+            'pusat_lintang.between' => 'Latitude harus berada dalam wilayah Indonesia (-11 sampai 6)',
+            'pusat_bujur.between'   => 'Longitude harus berada dalam wilayah Indonesia (95 sampai 141)',
+        ]);
+
+        // Find marker by survei ID
+        $marker = LokasiMarker::where('id_data_survei', $id)->firstOrFail();
+
+        // Update coordinates
+        $marker->update([
+            'pusat_lintang' => $request->pusat_lintang,
+            'pusat_bujur'   => $request->pusat_bujur,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Koordinat marker berhasil diupdate!',
+            'data' => [
+                'lat' => $marker->pusat_lintang,
+                'lng' => $marker->pusat_bujur
+            ]
+        ]);
     }
 
     public function destroy($id)
