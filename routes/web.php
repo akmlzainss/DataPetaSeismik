@@ -31,7 +31,7 @@ Route::middleware('guest:admin')->group(function () {
     Route::get('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
     Route::post('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,1');
     Route::get('/bbspgl-admin/reset-password/{token}', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetForm'])->name('admin.password.reset');
-    Route::post('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->middleware('throttle:3,1');
+    Route::post('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->name('admin.password.update')->middleware('throttle:3,1');
 });
 
 // Authenticated Admin

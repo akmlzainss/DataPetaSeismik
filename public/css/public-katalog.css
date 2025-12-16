@@ -1039,3 +1039,278 @@
         white-space: nowrap;
     }
 }
+/* ====================== LOCATION MAP STYLES ====================== */
+
+.location-map-card {
+    background: white;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 24px;
+}
+
+.location-info {
+    margin-bottom: 20px;
+}
+
+.location-detail {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #ffed00;
+}
+
+.location-detail i {
+    color: #003366;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.location-detail strong {
+    color: #003366;
+    font-size: 16px;
+}
+
+.survey-location-map {
+    height: 300px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.location-description {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #28a745;
+}
+
+.location-description i {
+    color: #28a745;
+    margin-right: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .location-map-card {
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .survey-location-map {
+        height: 250px;
+    }
+    
+    .location-detail {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .location-detail i {
+        align-self: flex-start;
+    }
+}
+/* Survey Location Popup Styles */
+.survey-location-popup .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid #ffed00;
+}
+
+.survey-location-popup .leaflet-popup-content {
+    margin: 12px 16px;
+    line-height: 1.4;
+}
+
+.survey-location-popup .leaflet-popup-tip {
+    border-top-color: #ffed00;
+}
+
+/* ====================== SURVEY META INFO - SEPARATED BOXES ====================== */
+
+.survey-meta-info {
+    margin-top: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.meta-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.meta-badge:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Remove the bullet separator */
+.meta-badge:not(:last-child)::after {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .survey-meta-info {
+        gap: 8px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+    }
+    
+    .meta-badge {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .survey-meta-info {
+        gap: 6px;
+    }
+    
+    .meta-badge {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}
+/* ====================== ENHANCED BREADCRUMB DESIGN ====================== */
+
+.breadcrumb {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.breadcrumb-item {
+    position: relative;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 6px solid #003366;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    margin: 0 12px;
+    vertical-align: middle;
+}
+
+.breadcrumb-item a {
+    color: #003366;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    position: relative;
+    display: inline-block;
+}
+
+.breadcrumb-item a:hover {
+    background: rgba(0, 51, 102, 0.08);
+    color: #002244;
+    transform: translateY(-1px);
+}
+
+.breadcrumb-item a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #ffed00;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.breadcrumb-item a:hover::after {
+    width: 80%;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d;
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(255, 237, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 237, 0, 0.3);
+    margin-left: 4px;
+}
+
+/* Clean breadcrumb without icons */
+
+/* Responsive */
+@media (max-width: 768px) {
+    .breadcrumb {
+        padding: 12px 16px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        border-left-width: 5px;
+        border-top-width: 5px;
+        border-bottom-width: 5px;
+        margin: 0 8px;
+    }
+    
+    .breadcrumb-item a,
+    .breadcrumb-item.active {
+        padding: 4px 8px;
+    }
+    
+    /* Hide long text on mobile */
+    .breadcrumb-item.active {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+}
+
+@media (max-width: 480px) {
+    .breadcrumb {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+    
+    .breadcrumb-item.active {
+        max-width: 120px;
+    }
+}
+/* Override Bootstrap breadcrumb defaults */
+.breadcrumb {
+    margin-bottom: 24px !important;
+    background-color: transparent !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "" !important;
+    float: none !important;
+    color: transparent !important;
+}
