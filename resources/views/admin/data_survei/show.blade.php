@@ -5,7 +5,78 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/openseadragon.min.css">
+    <link rel="stylesheet" href="{{ asset('css/admin-marker.css') }}">
+    {{-- Preload critical resources --}}
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style">
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script">
+    {{-- OpenSeadragon CSS - using unpkg instead --}}
+    <link rel="stylesheet" href="https://unpkg.com/openseadragon@4.1.0/build/openseadragon/openseadragon.min.css">
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    {{-- Fallback CSS jika CDN gagal --}}
+    <style>
+        /* Leaflet fallback styles */
+        .leaflet-container {
+            font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+            background: #ddd;
+            outline: 0;
+        }
+        .leaflet-container a {
+            color: #0078A8;
+        }
+        .leaflet-zoom-box {
+            border: 2px dotted #38f;
+            background: rgba(255,255,255,0.5);
+        }
+        .leaflet-popup-content-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        }
+        .leaflet-popup-content {
+            margin: 13px 19px;
+            line-height: 1.4;
+        }
+        .leaflet-popup-tip {
+            background: white;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .leaflet-control-zoom {
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            border-radius: 5px;
+        }
+        .leaflet-control-zoom a {
+            background-color: #fff;
+            border-bottom: 1px solid #ccc;
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+        .leaflet-control-zoom a:hover {
+            background-color: #f4f4f4;
+        }
+        .leaflet-control-zoom-in {
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        .leaflet-control-zoom-out {
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .leaflet-marker-icon {
+            margin-left: -12px;
+            margin-top: -41px;
+        }
+        .leaflet-marker-shadow {
+            margin-left: -12px;
+            margin-top: -41px;
+        }
+    </style>
     <style>
         /* Gaya khusus untuk OpenSeadragon (TIDAK BERUBAH) */
         #openseadragon-viewer {
@@ -77,12 +148,12 @@
         }
 
         /*
-                |--------------------------------------------------------------------------
-                | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
-                |--------------------------------------------------------------------------
-                | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
-                | yang dihasilkan Quill dapat ditampilkan dengan benar.
-                */
+                                |--------------------------------------------------------------------------
+                                | BAGIAN 1: PENAMBAHAN CSS KHUSUS UNTUK MENAMPILKAN OUTPUT QUILL
+                                |--------------------------------------------------------------------------
+                                | Ini diperlukan agar class-class seperti ql-align-center, daftar, dan blockquote
+                                | yang dihasilkan Quill dapat ditampilkan dengan benar.
+                                */
         .quill-content {
             /* Agar style tidak bocor keluar */
             line-height: 1.6;
@@ -183,6 +254,95 @@
         .quill-content span[style] {
             display: inline !important;
         }
+
+        /* ====================== ADMIN LOCATION MAP STYLES ====================== */
+        .admin-location-map-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+            margin-bottom: 24px;
+        }
+
+        .admin-location-info {
+            margin-bottom: 16px;
+        }
+
+        .admin-location-detail {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #003366;
+        }
+
+        .admin-location-detail svg {
+            color: #003366;
+            margin-top: 2px;
+        }
+
+        .admin-location-detail strong {
+            color: #003366;
+            font-size: 15px;
+        }
+
+        .admin-survey-location-map {
+            height: 280px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        /* Ensure Leaflet controls are visible */
+        .leaflet-control-zoom {
+            border: none !important;
+            border-radius: 4px !important;
+        }
+        
+        .leaflet-control-zoom a {
+            background-color: white !important;
+            color: #333 !important;
+            border: 1px solid #ccc !important;
+        }
+        
+        .leaflet-control-zoom a:hover {
+            background-color: #f4f4f4 !important;
+        }
+
+        .admin-location-description {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+
+        .admin-location-description svg {
+            color: #28a745;
+            margin-right: 4px;
+        }
+
+        /* Admin Location Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .admin-location-popup .leaflet-popup-content {
+            margin: 12px 16px;
+            line-height: 1.4;
+        }
+
+        .admin-location-popup .leaflet-popup-content h4 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+        }
     </style>
 @endpush
 
@@ -191,6 +351,32 @@
         <h1>Detail Data Survei</h1>
         <p>Informasi lengkap survei seismik</p>
     </div>
+
+    {{-- Breadcrumb Navigation --}}
+    <nav class="admin-breadcrumb" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a href="{{ route('admin.dashboard') }}">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                    Beranda
+                </a>
+            </li>
+            @if(request()->get('from') === 'lokasi_marker')
+                <li class="breadcrumb-item">
+                    <a href="{{ route('admin.lokasi_marker.index') }}">Lokasi Marker</a>
+                </li>
+            @else
+                <li class="breadcrumb-item">
+                    <a href="{{ route('admin.data_survei.index') }}">Data Survei</a>
+                </li>
+            @endif
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ Str::limit($dataSurvei->judul, 40) }}
+            </li>
+        </ol>
+    </nav>
 
     <div class="welcome-section">
         <!-- Header Section -->
@@ -249,7 +435,65 @@
 
             <!-- Right Column: Sidebar -->
             <aside class="admin-article-sidebar">
-                <div class="admin-meta-card">
+                {{-- Location Map Section --}}
+                @if ($dataSurvei->lokasi)
+                    <div class="admin-location-map-card">
+                        <h3 class="admin-card-title">Lokasi Survei</h3>
+
+                        <div class="admin-location-info">
+                            <div class="admin-location-detail">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                    <path
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                <div>
+                                    <strong>{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°,
+                                        {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="adminSurveyLocationMap" class="admin-survey-location-map">
+                            <div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">
+                                Memuat peta...
+                            </div>
+                        </div>
+
+                        @if ($dataSurvei->lokasi->keterangan)
+                            <div class="admin-location-description">
+                                <small class="text-muted">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                    </svg>
+                                    {{ $dataSurvei->lokasi->keterangan }}
+                                </small>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div class="admin-location-map-card">
+                        <h3 class="admin-card-title">Lokasi Survei</h3>
+                        <div class="admin-location-info">
+                            <div class="admin-location-detail">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <div>
+                                    <strong>{{ $dataSurvei->wilayah }}</strong>
+                                    <br>
+                                    <small class="text-muted">Lokasi belum ditentukan</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="admin-meta-card" style="margin-top: 24px;">
                     <h3 class="admin-card-title">Informasi Detail</h3>
 
                     <div class="admin-meta-list">
@@ -361,9 +605,16 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/openseadragon.min.js"></script>
+    <script src="https://unpkg.com/openseadragon@4.1.0/build/openseadragon/openseadragon.min.js"></script>
+    {{-- Leaflet JS --}}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // Wait for all resources to load
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded, initializing components...');
+        });
+
         // FUNGSI UNTUK OPENSEADRAGON (TIDAK BERUBAH)
         document.addEventListener("DOMContentLoaded", function() {
             const viewerElement = document.getElementById("openseadragon-viewer");
@@ -447,5 +698,173 @@
                 deleteForm.submit();
             }
         });
+
+        // ============================================================
+        // ADMIN LOCATION MAP INITIALIZATION
+        // ============================================================
+        @if ($dataSurvei->lokasi)
+            // Function to initialize map
+            function initAdminLocationMap() {
+                console.log('Initializing admin location map...');
+                
+                // Check if Leaflet is loaded
+                if (typeof L === 'undefined') {
+                    console.error('Leaflet library not loaded!');
+                    const mapElement = document.getElementById('adminSurveyLocationMap');
+                    if (mapElement) {
+                        // Show static map alternative
+                        mapElement.innerHTML = `
+                            <div style="padding: 20px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                                <div style="margin-bottom: 12px;">
+                                    <svg viewBox="0 0 24 24" width="32" height="32" fill="#666">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                    </svg>
+                                </div>
+                                <div style="font-weight: bold; color: #003366; margin-bottom: 8px;">{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</div>
+                                <div style="color: #666; font-size: 14px; margin-bottom: 12px;">
+                                    Koordinat: {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°, {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
+                                </div>
+                                <a href="https://www.google.com/maps?q={{ $dataSurvei->lokasi->pusat_lintang }},{{ $dataSurvei->lokasi->pusat_bujur }}" 
+                                   target="_blank" 
+                                   style="display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 13px;">
+                                    Buka di Google Maps
+                                </a>
+                            </div>
+                        `;
+                    }
+                    return;
+                }
+                
+                const mapElement = document.getElementById('adminSurveyLocationMap');
+                if (!mapElement) {
+                    console.error('Map element not found!');
+                    return;
+                }
+                
+                try {
+                    // Initialize admin location map
+                    const adminLocationMap = L.map('adminSurveyLocationMap', {
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        doubleClickZoom: true,
+                        boxZoom: false,
+                        keyboard: false,
+                        dragging: true,
+                        touchZoom: true
+                    }).setView([{{ $dataSurvei->lokasi->pusat_lintang }}, {{ $dataSurvei->lokasi->pusat_bujur }}], 8);
+
+                    // Add tile layer with error handling
+                    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 18,
+                        minZoom: 5,
+                        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                    });
+                    
+                    tileLayer.on('tileerror', function(error) {
+                        console.warn('Tile loading error:', error);
+                    });
+                    
+                    tileLayer.addTo(adminLocationMap);
+
+                    // Create blue icon same as main map page
+                    const blueIcon = new L.Icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    });
+
+                    // Create popup content with admin actions - styled like lokasi marker (smaller for detail page)
+                    const popupContent = `
+                        <div class="admin-popup-content popup-small popup-detail-centered">
+                            <h4 class="admin-popup-title">{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</h4>
+                            <div class="admin-popup-coordinates">
+                                {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°, {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
+                            </div>
+                            @if ($dataSurvei->lokasi->keterangan)
+                                <p class="admin-popup-description">{{ $dataSurvei->lokasi->keterangan }}</p>
+                            @endif
+                            <div class="admin-popup-actions admin-popup-actions-center">
+                                <a href="{{ route('admin.data_survei.edit', $dataSurvei) }}" class="admin-popup-btn admin-popup-btn-edit">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                    Edit
+                                </a>
+                                <button onclick="showDeleteModal()" class="admin-popup-btn admin-popup-btn-delete">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+
+
+
+                    // Add marker with popup
+                    const adminMarker = L.marker([{{ $dataSurvei->lokasi->pusat_lintang }}, {{ $dataSurvei->lokasi->pusat_bujur }}], {
+                        icon: blueIcon
+                    }).addTo(adminLocationMap);
+
+                    adminMarker.bindPopup(popupContent, {
+                        maxWidth: 250,
+                        className: 'admin-location-popup'
+                    });
+
+                    // Function to show delete modal from popup
+                    window.showDeleteModal = function() {
+                        // Close the popup first
+                        adminLocationMap.closePopup();
+                        
+                        // Trigger the same delete modal as the sidebar button
+                        document.getElementById('triggerDeleteModal').click();
+                    };
+
+                    // Fit map to show the marker properly
+                    setTimeout(() => {
+                        adminLocationMap.invalidateSize();
+                    }, 200);
+                    
+                    console.log('Admin location map initialized successfully!');
+                } catch (error) {
+                    console.error('Error initializing admin location map:', error);
+                    const mapElement = document.getElementById('adminSurveyLocationMap');
+                    if (mapElement) {
+                        mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">Terjadi kesalahan saat memuat peta.</div>';
+                    }
+                }
+            }
+
+            // Try to initialize map with multiple attempts
+            let attempts = 0;
+            const maxAttempts = 5;
+            
+            function tryInitMap() {
+                attempts++;
+                if (typeof L !== 'undefined') {
+                    initAdminLocationMap();
+                } else if (attempts < maxAttempts) {
+                    console.log(`Waiting for Leaflet... attempt ${attempts}/${maxAttempts}`);
+                    setTimeout(tryInitMap, 500);
+                } else {
+                    console.error('Failed to load Leaflet after multiple attempts');
+                    const mapElement = document.getElementById('adminSurveyLocationMap');
+                    if (mapElement) {
+                        mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">Gagal memuat library peta. Silakan refresh halaman.</div>';
+                    }
+                }
+            }
+            
+            // Start trying to initialize map
+            setTimeout(tryInitMap, 500);
+        @else
+            console.log('No location data found for this survey');
+        @endif
     </script>
 @endpush
