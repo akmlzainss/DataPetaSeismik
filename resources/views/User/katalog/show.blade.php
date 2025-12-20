@@ -66,7 +66,7 @@
                     <div class="article-content">
                         <h2 class="article-section-title">Keterangan</h2>
                         <div class="article-text">
-                            {!! strip_tags($survey->deskripsi, '<p><br><strong><em><ul><ol><li><h1><h2><h3>') !!}
+                            {!! strip_tags($survey->deskripsi, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6><blockquote><a><span><div>') !!}
                         </div>
                     </div>
                 @else

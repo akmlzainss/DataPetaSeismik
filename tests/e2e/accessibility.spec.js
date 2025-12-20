@@ -61,11 +61,13 @@ test.describe('Accessibility Tests', () => {
         await page.waitForTimeout(2000);
 
         // Check zoom buttons can be focused
-        const zoomIn = page.locator('#zoomInBtn');
+        // Check zoom buttons can be focused
+        const zoomIn = page.locator('.leaflet-control-zoom-in');
         if (await zoomIn.isVisible()) {
             await zoomIn.focus();
-            const focused = await page.evaluate(() => document.activeElement?.id);
-            expect(focused).toBe('zoomInBtn');
+            // Leaflet controls might not have ID, so we check if active element has correct class
+            const focusedClass = await page.evaluate(() => document.activeElement?.className);
+            expect(focusedClass).toContain('leaflet-control-zoom-in');
         }
     });
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Halaman Tidak Ditemukan - BBSPGL')
+@section('title', 'Sedang Maintenance - BBSPGL')
 
 @push('styles')
     <style>
@@ -21,7 +21,7 @@
         .error-code {
             font-size: 8rem;
             font-weight: 800;
-            color: #d63031; /* Merah ESDM-ish atau alert */
+            color: #636e72;
             margin-bottom: 0;
             line-height: 1;
             text-shadow: 2px 2px 0px #eee;
@@ -41,29 +41,9 @@
             line-height: 1.6;
         }
 
-        .btn-home {
-            display: inline-block;
-            background-color: #ffed00; /* Kuning tema */
-            color: #000;
-            padding: 12px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 2px solid #ffed00;
-        }
-
-        .btn-home:hover {
-            background-color: transparent;
-            color: #000;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-
         .error-illustration {
             font-size: 5rem;
-            color: #ffed00;
+            color: #636e72;
             margin-bottom: 20px;
         }
     </style>
@@ -73,17 +53,14 @@
     <div class="error-page">
         <div class="error-content">
             <div class="error-illustration">
-                <i class="fa-solid fa-map-location-dot fa-shake"></i>
+                <i class="fa-solid fa-screwdriver-wrench fa-bounce" style="--fa-animation-duration: 3s;"></i>
             </div>
-            <div class="error-code">404</div>
-            <h1 class="error-title">Halaman Tidak Ditemukan</h1>
+            <div class="error-code">503</div>
+            <h1 class="error-title">Sedang Dalam Pemeliharaan</h1>
             <p class="error-message">
-                Maaf, halaman yang Anda cari mungkin telah dihapus, <br>
-                namanya diubah, atau sementara tidak tersedia.
+                Kami sedang melakukan peningkatan sistem untuk pelayanan yang lebih baik. <br>
+                Silakan kembali lagi beberapa saat nanti.
             </p>
-            <a href="{{ route('beranda') }}" class="btn-home">
-                <i class="fa-solid fa-house"></i> Kembali ke Beranda
-            </a>
         </div>
     </div>
 @endsection

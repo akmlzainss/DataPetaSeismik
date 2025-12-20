@@ -247,15 +247,70 @@
                     <a href="https://www.esdm.go.id" target="_blank">Kementerian ESDM</a>
                 </p>
                 <div class="footer-bottom-links">
-                    <a href="#">Peta Situs</a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('sitemapModal').style.display='flex'">Peta Situs</a>
                     <a href="{{ route('privasi') }}">Kebijakan Privasi</a>
-                    <a href="#">Disclaimer</a>
-                    {{-- Admin login link for accessibility --}}
-                    <a href="{{ route('admin.login') }}" id="admin-login-link" title="Admin Login">Admin</a>
+                    <a href="{{ route('syarat') }}">Syarat & Ketentuan</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    {{-- ========== SITEMAP MODAL ========== --}}
+    <div id="sitemapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center; opacity:0; transition: opacity 0.3s ease;">
+        <div class="sitemap-content" style="background:white; width:90%; max-width:500px; border-radius:15px; padding:30px; position:relative; transform:scale(0.9); transition: transform 0.3s ease;">
+            <button onclick="closeSitemap()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px; color:#666; cursor:pointer;">&times;</button>
+            
+            <h3 style="color:#003366; border-bottom:2px solid #ffed00; padding-bottom:10px; marginBottom:20px; display:inline-block;">Peta Situs</h3>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                <div>
+                    <h4 style="font-size:16px; color:#333; margin-bottom:10px;">Menu Utama</h4>
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        <li style="margin-bottom:8px;"><a href="{{ route('beranda') }}" style="text-decoration:none; color:#0056b3; display:flex; align-items:center;"><i class="fas fa-home" style="width:20px;"></i> Beranda</a></li>
+                        <li style="margin-bottom:8px;"><a href="{{ route('katalog') }}" style="text-decoration:none; color:#0056b3; display:flex; align-items:center;"><i class="fas fa-database" style="width:20px;"></i> Katalog Data</a></li>
+                        <li style="margin-bottom:8px;"><a href="{{ route('peta') }}" style="text-decoration:none; color:#0056b3; display:flex; align-items:center;"><i class="fas fa-map-marked-alt" style="width:20px;"></i> Peta Sebaran</a></li>
+                        <li style="margin-bottom:8px;"><a href="{{ route('kontak') }}" style="text-decoration:none; color:#0056b3; display:flex; align-items:center;"><i class="fas fa-envelope" style="width:20px;"></i> Kontak</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-size:16px; color:#333; margin-bottom:10px;">Informasi</h4>
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        <li style="margin-bottom:8px;"><a href="{{ route('panduan') }}" style="text-decoration:none; color:#666; display:flex; align-items:center;"><i class="fas fa-book" style="width:20px;"></i> Panduan</a></li>
+                        <li style="margin-bottom:8px;"><a href="{{ route('faq') }}" style="text-decoration:none; color:#666; display:flex; align-items:center;"><i class="fas fa-question-circle" style="width:20px;"></i> FAQ</a></li>
+                        <li style="margin-bottom:8px;"><a href="{{ route('bantuan') }}" style="text-decoration:none; color:#666; display:flex; align-items:center;"><i class="fas fa-life-ring" style="width:20px;"></i> Bantuan</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        function closeSitemap() {
+            const modal = document.getElementById('sitemapModal');
+            const content = modal.querySelector('.sitemap-content');
+            modal.style.opacity = '0';
+            content.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        // Open animation
+        document.querySelector('a[onclick*="sitemapModal"]').addEventListener('click', function() {
+            const modal = document.getElementById('sitemapModal');
+            const content = modal.querySelector('.sitemap-content');
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                content.style.transform = 'scale(1)';
+            }, 10);
+        });
+        
+        // Close on outside click
+        document.getElementById('sitemapModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSitemap();
+        });
+    </script>
 
     {{-- ========== GLOBAL LOADING OVERLAY (TC016 FIX) ========== --}}
     <div id="globalLoadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">

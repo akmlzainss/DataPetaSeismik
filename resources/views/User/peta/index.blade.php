@@ -172,39 +172,6 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add custom zoom control buttons for better accessibility
-            const customZoomControl = L.control({position: 'topleft'});
-            customZoomControl.onAdd = function(map) {
-                const div = L.DomUtil.create('div', 'custom-zoom-controls');
-                div.innerHTML = `
-                    <button type="button" id="zoomInBtn" class="custom-zoom-btn" title="Zoom In" aria-label="Zoom In" style="display:block; width:40px; height:40px; font-size:20px; cursor:pointer; background:#fff; border:2px solid #ccc; border-radius:4px 4px 0 0; margin:0;">+</button>
-                    <button type="button" id="zoomOutBtn" class="custom-zoom-btn" title="Zoom Out" aria-label="Zoom Out" style="display:block; width:40px; height:40px; font-size:20px; cursor:pointer; background:#fff; border:2px solid #ccc; border-top:none; border-radius:0 0 4px 4px; margin:0;">−</button>
-                `;
-                return div;
-            };
-            customZoomControl.addTo(map);
-
-            // Add event listeners for custom zoom buttons
-            document.getElementById('zoomInBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                map.zoomIn();
-                console.log('Zoom In clicked, new zoom:', map.getZoom());
-            });
-            document.getElementById('zoomOutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                map.zoomOut();
-                console.log('Zoom Out clicked, new zoom:', map.getZoom());
-            });
-
-            // Keyboard shortcuts for zoom
-            document.addEventListener('keydown', function(e) {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (e.key === '+' || e.key === '=') map.zoomIn();
-                if (e.key === '-') map.zoomOut();
-            });
-
             // Hide loading overlay after map is initialized
             setTimeout(() => {
                 document.getElementById('loading-overlay').style.display = 'none';

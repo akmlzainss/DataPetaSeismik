@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Halaman Tidak Ditemukan - BBSPGL')
+@section('title', 'Akses Ditolak - BBSPGL')
 
 @push('styles')
     <style>
@@ -21,7 +21,7 @@
         .error-code {
             font-size: 8rem;
             font-weight: 800;
-            color: #d63031; /* Merah ESDM-ish atau alert */
+            color: #d63031;
             margin-bottom: 0;
             line-height: 1;
             text-shadow: 2px 2px 0px #eee;
@@ -43,7 +43,7 @@
 
         .btn-home {
             display: inline-block;
-            background-color: #ffed00; /* Kuning tema */
+            background-color: #ffed00;
             color: #000;
             padding: 12px 30px;
             border-radius: 50px;
@@ -63,7 +63,7 @@
 
         .error-illustration {
             font-size: 5rem;
-            color: #ffed00;
+            color: #d63031;
             margin-bottom: 20px;
         }
     </style>
@@ -73,13 +73,13 @@
     <div class="error-page">
         <div class="error-content">
             <div class="error-illustration">
-                <i class="fa-solid fa-map-location-dot fa-shake"></i>
+                <i class="fa-solid fa-ban fa-beat-fade"></i>
             </div>
-            <div class="error-code">404</div>
-            <h1 class="error-title">Halaman Tidak Ditemukan</h1>
+            <div class="error-code">403</div>
+            <h1 class="error-title">Akses Ditolak</h1>
             <p class="error-message">
-                Maaf, halaman yang Anda cari mungkin telah dihapus, <br>
-                namanya diubah, atau sementara tidak tersedia.
+                Maaf, Anda tidak memiliki izin untuk mengakses halaman ini. <br>
+                Silakan hubungi administrator jika Anda merasa ini kesalahan.
             </p>
             <a href="{{ route('beranda') }}" class="btn-home">
                 <i class="fa-solid fa-house"></i> Kembali ke Beranda

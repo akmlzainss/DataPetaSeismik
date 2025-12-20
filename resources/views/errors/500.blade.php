@@ -1,78 +1,89 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terjadi Kesalahan - BBSPGL</title>
+@section('title', 'Terjadi Kesalahan - BBSPGL')
+
+@push('styles')
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            min-height: 100vh;
+        .error-page {
+            min-height: 70vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #f9f9f9;
         }
 
-        .error-container {
-            text-align: center;
-            color: white;
+        .error-content {
             max-width: 600px;
-            padding: 2rem;
         }
 
         .error-code {
             font-size: 8rem;
-            font-weight: bold;
+            font-weight: 800;
+            color: #d63031;
+            margin-bottom: 0;
+            line-height: 1;
+            text-shadow: 2px 2px 0px #eee;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #333;
         }
 
         .error-message {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-
-        .error-description {
-            font-size: 1rem;
+            font-size: 1.1rem;
+            color: #666;
             margin-bottom: 2rem;
-            opacity: 0.8;
+            line-height: 1.6;
         }
 
-        .back-button {
+        .btn-home {
             display: inline-block;
+            background-color: #ffed00;
+            color: #000;
             padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            border-radius: 50px;
             text-decoration: none;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            border: 2px solid #ffed00;
         }
 
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .btn-home:hover {
+            background-color: transparent;
+            color: #000;
             transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .error-illustration {
+            font-size: 5rem;
+            color: #d63031;
+            margin-bottom: 20px;
         }
     </style>
-</head>
+@endpush
 
-<body>
-    <div class="error-container">
-        <div class="error-code">500</div>
-        <div class="error-message">Terjadi Kesalahan Server</div>
-        <div class="error-description">Mohon maaf, terjadi kesalahan pada sistem. Tim teknis kami sedang menangani
-            masalah ini.</div>
-        <a href="{{ route('beranda') }}" class="back-button">Kembali ke Beranda</a>
+@section('content')
+    <div class="error-page">
+        <div class="error-content">
+            <div class="error-illustration">
+                <i class="fa-solid fa-server fa-bounce"></i>
+            </div>
+            <div class="error-code">500</div>
+            <h1 class="error-title">Terjadi Kesalahan Server</h1>
+            <p class="error-message">
+                Maaf, sedang terjadi gangguan pada server kami. <br>
+                Tim teknis kami sedang bekerjasama untuk memperbaikinya.
+            </p>
+            <a href="{{ route('beranda') }}" class="btn-home">
+                <i class="fa-solid fa-house"></i> Kembali ke Beranda
+            </a>
+        </div>
     </div>
-</body>
-
-</html>
+@endsection
