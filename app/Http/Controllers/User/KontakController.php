@@ -23,12 +23,12 @@ class KontakController extends Controller
     public function submit(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'subjek' => 'required|string|max:255',
             'pesan' => 'required|string',
         ], [
-            'nama.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'subjek.required' => 'Subjek pesan wajib diisi.',

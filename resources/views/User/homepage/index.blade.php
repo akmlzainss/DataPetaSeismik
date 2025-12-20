@@ -36,7 +36,7 @@
             </div>
         </div>
         <div class="hero-image">
-            <img src="{{ asset('images/hero-illustration.png') }}" alt="Ilustrasi Survei Seismik" onerror="this.style.display='none'">
+            <img src="{{ asset('images/hero-kapal-seisimik.jpeg') }}" alt="Ilustrasi Survei Seismik" onerror="this.style.display='none'">
         </div>
     </div>
 </section>

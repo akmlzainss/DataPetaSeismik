@@ -21,7 +21,15 @@ class DataSurveiRequest extends FormRequest
             'tipe'            => ['required', 'string', Rule::in(['2D', '3D', 'HR', 'Lainnya'])],
             'wilayah'        => ['required', 'string', 'max:255'],
             'deskripsi'      => ['nullable', 'string'],
-            'gambar_pratinjau' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif', 'max:51200'],
+            'gambar_pratinjau' => [
+                'nullable', 
+                'file', 
+                'image',  // This validates it's actually an image
+                'mimes:jpeg,png,jpg', 
+                'mimetypes:image/jpeg,image/png,image/jpg', 
+                'max:5120',
+                'dimensions:min_width=100,min_height=100,max_width=5000,max_height=5000'
+            ],
             'tautan_file'    => ['nullable', 'string', 'max:2048'],
         ];
     }
@@ -37,9 +45,11 @@ class DataSurveiRequest extends FormRequest
             'tipe.required'     => 'Tipe survei wajib dipilih.',
             'tipe.in'           => 'Tipe hanya boleh 2D, 3D, HR, atau Lainnya.',
             'wilayah.required'  => 'Wilayah / blok wajib diisi.',
-            'gambar_pratinjau.file' => 'File harus berupa gambar.',
-            'gambar_pratinjau.mimes' => 'Format gambar harus jpeg, png, jpg, atau gif.',
-            'gambar_pratinjau.max' => 'Ukuran gambar maksimal 50MB.',
+            'gambar_pratinjau.image' => 'File harus berupa gambar yang valid (JPEG atau PNG).',
+            'gambar_pratinjau.mimes' => 'Format file tidak didukung. Hanya JPEG, PNG, atau JPG yang diperbolehkan.',
+            'gambar_pratinjau.mimetypes' => 'Tipe konten file tidak valid. File harus berupa gambar asli.',
+            'gambar_pratinjau.max' => 'Ukuran gambar maksimal 5MB.',
+            'gambar_pratinjau.dimensions' => 'Dimensi gambar harus minimal 100x100 piksel dan maksimal 5000x5000 piksel.',
         ];
     }
 }

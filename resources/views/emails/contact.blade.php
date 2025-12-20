@@ -108,7 +108,7 @@
 
             <div class="info-group">
                 <span class="info-label">Pengirim</span>
-                <div class="info-value">{{ $data['nama'] }}</div>
+                <div class="info-value">{{ $data['nama_lengkap'] }}</div>
                 <div style="font-size: 14px; color: #666; margin-top: 2px;">
                     <a href="mailto:{{ $data['email'] }}"
                         style="color: #003366; text-decoration: none;">{{ $data['email'] }}</a>

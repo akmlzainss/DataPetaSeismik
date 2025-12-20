@@ -14,7 +14,7 @@ class AdminSeeder extends Seeder
         $now = Carbon::now();
 
         DB::table('admin')->insertOrIgnore([
-            'nama'           => 'Admin Utama',        // PASTI 'nama', bukan 'nama_admin'
+            'nama'           => 'Admin Utama',
             'email'          => 'amay@example.com',
             'kata_sandi'     => Hash::make('12345678'),
             'remember_token' => null,
@@ -22,6 +22,17 @@ class AdminSeeder extends Seeder
             'updated_at'     => $now,
         ]);
 
+        // Admin kedua untuk TestSprite password reset test
+        DB::table('admin')->insertOrIgnore([
+            'nama'           => 'Admin BBSPGL',
+            'email'          => 'admin@bbspgl.esdm.go.id',
+            'kata_sandi'     => Hash::make('12345678'),
+            'remember_token' => null,
+            'created_at'     => $now,
+            'updated_at'     => $now,
+        ]);
+
         $this->command->info('Admin berhasil dibuat: amay@example.com | password: 12345678');
+        $this->command->info('Admin berhasil dibuat: admin@bbspgl.esdm.go.id | password: 12345678');
     }
 }

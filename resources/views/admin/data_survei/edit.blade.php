@@ -120,7 +120,7 @@
                     <!-- Gambar Pratinjau -->
                     <div class="form-group full-width">
                         <label class="form-label">Gambar Pratinjau (Opsional)</label>
-                        <input type="file" name="gambar_pratinjau" class="form-file" accept="image/*">
+                        <input type="file" name="gambar_pratinjau" class="form-file" accept=".jpeg,.jpg,.png">
 
                         @if ($dataSurvei->gambar_pratinjau)
                             <div class="image-preview" style="margin-top:16px;">
@@ -130,8 +130,8 @@
                             </div>
                         @endif
 
-                        <span class="help-text">Upload gambar baru jika ingin mengganti • Maksimal
-                            <strong>500MB</strong></span>
+                        <span class="help-text">Format: JPEG, JPG, PNG • Maksimal
+                            <strong>5MB</strong></span>
                         @error('gambar_pratinjau')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
