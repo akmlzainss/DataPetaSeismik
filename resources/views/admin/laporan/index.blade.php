@@ -329,7 +329,7 @@
 
                 <div class="filter-item">
                     <label>Tahun</label>
-                    <select name="tahun" class="form-select" {{ request('export_range') ? 'disabled' : '' }}>
+                    <select name="tahun" class="form-select">
                         <option value="">Semua Tahun</option>
                         @foreach ($tahunTersedia as $t)
                             <option value="{{ $t }}" {{ $tahun == $t ? 'selected' : '' }}>{{ $t }}
@@ -340,7 +340,7 @@
 
                 <div class="filter-item">
                     <label>Bulan</label>
-                    <select name="bulan" class="form-select" {{ request('export_range') ? 'disabled' : '' }}>
+                    <select name="bulan" class="form-select">
                         <option value="">Semua Bulan</option>
                         @for ($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
@@ -867,8 +867,8 @@
             if (currentParams.get('tipe')) params.append('tipe', currentParams.get('tipe'));
 
             const baseUrl = format === 'excel' ?
-                '{{ route('admin.export.excel') }}' :
-                '{{ route('admin.export.pdf') }}';
+                '{{ route('admin.laporan.export.excel') }}' :
+                '{{ route('admin.laporan.export.pdf') }}';
 
             const fullUrl = baseUrl + (params.toString() ? '?' + params.toString() : '');
 

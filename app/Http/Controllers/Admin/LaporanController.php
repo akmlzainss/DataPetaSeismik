@@ -23,6 +23,12 @@ class LaporanController extends Controller
         $tipe = $request->input('tipe');
         $exportRange = $request->input('export_range');
 
+        // Fix: Jika user memilih filter manual (Tahun/Bulan), abaikan export_range
+        // Ini mengatasi masalah di mana filter bulan tidak berfungsi jika export_range tertinggal di URL
+        if ($request->has('bulan') || $request->has('tahun')) {
+            $exportRange = null;
+        }
+
         // ========== LAPORAN PER TIPE SURVEI ==========
 
         $laporanPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
@@ -192,15 +198,97 @@ class LaporanController extends Controller
     }
 
     /**
-     * Export laporan (untuk pengembangan selanjutnya)
+     * Export laporan ke PDF
      */
-    public function export(Request $request)
+    public function exportPdf(Request $request)
     {
-        // Placeholder untuk fitur export PDF/Excel
-        return response()->json([
-            'message' => 'Fitur export sedang dalam pengembangan',
-            'status' => 'coming_soon'
-        ]);
+        $data = $this->getReportData($request);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.export-pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
+        
+        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export laporan ke Excel (CSV format)
+     */
+    public function exportExcel(Request $request)
+    {
+        $data = $this->getReportData($request);
+        
+        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+        
+        $callback = function() use ($data) {
+            $file = fopen('php://output', 'w');
+            
+            // Header row
+            fputcsv($file, ['No', 'Judul', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload']);
+            
+            // Data rows
+            $no = 1;
+            foreach ($data['surveiTerbaru'] as $survei) {
+                fputcsv($file, [
+                    $no++,
+                    $survei->judul,
+                    $survei->tahun,
+                    $survei->tipe,
+                    $survei->wilayah,
+                    $survei->ketua_tim ?? '-',
+                    $survei->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Get report data for export
+     */
+    private function getReportData(Request $request)
+    {
+        $tahun = $request->input('tahun');
+        $bulan = $request->input('bulan');
+        $tipe = $request->input('tipe');
+        $exportRange = $request->input('export_range');
+
+        $query = DataSurvei::with(['pengunggah', 'lokasi'])
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        return [
+            'surveiTerbaru' => $query,
+            'tahun' => $tahun,
+            'bulan' => $bulan,
+            'tipe' => $tipe,
+            'tanggalExport' => Carbon::now()->format('d F Y H:i'),
+        ];
     }
 
     /**

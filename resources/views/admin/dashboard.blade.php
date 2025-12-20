@@ -140,8 +140,23 @@
 @endpush
 
 @push('scripts')
+    {{-- Chart.js with fallback --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js CDN failed, using local fallback');
+            document.write('<script src="{{ asset("assets/js/chart.min.js") }}"><\/script>');
+        }
+    </script>
+    
+    {{-- jQuery with fallback --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        if (typeof jQuery === 'undefined') {
+            console.warn('jQuery CDN failed, using local fallback');
+            document.write('<script src="{{ asset("assets/js/jquery-3.6.0.min.js") }}"><\/script>');
+        }
+    </script>
 @endpush
 
 @section('content')

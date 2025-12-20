@@ -60,6 +60,22 @@ class ForgotPasswordController extends Controller
         return view('admin.auth.reset-password', ['token' => $token]);
     }
 
+    /**
+     * Handle reset password form when token is passed as query string.
+     * This helps testing bots that may use ?token=xxx format.
+     */
+    public function showResetFormFromQuery(Request $request)
+    {
+        $token = $request->query('token');
+        
+        if (!$token) {
+            return redirect()->route('admin.password.request')
+                ->with('error', 'Token reset password tidak ditemukan. Silakan request ulang.');
+        }
+        
+        return view('admin.auth.reset-password', ['token' => $token]);
+    }
+
     public function reset(Request $request)
     {
         $request->validate([

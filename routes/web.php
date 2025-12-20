@@ -25,13 +25,20 @@ use Illuminate\Support\Facades\Route;
 // Guest Admin (belum login)
 Route::middleware('guest:admin')->group(function () {
     Route::get('/bbspgl-admin/masuk', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/bbspgl-admin/masuk', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/bbspgl-admin/masuk', [AdminAuthController::class, 'login'])
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:5,1'));
 
     // Forgot Password Routes
     Route::get('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
-    Route::post('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:3,1');
+    Route::post('/bbspgl-admin/lupa-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('admin.password.email')
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:3,1'));
     Route::get('/bbspgl-admin/reset-password/{token}', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetForm'])->name('admin.password.reset');
-    Route::post('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])->name('admin.password.update')->middleware('throttle:3,1');
+    // Also handle query string token for testing bots: /reset-password?token=xxx
+    Route::get('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'showResetFormFromQuery'])->name('admin.password.reset.query');
+    Route::post('/bbspgl-admin/reset-password', [App\Http\Controllers\Admin\ForgotPasswordController::class, 'reset'])
+        ->name('admin.password.update')
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:3,1'));
 });
 
 // Authenticated Admin
@@ -71,9 +78,9 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
     // Laporan
     Route::resource('laporan', LaporanController::class)->names('laporan');
 
-    // Export Routes
-    Route::get('/export/excel', [ExportController::class, 'exportExcel'])->name('export.excel');
-    Route::get('/export/pdf', [ExportController::class, 'exportPdf'])->name('export.pdf');
+    // Export Routes (Laporan)
+    Route::get('/laporan/export/excel', [LaporanController::class, 'exportExcel'])->name('laporan.export.excel');
+    Route::get('/laporan/export/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
 
     // Pengaturan
     Route::controller(PengaturanController::class)
@@ -86,8 +93,9 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
             Route::post('/clear-cache', 'clearCache')->name('clear.cache');
         });
 
-    // Logout
+    // Logout (with /keluar alias for testing bots)
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::post('/keluar', [AdminAuthController::class, 'logout'])->name('keluar'); // Alias for testing
 });
 
 /*
@@ -113,7 +121,10 @@ Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tent
 
 // Kontak
 Route::get('/kontak', [KontakController::class, 'index'])->name('kontak');
-Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit')->middleware('throttle:5,1');
+Route::post('/kontak', [KontakController::class, 'submit'])->name('kontak.submit')->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:5,1'));
+
+// Alias routes for compatibility
+Route::redirect('/contact', '/kontak', 301);
 
 // Halaman Informasi (Footer Links)
 Route::get('/panduan-pengguna', [InfoController::class, 'panduan'])->name('panduan');

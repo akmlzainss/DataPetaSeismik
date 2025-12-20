@@ -112,8 +112,8 @@
                     <!-- Gambar Pratinjau tetap sama -->
                     <div class="form-group full-width">
                         <label class="form-label">Gambar Pratinjau (Opsional)</label>
-                        <input type="file" name="gambar_pratinjau" class="form-file" accept="image/*">
-                        <span class="help-text">Format: JPG, PNG, TIFF • Maksimal <strong>500MB</strong></span>
+                        <input type="file" name="gambar_pratinjau" class="form-file" accept=".jpeg,.jpg,.png">
+                        <span class="help-text">Format: JPEG, JPG, PNG • Maksimal <strong>5MB</strong></span>
                         @error('gambar_pratinjau')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
@@ -177,15 +177,86 @@
                 placeholder: 'Penjelasan untuk hasil survei ini...'
             });
 
-            // Submit: masukkan HTML ke textarea tersembunyi
-            document.getElementById('uploadForm').onsubmit = function() {
+            // File input validation (TC014 fix)
+            const fileInput = document.querySelector('input[name="gambar_pratinjau"]');
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    // Remove existing error messages
+                    let existingError = this.parentElement.querySelector('.file-error-js');
+                    if (existingError) existingError.remove();
+                    
+                    if (file) {
+                        let errors = [];
+                        
+                        // Check file type
+                        if (!allowedTypes.includes(file.type)) {
+                            errors.push('Format file tidak didukung. Hanya JPEG, JPG, atau PNG.');
+                        }
+                        
+                        // Check file size
+                        if (file.size > maxSize) {
+                            errors.push('Ukuran file terlalu besar. Maksimal 5MB. File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                        }
+                        
+                        if (errors.length > 0) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'file-error-js error-message';
+                            errorDiv.style.cssText = 'color: #dc3545; background: #fff5f5; padding: 10px; border-radius: 4px; margin-top: 8px; border: 1px solid #f5c2c7;';
+                            errorDiv.innerHTML = '⚠️ ' + errors.join('<br>⚠️ ');
+                            this.parentElement.appendChild(errorDiv);
+                            this.value = ''; // Clear the input
+                        } else {
+                            // Show success info
+                            const successDiv = document.createElement('div');
+                            successDiv.className = 'file-error-js';
+                            successDiv.style.cssText = 'color: #198754; background: #f0fff4; padding: 10px; border-radius: 4px; margin-top: 8px; border: 1px solid #c3e6cb;';
+                            successDiv.innerHTML = '✓ File siap diupload: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
+                            this.parentElement.appendChild(successDiv);
+                        }
+                    }
+                });
+            }
+
+            // Form submit with loading state (TC016 fix)
+            const form = document.getElementById('uploadForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loadingText = document.getElementById('loadingText');
+            
+            form.onsubmit = function(e) {
+                // Check for file validation errors
+                const fileError = document.querySelector('.file-error-js.error-message');
+                if (fileError) {
+                    e.preventDefault();
+                    alert('Mohon perbaiki error file upload sebelum melanjutkan.');
+                    return false;
+                }
+                
+                // Set Quill content to hidden textarea
                 document.getElementById('quill-hidden').value = quill.root.innerHTML;
 
-                // Loading button
-                document.getElementById('submitText').style.display = 'none';
-                document.getElementById('loadingText').style.display = 'inline';
-                document.getElementById('submitBtn').disabled = true;
+                // Show loading state
+                submitText.style.display = 'none';
+                loadingText.style.display = 'inline';
+                loadingText.innerHTML = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" style="animation: spin 1s linear infinite; margin-right: 8px;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.416" stroke-dashoffset="10"></circle></svg> Menyimpan data...';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.7';
+                submitBtn.style.cursor = 'wait';
             };
         });
     </script>
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
 @endpush

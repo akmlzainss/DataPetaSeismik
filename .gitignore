@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Playwright test results
+/test-results
+/playwright-report
+/playwright/.cache
+
+# TestSprite (if regenerated)
+/testsprite_tests

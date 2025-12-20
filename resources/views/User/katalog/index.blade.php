@@ -110,14 +110,14 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-wrapper">
+            <div class="pagination-wrapper" id="pagination-section">
                 {{ $surveys->links() }}
-                @if ($surveys->hasPages())
-                    <div class="pagination-info">
-                        {{ $surveys->firstItem() }} - {{ $surveys->lastItem() }} dari {{ $surveys->total() }}
-                        survei
-                    </div>
-                @endif
+                <div class="pagination-info">
+                    Menampilkan {{ $surveys->firstItem() ?? 0 }} - {{ $surveys->lastItem() ?? 0 }} dari {{ $surveys->total() }} survei
+                    @if($surveys->hasPages())
+                        | Halaman {{ $surveys->currentPage() }} dari {{ $surveys->lastPage() }}
+                    @endif
+                </div>
             </div>
         @else
             <div class="no-results">

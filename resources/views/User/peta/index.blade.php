@@ -62,6 +62,27 @@
                             <span class="legend-item"><span class="dot dot-blue"></span> Area Survei</span>
                         </div>
                     </div>
+                    
+                    {{-- Filter Controls --}}
+                    <div class="map-filter-controls" style="padding: 12px 16px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                        <label style="font-weight: 600; font-size: 14px; color: #003366;">
+                            <i class="fas fa-filter"></i> Filter:
+                        </label>
+                        <select id="filterTipe" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-width: 120px;">
+                            <option value="">Semua Tipe</option>
+                            <option value="2D">2D</option>
+                            <option value="3D">3D</option>
+                            <option value="HR">HR</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                        <button type="button" id="applyFilterBtn" style="padding: 8px 16px; background: #003366; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                            <i class="fas fa-search"></i> Terapkan
+                        </button>
+                        <button type="button" id="resetFilterBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                        <span id="filterStatus" style="font-size: 13px; color: #666;"></span>
+                    </div>
                     <div class="map-frame">
                         <div id="map">
                             <div class="loading-overlay" id="loading-overlay">
@@ -142,13 +163,47 @@
                 maxBounds: indonesiaBounds,
                 maxBoundsViscosity: 1.0,
                 minZoom: 5,
-                maxZoom: 18
+                maxZoom: 18,
+                zoomControl: true // Enable default zoom control
             }).fitBounds(indonesiaBounds);
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+
+            // Add custom zoom control buttons for better accessibility
+            const customZoomControl = L.control({position: 'topleft'});
+            customZoomControl.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'custom-zoom-controls');
+                div.innerHTML = `
+                    <button type="button" id="zoomInBtn" class="custom-zoom-btn" title="Zoom In" aria-label="Zoom In" style="display:block; width:40px; height:40px; font-size:20px; cursor:pointer; background:#fff; border:2px solid #ccc; border-radius:4px 4px 0 0; margin:0;">+</button>
+                    <button type="button" id="zoomOutBtn" class="custom-zoom-btn" title="Zoom Out" aria-label="Zoom Out" style="display:block; width:40px; height:40px; font-size:20px; cursor:pointer; background:#fff; border:2px solid #ccc; border-top:none; border-radius:0 0 4px 4px; margin:0;">−</button>
+                `;
+                return div;
+            };
+            customZoomControl.addTo(map);
+
+            // Add event listeners for custom zoom buttons
+            document.getElementById('zoomInBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                map.zoomIn();
+                console.log('Zoom In clicked, new zoom:', map.getZoom());
+            });
+            document.getElementById('zoomOutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                map.zoomOut();
+                console.log('Zoom Out clicked, new zoom:', map.getZoom());
+            });
+
+            // Keyboard shortcuts for zoom
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.key === '+' || e.key === '=') map.zoomIn();
+                if (e.key === '-') map.zoomOut();
+            });
 
             // Hide loading overlay after map is initialized
             setTimeout(() => {
@@ -321,6 +376,50 @@ Lihat Detail
                 console.log('All markers array length:', allMarkers.length);
                 console.log('Markers successfully loaded on map');
             }, 1000);
+
+            // ============ FILTER FUNCTIONALITY ============
+            const filterTipe = document.getElementById('filterTipe');
+            const applyFilterBtn = document.getElementById('applyFilterBtn');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            const filterStatus = document.getElementById('filterStatus');
+
+            function applyFilter() {
+                const selectedTipe = filterTipe.value;
+                let visibleCount = 0;
+
+                allMarkers.forEach(item => {
+                    if (!selectedTipe || item.tipe === selectedTipe) {
+                        item.marker.addTo(map);
+                        visibleCount++;
+                    } else {
+                        map.removeLayer(item.marker);
+                    }
+                });
+
+                if (selectedTipe) {
+                    filterStatus.textContent = `Menampilkan ${visibleCount} dari ${allMarkers.length} marker (Tipe: ${selectedTipe})`;
+                } else {
+                    filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
+                }
+                console.log('Filter applied:', selectedTipe, 'Visible:', visibleCount);
+            }
+
+            function resetFilter() {
+                filterTipe.value = '';
+                allMarkers.forEach(item => {
+                    item.marker.addTo(map);
+                });
+                filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
+                console.log('Filter reset');
+            }
+
+            // Event listeners for filter
+            applyFilterBtn?.addEventListener('click', applyFilter);
+            resetFilterBtn?.addEventListener('click', resetFilter);
+            filterTipe?.addEventListener('change', applyFilter);
+
+            // Initial status
+            filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
         });
     </script>
 @endpush

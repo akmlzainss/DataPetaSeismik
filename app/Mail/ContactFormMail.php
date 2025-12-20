@@ -31,7 +31,7 @@ class ContactFormMail extends Mailable
     {
         return new Envelope(
             subject: '[Sistem Informasi Survei Seismik] Pesan Baru: ' . $this->data['subjek'],
-            from: new Address($this->data['email'], $this->data['nama']),
+            from: new Address($this->data['email'], $this->data['nama_lengkap']),
         );
     }
 

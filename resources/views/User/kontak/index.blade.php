@@ -384,13 +384,13 @@
                 <div class="info-section">
                     <h3 class="info-title">Media Sosial</h3>
                     <div style="display: flex; gap: 15px; margin-top: 15px;">
-                        <a href="https://www.facebook.com/people/Badan-Geologi/100068349101047/" target="_blank"
+                        <a href="https://www.facebook.com/people/Badan-Geologi/100068349101047/" target="_blank" rel="noopener noreferrer"
                             style="color: #3b5998; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
-                        <a href="https://twitter.com/badangeologi_" target="_blank"
+                        <a href="https://twitter.com/badangeologi_" target="_blank" rel="noopener noreferrer"
                             style="color: #1da1f2; font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
-                        <a href="https://www.instagram.com/geologi_kelautan/" target="_blank"
+                        <a href="https://www.instagram.com/geologi_kelautan/" target="_blank" rel="noopener noreferrer"
                             style="color: #e1306c; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.youtube.com/@BadanGeologiBG" target="_blank"
+                        <a href="https://www.youtube.com/@BadanGeologiBG" target="_blank" rel="noopener noreferrer"
                             style="color: #ff0000; font-size: 1.5rem;"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
@@ -422,10 +422,10 @@
                     @csrf
 
                     <div class="form-group">
-                        <label for="nama" class="form-label">Nama Lengkap <span class="required">*</span></label>
-                        <input type="text" class="form-control @error('nama') is-invalid @enderror" id="nama"
-                            name="nama" value="{{ old('nama') }}" placeholder="Contoh: Budi Santoso" required>
-                        @error('nama')
+                        <label for="nama_lengkap" class="form-label">Nama Lengkap <span class="required">*</span></label>
+                        <input type="text" class="form-control @error('nama_lengkap') is-invalid @enderror" id="nama_lengkap"
+                            name="nama_lengkap" value="{{ old('nama_lengkap') }}" placeholder="Contoh: Budi Santoso" required>
+                        @error('nama_lengkap')
                             <div style="color: var(--error-color); font-size: 0.85rem; margin-top: 0.3rem;">{{ $message }}
                             </div>
                         @enderror

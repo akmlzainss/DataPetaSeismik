@@ -68,7 +68,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.password.request') }}" class="login-form">
+                    <form method="POST" action="{{ route('admin.password.email') }}" class="login-form">
                         @csrf
 
                         <div class="form-group">

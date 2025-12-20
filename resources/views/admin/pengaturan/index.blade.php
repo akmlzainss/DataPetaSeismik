@@ -66,6 +66,13 @@
             </svg>
             Keamanan
         </button>
+        <button class="settings-tab" data-tab="sistem">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
+            Sistem
+        </button>
     </div>
 
     {{-- TAB 1: PROFIL SAYA --}}
@@ -298,6 +305,100 @@
         </div>
     </div>
 
+    {{-- TAB 3: SISTEM --}}
+    <div id="sistem" class="settings-tab-content">
+        {{-- Cache Management Card --}}
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                    Manajemen Cache
+                </div>
+                <div class="settings-card-subtitle">Kelola cache aplikasi untuk performa optimal</div>
+            </div>
+            <div class="settings-card-body">
+                <div class="info-box-settings warning">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                    </svg>
+                    <div>
+                        <strong>Informasi Cache</strong>
+                        <p>Membersihkan cache dapat membantu menyelesaikan masalah tampilan atau data yang tidak sinkron. Proses ini aman dan tidak akan menghapus data penting.</p>
+                    </div>
+                </div>
+
+                <form action="{{ route('admin.pengaturan.clear.cache') }}" method="POST" style="margin-top: 20px;">
+                    @csrf
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save" style="background: #dc3545; border-color: #dc3545;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                            </svg>
+                            Bersihkan Cache Aplikasi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- System Info Card --}}
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                    </svg>
+                    Informasi Sistem
+                </div>
+                <div class="settings-card-subtitle">Detail teknis aplikasi</div>
+            </div>
+            <div class="settings-card-body">
+                <div class="security-info-grid">
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H3v-2h9v2zm9-4H3v-2h18v2zm0-4H3V7h18v2z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Versi Laravel</div>
+                            <div class="security-info-value">{{ app()->version() }}</div>
+                        </div>
+                    </div>
+
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Versi PHP</div>
+                            <div class="security-info-value">{{ PHP_VERSION }}</div>
+                        </div>
+                    </div>
+
+                    <div class="security-info-item">
+                        <div class="security-info-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                            </svg>
+                        </div>
+                        <div class="security-info-content">
+                            <div class="security-info-label">Environment</div>
+                            <div class="security-info-value">{{ app()->environment() }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -307,19 +408,47 @@
             const tabs = document.querySelectorAll('.settings-tab');
             const contents = document.querySelectorAll('.settings-tab-content');
 
+            function switchTab(targetTab) {
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                // Add active class to target tab button
+                const targetButton = document.querySelector(`.settings-tab[data-tab="${targetTab}"]`);
+                if (targetButton) {
+                    targetButton.classList.add('active');
+                }
+
+                // Add active class to target content
+                const targetContent = document.getElementById(targetTab);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+
+                // Update URL hash without page reload
+                history.replaceState(null, null, `#${targetTab}`);
+            }
+
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     const targetTab = this.dataset.tab;
-
-                    // Remove active class from all tabs and contents
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
-
-                    // Add active class to clicked tab and corresponding content
-                    this.classList.add('active');
-                    document.getElementById(targetTab).classList.add('active');
+                    switchTab(targetTab);
                 });
             });
+
+            // Handle URL hash on page load (for direct links like /pengaturan#keamanan)
+            function handleHashChange() {
+                const hash = window.location.hash.replace('#', '');
+                if (hash && document.getElementById(hash)) {
+                    switchTab(hash);
+                }
+            }
+
+            // Check hash on load
+            handleHashChange();
+
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashChange);
         });
     </script>
 @endpush
