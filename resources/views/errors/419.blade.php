@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Halaman Tidak Ditemukan - BBSPGL')
+@section('title', 'Sesi Berakhir - BBSPGL')
 
 @push('styles')
     <style>
@@ -21,7 +21,7 @@
         .error-code {
             font-size: 8rem;
             font-weight: 800;
-            color: #d63031; /* Merah ESDM-ish atau alert */
+            color: #f0932b; /* Orange for warning/expired */
             margin-bottom: 0;
             line-height: 1;
             text-shadow: 2px 2px 0px #eee;
@@ -43,7 +43,7 @@
 
         .btn-home {
             display: inline-block;
-            background-color: #ffed00; /* Kuning tema */
+            background-color: #ffed00;
             color: #000;
             padding: 12px 30px;
             border-radius: 50px;
@@ -63,7 +63,7 @@
 
         .error-illustration {
             font-size: 5rem;
-            color: #ffed00;
+            color: #f0932b;
             margin-bottom: 20px;
         }
     </style>
@@ -73,16 +73,16 @@
     <div class="error-page">
         <div class="error-content">
             <div class="error-illustration">
-                <i class="fa-solid fa-map-location-dot fa-shake"></i>
+                <i class="fa-solid fa-hourglass-end fa-spin-pulse" style="--fa-animation-duration: 2s;"></i>
             </div>
-            <div class="error-code">404</div>
-            <h1 class="error-title">Halaman Tidak Ditemukan</h1>
+            <div class="error-code">419</div>
+            <h1 class="error-title">Sesi Kedaluwarsa</h1>
             <p class="error-message">
-                Maaf, halaman yang Anda cari mungkin telah dihapus, <br>
-                namanya diubah, atau sementara tidak tersedia.
+                Maaf, sesi Anda telah berakhir karena tidak ada aktivitas. <br>
+                Silakan muat ulang halaman untuk melanjutkan.
             </p>
-            <a href="{{ route('beranda') }}" class="btn-home">
-                <i class="fa-solid fa-house"></i> Kembali ke Beranda
+            <a href="javascript:window.location.reload()" class="btn-home">
+                <i class="fa-solid fa-rotate-right"></i> Muat Ulang Halaman
             </a>
         </div>
     </div>

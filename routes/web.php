@@ -135,3 +135,5 @@ Route::get('/bantuan', [InfoController::class, 'bantuan'])->name('bantuan');
 
 // Catatan: Setelah ini didefinisikan, Anda harus mengganti '#' 
 // dengan route() yang sesuai di layouts/app.blade.php.
+
+

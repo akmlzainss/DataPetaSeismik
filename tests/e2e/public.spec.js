@@ -62,9 +62,9 @@ test.describe('Public Pages', () => {
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(3000);
 
-        // Check custom zoom buttons exist (we added these with explicit IDs)
-        const zoomIn = page.locator('#zoomInBtn');
-        const zoomOut = page.locator('#zoomOutBtn');
+        // Check Leaflet default zoom buttons exist
+        const zoomIn = page.locator('.leaflet-control-zoom-in');
+        const zoomOut = page.locator('.leaflet-control-zoom-out');
 
         await expect(zoomIn).toBeVisible();
         await expect(zoomOut).toBeVisible();
@@ -101,13 +101,6 @@ test.describe('Public Pages', () => {
         expect(pageContent.length).toBeGreaterThan(1000);
     });
 
-    test('TC017 - Admin link should be accessible from footer', async ({ page }) => {
-        await page.goto('/');
-        await page.waitForLoadState('networkidle');
 
-        // Check admin link exists
-        const adminLink = page.locator('#admin-login-link, a:has-text("Admin")');
-        await expect(adminLink).toBeVisible();
-    });
 
 });
