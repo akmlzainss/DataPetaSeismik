@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataSurveiController;
-use App\Http\Controllers\Admin\LokasiMarkerController;
+use App\Http\Controllers\Admin\GridKotakController; // SISTEM GRID BARU
+use App\Http\Controllers\Admin\LokasiMarkerController; // DEPRECATED - Sistem marker lama
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\PengaturanController;
@@ -67,13 +68,28 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
         ->name('data_survei.show_json');
 
 
-    // Lokasi Marker
+
+    // ==========================================
+    // GRID KOTAK (SISTEM PETA SEISMIK BARU)
+    // ==========================================
+    Route::get('/grid-kotak', [GridKotakController::class, 'index'])->name('grid_kotak.index');
+    Route::get('/grid-kotak/data', [GridKotakController::class, 'getGridData'])->name('grid_kotak.data');
+    Route::post('/grid-kotak/assign', [GridKotakController::class, 'assign'])->name('grid_kotak.assign');
+    Route::delete('/grid-kotak/unassign/{gridKotak}/{dataSurvei}', [GridKotakController::class, 'unassign'])->name('grid_kotak.unassign');
+    Route::get('/grid-kotak/{id}', [GridKotakController::class, 'show'])->name('grid_kotak.show');
+
+    // ==========================================
+    // LOKASI MARKER (DEPRECATED - SISTEM LAMA)
+    // ==========================================
+    // Routes di-comment karena sudah diganti dengan Grid Kotak system
+    // Uncomment jika ingin menggunakan sistem marker lama
+    /*
     Route::get('/lokasi-marker', [LokasiMarkerController::class, 'index'])->name('lokasi_marker.index');
     Route::post('/lokasi-marker', [LokasiMarkerController::class, 'store'])->name('lokasi_marker.store');
     Route::put('/lokasi-marker/{id}', [LokasiMarkerController::class, 'update'])->name('lokasi_marker.update');
     Route::delete('/lokasi-marker/{id}', [LokasiMarkerController::class, 'destroy'])->name('lokasi_marker.destroy');
     Route::get('/geocode', [LokasiMarkerController::class, 'geocode'])->name('geocode');
-
+    */
 
     // Laporan
     Route::resource('laporan', LaporanController::class)->names('laporan');
@@ -91,12 +107,64 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
             Route::put('/profile', 'updateProfile')->name('update.profile');
             Route::put('/password', 'updatePassword')->name('update.password');
             Route::post('/clear-cache', 'clearCache')->name('clear.cache');
+            
+            // CRUD Pegawai Internal
+            Route::put('/pegawai/{id}', 'updatePegawai')->name('pegawai.update');
+            Route::delete('/pegawai/{id}', 'deletePegawai')->name('pegawai.delete');
+            
+            // Approval Pegawai
+            Route::post('/pegawai/{id}/approve', 'approvePegawai')->name('pegawai.approve');
+            Route::delete('/pegawai/{id}/reject', 'rejectPegawai')->name('pegawai.reject');
+        });
+
+    // Approval Pegawai Internal (Backup jika email tidak masuk)
+    Route::controller(App\Http\Controllers\Admin\PegawaiApprovalController::class)
+        ->prefix('pegawai-approval')
+        ->name('pegawai.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/{id}/approve', 'approve')->name('approve');
+            Route::post('/{id}/reject', 'reject')->name('reject');
+            Route::post('/{id}/revoke', 'revoke')->name('revoke');
         });
 
     // Logout (with /keluar alias for testing bots)
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
     Route::post('/keluar', [AdminAuthController::class, 'logout'])->name('keluar'); // Alias for testing
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| PEGAWAI INTERNAL ROUTES
+|--------------------------------------------------------------------------
+*/
+
+// Guest Pegawai (belum login)
+Route::middleware('guest:pegawai')->prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::get('/daftar', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/daftar', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'register'])
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:3,1'));
+    
+    Route::get('/masuk', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/masuk', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'login'])
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:5,1'));
+});
+
+// Email verification (tidak perlu login)
+Route::get('/pegawai/verify/{token}', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'verifyEmail'])
+    ->name('pegawai.verify');
+
+// Authenticated Pegawai
+Route::middleware(['auth:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::post('/keluar', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'logout'])->name('logout');
+});
+
+// Protected Download - Hanya untuk pegawai internal yang sudah login & verified
+Route::get('/download-scan/{id}', [App\Http\Controllers\ScanDownloadController::class, 'download'])
+    ->middleware(['auth:pegawai'])
+    ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:10,1')) // Max 10 download per menit
+    ->name('scan.download');
 
 /*
 |--------------------------------------------------------------------------

@@ -24,6 +24,12 @@
             padding: 24px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border: 1px solid #e5e7eb;
+            margin-bottom: 28px;  /* Spacing antar section */
+        }
+
+        /* Hilangkan margin-bottom di dalam grid */
+        .stats-grid .chart-card {
+            margin-bottom: 0;
         }
 
         .chart-title {
@@ -189,13 +195,13 @@
                 </svg>
             </div>
             <div class="stat-info">
-                <h3>Lokasi Marker</h3>
-                <div class="stat-value">{{ number_format($totalMarker ?? 0) }}</div>
+                <h3>Grid Terisi</h3>
+                <div class="stat-value">{{ number_format($totalGridTerisi ?? 0) }}</div>
                 <div class="stat-label">
                     <span
-                        style="color: {{ $persentaseMarker >= 75 ? '#28a745' : ($persentaseMarker >= 50 ? '#ffc107' : '#dc3545') }}; font-weight: 700;">
-                        {{ $persentaseMarker }}%
-                    </span> dari total survei
+                        style="color: {{ $persentaseGrid >= 75 ? '#28a745' : ($persentaseGrid >= 50 ? '#ffc107' : '#dc3545') }}; font-weight: 700;">
+                        {{ $persentaseGrid }}%
+                    </span> dari 313 kotak total
                 </div>
             </div>
         </div>
@@ -460,12 +466,12 @@
                 </svg>
                 <span>Lihat Semua Data</span>
             </a>
-            <a href="{{ route('admin.lokasi_marker.index') }}" class="quick-action-btn">
+            <a href="{{ route('admin.grid_kotak.index') }}" class="quick-action-btn">
                 <svg viewBox="0 0 24 24">
                     <path
-                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                        d="M3 3v8h8V3H3zm6 6H5V5h4v4zm-6 4v8h8v-8H3zm6 6H5v-4h4v4zm4-16v8h8V3h-8zm6 6h-4V5h4v4zm-6 4v8h8v-8h-8zm6 6h-4v-4h4v4z" />
                 </svg>
-                <span>Kelola Marker</span>
+                <span>Kelola Grid Peta</span>
             </a>
             <a href="{{ route('admin.laporan.index') }}" class="quick-action-btn">
                 <svg viewBox="0 0 24 24">

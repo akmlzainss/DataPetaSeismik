@@ -10,12 +10,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #ffed00; /* Yellow matching navbar */
+    background-color: #ffed00;
+    /* Yellow matching navbar */
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #ffd500; /* Slightly darker yellow on hover */
+    background-color: #ffd500;
+    /* Slightly darker yellow on hover */
 }
 
 /* ====================== HALAMAN LAPORAN ====================== */
@@ -111,6 +113,8 @@
     border: 1px solid #e0e0e0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    margin-bottom: 28px;
+    /* Spacing antar section */
 }
 
 .report-card-header {
@@ -330,6 +334,13 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+    margin-bottom: 28px;
+    /* Spacing antar section */
+}
+
+/* Hilangkan margin-bottom dari report-card terakhir dalam grid */
+.report-grid-2 .report-card {
+    margin-bottom: 0;
 }
 
 /* Badge Styles */
@@ -429,7 +440,7 @@
     .report-grid-2 {
         grid-template-columns: 1fr;
     }
-    
+
     .filter-grid {
         grid-template-columns: 1fr;
     }
@@ -439,33 +450,33 @@
     .stats-overview {
         grid-template-columns: 1fr;
     }
-    
+
     .report-card-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .report-card-actions {
         width: 100%;
     }
-    
+
     .btn-export,
     .btn-filter,
     .btn-secondary {
         width: 100%;
         justify-content: center;
     }
-    
+
     .report-table {
         font-size: 13px;
     }
-    
+
     .report-table th,
     .report-table td {
         padding: 10px 12px;
     }
-    
+
     .chart-container {
         height: 250px;
     }
@@ -473,13 +484,14 @@
 
 /* Print Styles */
 @media print {
+
     .report-card-actions,
     .filter-section,
     .btn-export,
     .btn-filter {
         display: none !important;
     }
-    
+
     .report-card {
         box-shadow: none;
         border: 1px solid #000;
@@ -538,7 +550,7 @@
     background: white;
     border: 1px solid #ddd;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 150px;
     z-index: 1000;
     margin-top: 4px;
@@ -591,7 +603,8 @@
     display: inline-block;
 }
 
-.pagination a, .pagination span {
+.pagination a,
+.pagination span {
     display: block;
     padding: 10px 14px;
     color: #003366;
@@ -641,13 +654,14 @@
         flex-wrap: wrap;
         gap: 2px;
     }
-    
-    .pagination a, .pagination span {
+
+    .pagination a,
+    .pagination span {
         padding: 8px 10px;
         font-size: 13px;
         min-width: 36px;
     }
-    
+
     /* Hide some pagination links on mobile */
     .pagination li:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
         display: none;
@@ -774,8 +788,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* ====================== EXPORT PROGRESS ====================== */
@@ -787,7 +806,7 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     min-width: 250px;
 }
@@ -840,8 +859,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-indicator span {
@@ -963,23 +987,24 @@
         gap: 2px;
         justify-content: center;
     }
-    
+
     .pagination-btn {
         padding: 8px 10px;
         min-width: 36px;
         height: 36px;
         font-size: 13px;
     }
-    
+
     .pagination-btn svg {
         width: 14px;
         height: 14px;
     }
-    
+
     .pagination-btn .btn-text {
-        display: none; /* Hide text on mobile, show only icons */
+        display: none;
+        /* Hide text on mobile, show only icons */
     }
-    
+
     .pagination-info {
         font-size: 12px;
         margin-top: 10px;
@@ -991,14 +1016,14 @@
     .ajax-pagination {
         gap: 1px;
     }
-    
+
     .pagination-btn {
         padding: 6px 8px;
         min-width: 32px;
         height: 32px;
         font-size: 12px;
     }
-    
+
     .pagination-btn svg {
         width: 12px;
         height: 12px;

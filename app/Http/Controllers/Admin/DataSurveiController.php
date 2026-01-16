@@ -87,6 +87,17 @@ class DataSurveiController extends Controller
             $data['gambar_pratinjau'] = $path;
         }
 
+        // Handle upload file scan asli (file besar untuk pegawai internal)
+        if ($request->hasFile('file_scan_asli')) {
+            $file = $request->file('file_scan_asli');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            // Simpan ke folder 'scan_asli' di disk public
+            $path = $file->storeAs('scan_asli', $fileName, 'public');
+            $data['file_scan_asli'] = $path;
+            $data['ukuran_file_asli'] = $file->getSize(); // dalam bytes
+            $data['format_file_asli'] = $file->getClientOriginalExtension();
+        }
+
         $survei = DataSurvei::create($data);
 
         // Proses gambar thumbnail dan medium di background menggunakan Job
@@ -105,8 +116,8 @@ class DataSurveiController extends Controller
      */
     public function show(DataSurvei $dataSurvei)
     {
-        // Pastikan relasi pengunggah dan lokasi dimuat
-        $dataSurvei->load('pengunggah', 'lokasi');
+        // Load relasi pengunggah, lokasi (legacy), dan gridKotak (sistem baru)
+        $dataSurvei->load('pengunggah', 'lokasi', 'gridKotak');
         $safeDeskripsi = HtmlSanitizerService::sanitize($dataSurvei->deskripsi);
         return view('admin.data_survei.show', compact('dataSurvei', 'safeDeskripsi'));
     }
@@ -158,6 +169,23 @@ class DataSurveiController extends Controller
             $data['gambar_pratinjau'] = $path;
         }
 
+        // Handle upload file scan asli baru
+        if ($request->hasFile('file_scan_asli')) {
+            // Hapus file scan asli lama jika ada
+            if ($dataSurvei->file_scan_asli && Storage::disk('public')->exists($dataSurvei->file_scan_asli)) {
+                Storage::disk('public')->delete($dataSurvei->file_scan_asli);
+            }
+
+            // Upload file scan asli yang baru
+            $file = $request->file('file_scan_asli');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('scan_asli', $fileName, 'public');
+            $data['file_scan_asli'] = $path;
+            $data['ukuran_file_asli'] = $file->getSize();
+            $data['format_file_asli'] = $file->getClientOriginalExtension();
+        }
+
+
         $dataSurvei->update($data);
 
         // Proses gambar thumbnail dan medium yang baru di background
@@ -175,8 +203,8 @@ class DataSurveiController extends Controller
      */
     public function destroy(DataSurvei $dataSurvei)
     {
-        // Hapus semua versi gambar saat delete
-        foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium] as $file) {
+        // Hapus semua versi gambar dan file scan asli saat delete
+        foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium, $dataSurvei->file_scan_asli] as $file) {
             if ($file && Storage::disk('public')->exists($file)) {
                 Storage::disk('public')->delete($file);
             }

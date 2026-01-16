@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // --- ALIAS KUSTOM UNTUK ADMIN ---
             'auth.admin' => \App\Http\Middleware\AdminAuthMiddleware::class,
             'guest:admin' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
+            
+            // --- ALIAS KUSTOM UNTUK PEGAWAI INTERNAL ---
+            'verified.pegawai' => \App\Http\Middleware\VerifiedPegawai::class,
         ]);
 
         // Rate limiting sudah diterapkan di routes

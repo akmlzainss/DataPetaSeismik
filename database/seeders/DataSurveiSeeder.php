@@ -154,17 +154,22 @@ class DataSurveiSeeder extends Seeder
 
         $adminId = 1; // Asumsi admin pertama
 
+        $insertedCount = 0;
+        $skippedCount = 0;
+
         foreach ($allData as $data) {
-            // Skip jika ada data yang kosong atau tanda "-"
-            if (empty($data['daerah']) || $data['daerah'] === '-' || 
-                empty($data['ketua_team']) || $data['ketua_team'] === '-' ||
-                empty($data['tahun']) || $data['tahun'] === '-') {
+            // Skip hanya jika benar-benar kosong (bukan '-')
+            if (empty($data['daerah']) || 
+                empty($data['tahun']) ||
+                (empty($data['ketua_team']) && $data['ketua_team'] !== '-')) {
+                $skippedCount++;
                 continue;
             }
 
             // Parsing tahun
             $tahun = $this->parseYear($data['tahun']);
             if (!$tahun || $tahun < 1900 || $tahun > 2025) {
+                $skippedCount++;
                 continue; // Skip jika tahun tidak valid
             }
 
@@ -174,7 +179,19 @@ class DataSurveiSeeder extends Seeder
             // Buat deskripsi singkat
             $deskripsi = $this->createDeskripsi($data['daerah']);
 
-            // Buat data survei
+            // ✅ CEK DUPLIKASI - berdasarkan wilayah, tahun, dan ketua tim
+            $exists = DataSurvei::where('wilayah', $data['daerah'])
+                ->where('tahun', $tahun)
+                ->where('ketua_tim', $data['ketua_team'])
+                ->exists();
+
+            if ($exists) {
+                $this->command->info("⏭ Skip (sudah ada): {$judul} ({$tahun}) - {$data['ketua_team']}");
+                $skippedCount++;
+                continue; // Skip jika data sudah ada
+            }
+
+            // Buat data survei baru
             $survei = DataSurvei::create([
                 'judul' => $judul,
                 'ketua_tim' => $data['ketua_team'],
@@ -187,11 +204,20 @@ class DataSurveiSeeder extends Seeder
                 'diunggah_oleh' => $adminId,
             ]);
 
-            // Simpan lokasi marker jika berhasil geocoding
-            $this->tryCreateLokasiMarker($survei, $data['daerah']);
+            $insertedCount++;
+
+            // ========================================
+            // DEPRECATED: Sistem marker lama di-nonaktifkan
+            // Sekarang menggunakan Grid System - data survei akan di-assign 
+            // ke grid kotak secara manual oleh admin via UI
+            // ========================================
+            // $this->tryCreateLokasiMarker($survei, $data['daerah']);
         }
 
-        $this->command->info('Seeder DataSurvei selesai! Total data yang dimasukkan: ' . count($allData));
+        $this->command->info("✅ Seeder selesai!");
+        $this->command->info("📊 Total diproses: " . count($allData));
+        $this->command->info("✅ Berhasil insert: {$insertedCount}");
+        $this->command->info("⏭ Di-skip (duplikat/invalid): {$skippedCount}");
     }
 
     /**
@@ -259,6 +285,14 @@ class DataSurveiSeeder extends Seeder
     private function tryCreateLokasiMarker($survei, $daerah)
     {
         try {
+            // ✅ Cek apakah marker sudah ada untuk survei ini
+            $existingMarker = LokasiMarker::where('id_data_survei', $survei->id)->exists();
+            
+            if ($existingMarker) {
+                $this->command->info("  ↪ Marker sudah ada untuk: {$survei->judul}");
+                return;
+            }
+
             // Bersihkan nama daerah untuk geocoding
             $lokasiGeocode = $this->cleanDaerahForGeocoding($daerah);
             
@@ -283,12 +317,12 @@ class DataSurveiSeeder extends Seeder
                     'pusat_bujur' => $lon,
                 ]);
 
-                $this->command->info("✓ Berhasil geocoding untuk: {$survei->judul}");
+                $this->command->info("  ✓ Berhasil geocoding untuk: {$survei->judul}");
             } else {
-                $this->command->warn("⚠ Gagal geocoding untuk: {$survei->judul} ({$lokasiGeocode})");
+                $this->command->warn("  ⚠ Gagal geocoding untuk: {$survei->judul} ({$lokasiGeocode})");
             }
         } catch (\Exception $e) {
-            $this->command->error("✗ Error geocoding untuk {$survei->judul}: " . $e->getMessage());
+            $this->command->error("  ✗ Error geocoding untuk {$survei->judul}: " . $e->getMessage());
         }
     }
 

@@ -30,6 +30,13 @@ class DataSurveiRequest extends FormRequest
                 'max:5120',
                 'dimensions:min_width=100,min_height=100,max_width=5000,max_height=5000'
             ],
+            // File scan asli (optional - untuk pegawai internal)
+            'file_scan_asli' => [
+                'nullable',
+                'file',
+                'mimes:pdf,tiff,tif,png,jpeg,jpg,zip,rar', // Format yang didukung
+                'max:614400', // 600MB = 614400 KB (naik dari 5MB)
+            ],
             'tautan_file'    => ['nullable', 'string', 'max:2048'],
         ];
     }
@@ -50,6 +57,9 @@ class DataSurveiRequest extends FormRequest
             'gambar_pratinjau.mimetypes' => 'Tipe konten file tidak valid. File harus berupa gambar asli.',
             'gambar_pratinjau.max' => 'Ukuran gambar maksimal 5MB.',
             'gambar_pratinjau.dimensions' => 'Dimensi gambar harus minimal 100x100 piksel dan maksimal 5000x5000 piksel.',
+            'file_scan_asli.file' => 'File scan asli harus berupa file yang valid.',
+            'file_scan_asli.mimes' => 'Format file scan asli hanya mendukung: PDF, TIFF, PNG, JPEG, JPG, ZIP, RAR.',
+            'file_scan_asli.max' => 'Ukuran file scan asli maksimal 600MB.',
         ];
     }
 }

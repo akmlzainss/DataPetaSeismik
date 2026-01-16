@@ -153,6 +153,46 @@
                             </a>
                         </div>
                     @endif
+
+                    {{-- Download File Scan Asli (Hanya untuk Pegawai ESDM) --}}
+                    @if ($survey->file_scan_asli)
+                        <div class="download-section" style="margin-top: 15px;">
+                            @auth('pegawai')
+                                {{-- Pegawai ESDM: Bisa download --}}
+                                <a href="{{ route('scan.download', $survey->id) }}" 
+                                   class="btn-download-large no-loading" 
+                                   onclick="handleFileDownload(event)"
+                                   style="background: #ffed00;
+                                          border: none; box-shadow: 0 4px 15px rgba(255, 237, 0, 0.4); color: #003366; font-weight: 700;">
+                                    <i class="fas fa-download"></i> 
+                                    Download File Scan Asli
+                                    @if($survey->ukuran_file_asli)
+                                        <small style="display: block; font-size: 12px; opacity: 0.85; margin-top: 5px;">
+                                            ({{ number_format($survey->ukuran_file_asli / 1048576, 2) }} MB - {{ strtoupper($survey->format_file_asli) }})
+                                        </small>
+                                    @endif
+                                </a>
+                            @else
+                                {{-- User External: Tidak bisa download --}}
+                                <button class="btn-download-large" disabled
+                                        style="background: #6c757d; cursor: not-allowed; opacity: 0.6;">
+                                    <i class="fas fa-lock"></i> 
+                                    Download File Scan Asli
+                                    @if($survey->ukuran_file_asli)
+                                        <small style="display: block; font-size: 12px; opacity: 0.9; margin-top: 5px;">
+                                            ({{ number_format($survey->ukuran_file_asli / 1048576, 2) }} MB - {{ strtoupper($survey->format_file_asli) }})
+                                        </small>
+                                    @endif
+                                </button>
+                                <p style="text-align: center; margin-top: 10px; font-size: 13px; color: #666;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <a href="{{ route('pegawai.login') }}" style="color: #003366; text-decoration: none;">
+                                        Login sebagai Pegawai ESDM
+                                    </a> untuk mengunduh file asli
+                                </p>
+                            @endauth
+                        </div>
+                    @endif
                 </div>
             </aside>
         </div>
@@ -288,5 +328,21 @@
                 });
             @endif
         });
+
+        // Handle file download - show loading then hide after download starts
+        function handleFileDownload(event) {
+            // Show loading for download
+            if (typeof showLoading === 'function') {
+                showLoading('Memuat file...');
+            }
+            
+            // Hide loading after a short delay (download has started)
+            setTimeout(function() {
+                if (typeof hideLoading === 'function') {
+                    hideLoading();
+                }
+            }, 1500); // 1.5 detik cukup untuk download mulai
+        }
     </script>
 @endpush
+

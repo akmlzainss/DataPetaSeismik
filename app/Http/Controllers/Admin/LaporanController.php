@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
-use App\Models\LokasiMarker;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -137,29 +136,13 @@ class LaporanController extends Controller
             ];
         }
 
-        // ========== SURVEI DENGAN MARKER vs TANPA MARKER ==========
+        // ========== SURVEI DENGAN GRID vs TANPA GRID (STATISTIK KESELURUHAN) ==========
+        // Statistik grid dihitung dari SELURUH data (tanpa filter tahun)
+        // karena ini adalah ringkasan kelengkapan data secara keseluruhan
 
-        $totalSurveiQuery = DataSurvei::query()
-            ->when($exportRange, function ($query) use ($exportRange) {
-                $dateRange = $this->getDateRangeFromString($exportRange);
-                if ($dateRange) {
-                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
-                }
-                return $query;
-            })
-            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
-                return $query->whereYear('created_at', $tahun);
-            })
-            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
-                return $query->whereMonth('created_at', $bulan);
-            })
-            ->when($tipe, function ($query) use ($tipe) {
-                return $query->where('tipe', $tipe);
-            });
-
-        $totalSurvei = $totalSurveiQuery->count();
-        $surveiDenganMarker = (clone $totalSurveiQuery)->has('lokasi')->count();
-        $surveiTanpaMarker = (clone $totalSurveiQuery)->doesntHave('lokasi')->count();
+        $totalSurvei = DataSurvei::count();
+        $surveiDenganGrid = DataSurvei::has('gridKotak')->count();
+        $surveiTanpaGrid = DataSurvei::doesntHave('gridKotak')->count();
 
         // ========== DATA UNTUK FILTER ==========
 
@@ -185,9 +168,9 @@ class LaporanController extends Controller
             'aktivitasAdmin',
             'surveiTerbaru',
             'statistikBulanan',
-            'totalSurvei', // Untuk perhitungan persentase marker
-            'surveiDenganMarker',
-            'surveiTanpaMarker',
+            'totalSurvei',
+            'surveiDenganGrid',
+            'surveiTanpaGrid',
             'tahunTersedia',
             'tipeSurvei',
             'tahun',
@@ -213,44 +196,50 @@ class LaporanController extends Controller
     }
 
     /**
-     * Export laporan ke Excel (CSV format)
-     */
-    public function exportExcel(Request $request)
-    {
-        $data = $this->getReportData($request);
+ * Export laporan ke Excel (CSV format)
+ */
+public function exportExcel(Request $request)
+{
+    $data = $this->getReportData($request);
+    
+    $filename = 'laporan-survei-' . date('Y-m-d-His') . '.csv';
+    
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"$filename\"",
+    ];
+    
+    $callback = function() use ($data) {
+        $file = fopen('php://output', 'w');
         
-        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.csv';
+        // Header row - dengan kolom Status Grid
+        fputcsv($file, ['No', 'Judul', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload', 'Status Grid']);
         
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ];
-        
-        $callback = function() use ($data) {
-            $file = fopen('php://output', 'w');
+        // Data rows
+        $no = 1;
+        foreach ($data['surveiTerbaru'] as $survei) {
+            // Cek apakah survei memiliki grid
+            $statusGrid = $survei->gridKotak->count() > 0 
+                ? 'Grid ' . $survei->gridKotak->first()->nomor_kotak 
+                : 'Belum di-assign';
             
-            // Header row
-            fputcsv($file, ['No', 'Judul', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload']);
-            
-            // Data rows
-            $no = 1;
-            foreach ($data['surveiTerbaru'] as $survei) {
-                fputcsv($file, [
-                    $no++,
-                    $survei->judul,
-                    $survei->tahun,
-                    $survei->tipe,
-                    $survei->wilayah,
-                    $survei->ketua_tim ?? '-',
-                    $survei->created_at->format('d/m/Y H:i'),
-                ]);
-            }
-            
-            fclose($file);
-        };
+            fputcsv($file, [
+                $no++,
+                $survei->judul,
+                $survei->tahun,
+                $survei->tipe,
+                $survei->wilayah,
+                $survei->ketua_tim ?? '-',
+                $survei->created_at->format('d/m/Y H:i'),
+                $statusGrid,
+            ]);
+        }
         
-        return response()->stream($callback, 200, $headers);
-    }
+        fclose($file);
+    };
+    
+    return response()->stream($callback, 200, $headers);
+}
 
     /**
      * Get report data for export
@@ -262,7 +251,7 @@ class LaporanController extends Controller
         $tipe = $request->input('tipe');
         $exportRange = $request->input('export_range');
 
-        $query = DataSurvei::with(['pengunggah', 'lokasi'])
+        $query = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->when($exportRange, function ($query) use ($exportRange) {
                 $dateRange = $this->getDateRangeFromString($exportRange);
                 if ($dateRange) {

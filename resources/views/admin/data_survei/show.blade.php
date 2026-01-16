@@ -363,9 +363,9 @@
                     Beranda
                 </a>
             </li>
-            @if(request()->get('from') === 'lokasi_marker')
+            @if(request()->get('from') === 'grid_kotak')
                 <li class="breadcrumb-item">
-                    <a href="{{ route('admin.lokasi_marker.index') }}">Lokasi Marker</a>
+                    <a href="{{ route('admin.grid_kotak.index') }}">Grid Peta</a>
                 </li>
             @else
                 <li class="breadcrumb-item">
@@ -435,60 +435,88 @@
 
             <!-- Right Column: Sidebar -->
             <aside class="admin-article-sidebar">
-                {{-- Location Map Section --}}
-                @if ($dataSurvei->lokasi)
+            {{-- Location Map Section - SISTEM GRID BARU --}}
+                @if ($dataSurvei->gridKotak->count() > 0)
+                    @php
+                        $grid = $dataSurvei->gridKotak->first();
+                    @endphp
                     <div class="admin-location-map-card">
-                        <h3 class="admin-card-title">Lokasi Survei</h3>
+                        <h3 class="admin-card-title">Lokasi Grid</h3>
 
                         <div class="admin-location-info">
                             <div class="admin-location-detail">
                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                    <path
-                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                    <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
                                 </svg>
                                 <div>
-                                    <strong>{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</strong>
+                                    <strong>Grid {{ $grid->nomor_kotak }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°,
-                                        {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
+                                        {{ number_format($grid->bounds_sw_lat, 2) }}° - {{ number_format($grid->bounds_ne_lat, 2) }}° LS,
+                                        {{ number_format($grid->bounds_sw_lng, 2) }}° - {{ number_format($grid->bounds_ne_lng, 2) }}° BT
                                     </small>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="adminSurveyLocationMap" class="admin-survey-location-map">
+                        <div id="adminSurveyLocationMap" class="admin-survey-location-map"
+                             data-grid-sw-lat="{{ $grid->bounds_sw_lat }}"
+                             data-grid-ne-lat="{{ $grid->bounds_ne_lat }}"
+                             data-grid-sw-lng="{{ $grid->bounds_sw_lng }}"
+                             data-grid-ne-lng="{{ $grid->bounds_ne_lng }}"
+                             data-grid-nomor="{{ $grid->nomor_kotak }}">
                             <div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">
                                 Memuat peta...
                             </div>
                         </div>
 
-                        @if ($dataSurvei->lokasi->keterangan)
-                            <div class="admin-location-description">
+                        @if($dataSurvei->gridKotak->count() > 1)
+                            <div class="admin-location-description" style="margin-top: 12px;">
                                 <small class="text-muted">
                                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                                        <path
-                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                                     </svg>
-                                    {{ $dataSurvei->lokasi->keterangan }}
+                                    Data ini juga ditemukan di grid: 
+                                    @foreach($dataSurvei->gridKotak->skip(1) as $otherGrid)
+                                        <strong>{{ $otherGrid->nomor_kotak }}</strong>{{ !$loop->last ? ', ' : '' }}
+                                    @endforeach
                                 </small>
                             </div>
                         @endif
                     </div>
                 @else
+                    {{-- Lokasi belum ditentukan --}}
                     <div class="admin-location-map-card">
-                        <h3 class="admin-card-title">Lokasi Survei</h3>
+                        <h3 class="admin-card-title">Lokasi Grid</h3>
                         <div class="admin-location-info">
-                            <div class="admin-location-detail">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                            <div class="admin-location-detail" style="color: #94a3b8;">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="opacity: 0.6;">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 1.74.5 3.37 1.41 4.84.95 1.54 2.2 2.86 3.16 4.4.47.75.81 1.45 1.17 2.26.26.55.47 1.5 1.26 1.5s1-.95 1.26-1.5c.37-.81.7-1.51 1.17-2.26.96-1.53 2.21-2.86 3.16-4.4C18.5 12.37 19 10.74 19 9c0-3.87-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                                    <path d="M14.59 8.59L12 11.17 9.41 8.59 8 10l4 4 4-4z"/>
                                 </svg>
                                 <div>
-                                    <strong>{{ $dataSurvei->wilayah }}</strong>
+                                    <strong style="color: #64748b;">{{ $dataSurvei->wilayah }}</strong>
                                     <br>
-                                    <small class="text-muted">Lokasi belum ditentukan</small>
+                                    <small style="color: #94a3b8;">
+                                        <em>Lokasi grid belum ditentukan</em>
+                                    </small>
+                                    <br>
+                                    <a href="{{ route('admin.grid_kotak.index') }}" 
+                                       style="color: #3b82f6; font-size: 12px; text-decoration: none;">
+                                        → Assign ke Grid
+                                    </a>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div style="padding: 40px 20px; text-align: center; background: #f8fafc; border-radius: 8px; margin-top: 12px;">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="#cbd5e1" style="margin-bottom: 12px;">
+                                <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                            </svg>
+                            <p style="color: #94a3b8; font-size: 13px; margin: 0;">
+                                Peta tidak tersedia.<br>
+                                Data belum di-assign ke grid peta seismik.
+                            </p>
                         </div>
                     </div>
                 @endif
@@ -700,40 +728,15 @@
         });
 
         // ============================================================
-        // ADMIN LOCATION MAP INITIALIZATION
+        // ADMIN LOCATION MAP INITIALIZATION - SISTEM GRID BARU
         // ============================================================
-        @if ($dataSurvei->lokasi)
-            // Function to initialize map
+        @if ($dataSurvei->gridKotak->count() > 0)
+            @php
+                $grid = $dataSurvei->gridKotak->first();
+            @endphp
+            
             function initAdminLocationMap() {
-                console.log('Initializing admin location map...');
-                
-                // Check if Leaflet is loaded
-                if (typeof L === 'undefined') {
-                    console.error('Leaflet library not loaded!');
-                    const mapElement = document.getElementById('adminSurveyLocationMap');
-                    if (mapElement) {
-                        // Show static map alternative
-                        mapElement.innerHTML = `
-                            <div style="padding: 20px; text-align: center; background: #f8f9fa; border-radius: 8px;">
-                                <div style="margin-bottom: 12px;">
-                                    <svg viewBox="0 0 24 24" width="32" height="32" fill="#666">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                    </svg>
-                                </div>
-                                <div style="font-weight: bold; color: #003366; margin-bottom: 8px;">{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</div>
-                                <div style="color: #666; font-size: 14px; margin-bottom: 12px;">
-                                    Koordinat: {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°, {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
-                                </div>
-                                <a href="https://www.google.com/maps?q={{ $dataSurvei->lokasi->pusat_lintang }},{{ $dataSurvei->lokasi->pusat_bujur }}" 
-                                   target="_blank" 
-                                   style="display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 13px;">
-                                    Buka di Google Maps
-                                </a>
-                            </div>
-                        `;
-                    }
-                    return;
-                }
+                console.log('Initializing admin grid location map...');
                 
                 const mapElement = document.getElementById('adminSurveyLocationMap');
                 if (!mapElement) {
@@ -741,103 +744,95 @@
                     return;
                 }
                 
+                // Get grid bounds from data attributes
+                const swLat = parseFloat(mapElement.dataset.gridSwLat);
+                const neLat = parseFloat(mapElement.dataset.gridNeLat);
+                const swLng = parseFloat(mapElement.dataset.gridSwLng);
+                const neLng = parseFloat(mapElement.dataset.gridNeLng);
+                const gridNomor = mapElement.dataset.gridNomor;
+                
+                // Check if Leaflet is loaded
+                if (typeof L === 'undefined') {
+                    console.error('Leaflet library not loaded!');
+                    mapElement.innerHTML = `
+                        <div style="padding: 20px; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                            <p style="color: #666;">Library peta tidak tersedia.</p>
+                            <p style="color: #333; font-weight: bold;">Grid ${gridNomor}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 try {
-                    // Initialize admin location map
+                    // Calculate center of grid
+                    const centerLat = (swLat + neLat) / 2;
+                    const centerLng = (swLng + neLng) / 2;
+                    
+                    // Initialize map
                     const adminLocationMap = L.map('adminSurveyLocationMap', {
                         zoomControl: true,
                         scrollWheelZoom: true,
                         doubleClickZoom: true,
-                        boxZoom: false,
-                        keyboard: false,
                         dragging: true,
                         touchZoom: true
-                    }).setView([{{ $dataSurvei->lokasi->pusat_lintang }}, {{ $dataSurvei->lokasi->pusat_bujur }}], 8);
+                    }).setView([centerLat, centerLng], 7);
 
-                    // Add tile layer with error handling
-                    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    // Add tile layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                         maxZoom: 18,
-                        minZoom: 5,
-                        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
-                    });
-                    
-                    tileLayer.on('tileerror', function(error) {
-                        console.warn('Tile loading error:', error);
-                    });
-                    
-                    tileLayer.addTo(adminLocationMap);
-
-                    // Create blue icon same as main map page
-                    const blueIcon = new L.Icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    });
-
-                    // Create popup content with admin actions - styled like lokasi marker (smaller for detail page)
-                    const popupContent = `
-                        <div class="admin-popup-content popup-small popup-detail-centered">
-                            <h4 class="admin-popup-title">{{ $dataSurvei->lokasi->nama_lokasi ?? $dataSurvei->wilayah }}</h4>
-                            <div class="admin-popup-coordinates">
-                                {{ number_format($dataSurvei->lokasi->pusat_lintang, 6) }}°, {{ number_format($dataSurvei->lokasi->pusat_bujur, 6) }}°
-                            </div>
-                            @if ($dataSurvei->lokasi->keterangan)
-                                <p class="admin-popup-description">{{ $dataSurvei->lokasi->keterangan }}</p>
-                            @endif
-                            <div class="admin-popup-actions admin-popup-actions-center">
-                                <a href="{{ route('admin.data_survei.edit', $dataSurvei) }}" class="admin-popup-btn admin-popup-btn-edit">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                    </svg>
-                                    Edit
-                                </a>
-                                <button onclick="showDeleteModal()" class="admin-popup-btn admin-popup-btn-delete">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                                    </svg>
-                                    Hapus
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-
-
-
-                    // Add marker with popup
-                    const adminMarker = L.marker([{{ $dataSurvei->lokasi->pusat_lintang }}, {{ $dataSurvei->lokasi->pusat_bujur }}], {
-                        icon: blueIcon
+                        minZoom: 4
                     }).addTo(adminLocationMap);
 
-                    adminMarker.bindPopup(popupContent, {
-                        maxWidth: 250,
-                        className: 'admin-location-popup'
+                    // Create grid rectangle - STYLE SAMA SEPERTI HALAMAN GRID PETA
+                    // Hijau muda transparan untuk grid terisi
+                    const bounds = [[swLat, swLng], [neLat, neLng]];
+                    const rectangle = L.rectangle(bounds, {
+                        color: '#999',           // Border abu-abu
+                        fillColor: '#8fbc8f',    // Hijau muda (light green) untuk terisi
+                        fillOpacity: 0.4,
+                        weight: 1                // Border tipis
+                    }).addTo(adminLocationMap);
+
+                    // Add label in center - STYLE SAMA SEPERTI HALAMAN GRID PETA
+                    // Plain text tanpa background, dengan text-shadow untuk readability
+                    const labelIcon = L.divIcon({
+                        className: 'grid-label',
+                        html: `<span style="
+                            font-size: 11px;
+                            font-weight: 600;
+                            color: #333;
+                            text-shadow: 
+                                -1px -1px 0 #fff,
+                                1px -1px 0 #fff,
+                                -1px 1px 0 #fff,
+                                1px 1px 0 #fff,
+                                0 0 3px #fff;
+                            pointer-events: none;
+                        ">${gridNomor}</span>`,
+                        iconSize: [40, 20],
+                        iconAnchor: [20, 10]
+                    });
+                    
+                    L.marker([centerLat, centerLng], {
+                        icon: labelIcon,
+                        interactive: false
+                    }).addTo(adminLocationMap);
+
+                    // Fit map to grid bounds with padding - AUTO ZOOM KE GRID INI
+                    adminLocationMap.fitBounds(bounds, { 
+                        padding: [50, 50],
+                        maxZoom: 8  // Batasi zoom agar tidak terlalu dekat
                     });
 
-                    // Function to show delete modal from popup
-                    window.showDeleteModal = function() {
-                        // Close the popup first
-                        adminLocationMap.closePopup();
-                        
-                        // Trigger the same delete modal as the sidebar button
-                        document.getElementById('triggerDeleteModal').click();
-                    };
-
-                    // Fit map to show the marker properly
                     setTimeout(() => {
                         adminLocationMap.invalidateSize();
                     }, 200);
                     
-                    console.log('Admin location map initialized successfully!');
+                    console.log('Admin grid map initialized successfully!');
                 } catch (error) {
                     console.error('Error initializing admin location map:', error);
-                    const mapElement = document.getElementById('adminSurveyLocationMap');
-                    if (mapElement) {
-                        mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">Terjadi kesalahan saat memuat peta.</div>';
-                    }
+                    mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Terjadi kesalahan saat memuat peta.</div>';
                 }
             }
 
@@ -856,7 +851,7 @@
                     console.error('Failed to load Leaflet after multiple attempts');
                     const mapElement = document.getElementById('adminSurveyLocationMap');
                     if (mapElement) {
-                        mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">Gagal memuat library peta. Silakan refresh halaman.</div>';
+                        mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Gagal memuat peta.</div>';
                     }
                 }
             }
@@ -864,7 +859,7 @@
             // Start trying to initialize map
             setTimeout(tryInitMap, 500);
         @else
-            console.log('No location data found for this survey');
+            console.log('No grid location assigned to this survey');
         @endif
     </script>
 @endpush

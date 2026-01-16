@@ -130,6 +130,25 @@
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    {{-- File Scan Asli (untuk Pegawai ESDM) --}}
+                    <div class="form-group full-width" style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #003366;">
+                        <label class="form-label">
+                            <i class="fas fa-file-archive"></i> File Scan Asli (Opsional - Untuk Pegawai ESDM)
+                        </label>
+                        <input type="file" name="file_scan_asli" class="form-file" 
+                               accept=".pdf,.tiff,.tif,.png,.jpeg,.jpg,.zip,.rar"
+                               id="fileScanAsli">
+                        <span class="help-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Format: PDF, TIFF, PNG, JPEG, ZIP, RAR • Maksimal <strong>600MB</strong><br>
+                            File ini hanya bisa diunduh oleh Pegawai ESDM ESDM yang sudah login.
+                        </span>
+                        @error('file_scan_asli')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                        <div id="fileScanInfo" style="margin-top: 10px; display: none;"></div>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -221,6 +240,39 @@
                 });
             }
 
+            // File Scan Asli validation
+            const fileScanInput = document.getElementById('fileScanAsli');
+            const maxScanSize = 600 * 1024 * 1024; // 600MB
+
+            if (fileScanInput) {
+                fileScanInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    const infoDiv = document.getElementById('fileScanInfo');
+                    
+                    if (file) {
+                        let errors = [];
+                        
+                        // Check file size
+                        if (file.size > maxScanSize) {
+                            errors.push('Ukuran file terlalu besar. Maksimal 600MB. File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                        }
+                        
+                        if (errors.length > 0) {
+                            infoDiv.style.cssText = 'color: #dc3545; background: #fff5f5; padding: 10px; border-radius: 4px; border: 1px solid #f5c2c7; display: block;';
+                            infoDiv.innerHTML = '⚠️ ' + errors.join('<br>⚠️ ');
+                            this.value = ''; // Clear the input
+                        } else {
+                            // Show success info
+                            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                            infoDiv.style.cssText = 'color: #198754; background: #f0fff4; padding: 10px; border-radius: 4px; border: 1px solid #c3e6cb; display: block;';
+                            infoDiv.innerHTML = '✓ File siap diupload: <strong>' + file.name + '</strong> (' + sizeMB + ' MB)';
+                        }
+                    } else {
+                        infoDiv.style.display = 'none';
+                    }
+                });
+            }
+
             // Form submit with loading state (TC016 fix)
             const form = document.getElementById('uploadForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -260,3 +312,4 @@
         }
     </style>
 @endpush
+
