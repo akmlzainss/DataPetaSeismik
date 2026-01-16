@@ -267,13 +267,13 @@
                 <div class="stat-label">Total Survei</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value">{{ number_format($surveiDenganMarker) }}</div>
-                <div class="stat-label">Dengan Marker</div>
+                <div class="stat-value">{{ number_format($surveiDenganGrid) }}</div>
+                <div class="stat-label">Dengan Grid</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value">
-                    {{ $totalSurvei > 0 ? number_format(($surveiDenganMarker / $totalSurvei) * 100, 1) : 0 }}%</div>
-                <div class="stat-label">Persentase Marker</div>
+                    {{ $totalSurvei > 0 ? number_format(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0 }}%</div>
+                <div class="stat-label">Persentase Grid</div>
             </div>
         </div>
 
@@ -298,7 +298,7 @@
                 <th style="width: 8%;">Tipe</th>
                 <th style="width: 8%;">Tahun</th>
                 <th style="width: 25%;">Wilayah</th>
-                <th style="width: 12%;">Status Marker</th>
+                <th style="width: 12%;">Status Grid</th>
             </tr>
         </thead>
         <tbody>
@@ -313,8 +313,8 @@
                     <td class="text-center">{{ $survei->tahun }}</td>
                     <td>{{ Str::limit($survei->wilayah, 40) }}</td>
                     <td class="text-center">
-                        @if ($survei->lokasi)
-                            <span class="status-ada">✓ Ada</span>
+                        @if ($survei->gridKotak->count() > 0)
+                            <span class="status-ada">✓ Grid {{ $survei->gridKotak->first()->nomor_kotak }}</span>
                         @else
                             <span class="status-belum">✗ Belum</span>
                         @endif
@@ -335,7 +335,7 @@
                 <th style="width: 8%;">Tipe</th>
                 <th style="width: 8%;">Tahun</th>
                 <th style="width: 25%;">Wilayah</th>
-                <th style="width: 12%;">Status Marker</th>
+                <th style="width: 12%;">Status Grid</th>
             </tr>
         </thead>
         <tbody>

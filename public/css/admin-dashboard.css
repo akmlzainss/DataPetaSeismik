@@ -21,12 +21,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #ffed00; /* Yellow matching navbar */
+    background-color: #ffed00;
+    /* Yellow matching navbar */
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #ffd500; /* Slightly darker yellow on hover */
+    background-color: #ffd500;
+    /* Slightly darker yellow on hover */
 }
 
 /* ====================== SIDEBAR ====================== */
@@ -39,7 +41,7 @@ body {
     background: linear-gradient(180deg, #003366 0%, #004080 100%);
     color: white;
     padding: 20px 0;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     overflow-y: auto;
     transition: transform 0.3s ease;
@@ -48,7 +50,7 @@ body {
 /* Sidebar Logo - Tata Letak Baru */
 .sidebar-logo {
     padding: 20px;
-    border-bottom: 2px solid rgba(255,215,0,0.2);
+    border-bottom: 2px solid rgba(255, 215, 0, 0.2);
     background: rgba(0, 51, 102, 0.4);
 }
 
@@ -68,7 +70,7 @@ body {
 .sidebar-logo .logo-text {
     color: #ffffff;
     font-weight: 700;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     line-height: 1.4;
 }
 
@@ -83,8 +85,8 @@ body {
     padding: 10px 0;
 }
 
-.sidebar-menu li { 
-    margin: 6px 15px; 
+.sidebar-menu li {
+    margin: 6px 15px;
 }
 
 .sidebar-menu a {
@@ -100,7 +102,7 @@ body {
 }
 
 .sidebar-menu a:hover {
-    background: rgba(255,215,0,0.18);
+    background: rgba(255, 215, 0, 0.18);
     color: #ffd700;
     padding-left: 26px;
 }
@@ -109,7 +111,7 @@ body {
     background: #ffd700;
     color: #003366;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
     padding-left: 26px;
 }
 
@@ -167,7 +169,7 @@ body {
     height: 50px;
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
 }
 
@@ -231,7 +233,7 @@ body {
     padding: 30px 35px;
     border-radius: 14px;
     margin-bottom: 30px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
 }
 
 .page-header h1 {
@@ -244,8 +246,8 @@ body {
     font-size: 16px;
 }
 
-.page-header strong { 
-    color: #ffd700; 
+.page-header strong {
+    color: #ffd700;
 }
 
 /* ====================== STATS CARDS ====================== */
@@ -260,7 +262,7 @@ body {
     background: white;
     padding: 28px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     border-left: 5px solid #ffd700;
     transition: all 0.3s;
     display: flex;
@@ -270,7 +272,7 @@ body {
 
 .stat-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
 }
 
 .stat-icon {
@@ -317,15 +319,23 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    /* Spacing antar section */
 }
 
 .dashboard-card {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e0e0e0;
     overflow: hidden;
+    margin-bottom: 28px;
+    /* Spacing antar section */
+}
+
+/* Hilangkan margin-bottom di dalam grid row */
+.dashboard-row .dashboard-card {
+    margin-bottom: 0;
 }
 
 .card-header {
@@ -480,7 +490,7 @@ body {
     background: white;
     padding: 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e0e0e0;
 }
 
@@ -534,13 +544,14 @@ body {
     .dashboard-row {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-actions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
+
     /* Show Hamburger */
     .hamburger-btn {
         display: flex;
@@ -548,48 +559,48 @@ body {
         align-items: center;
         justify-content: center;
     }
-    
+
     /* Hide Sidebar by Default */
     .sidebar {
         transform: translateX(-100%);
     }
-    
+
     /* Show Sidebar when Active */
     .sidebar.active {
         transform: translateX(0);
     }
-    
+
     /* Adjust Main Content */
     .main-content {
         margin-left: 0;
         padding: 80px 20px 20px;
     }
-    
+
     /* Stats */
     .stats-container {
         grid-template-columns: 1fr;
     }
-    
+
     .stat-card {
         flex-direction: column;
         text-align: center;
     }
-    
+
     /* Quick Actions */
     .quick-actions-grid {
         grid-template-columns: 1fr;
     }
-    
+
     /* Tables */
     .card-body {
         padding: 16px;
         overflow-x: auto;
     }
-    
+
     .simple-table {
         font-size: 13px;
     }
-    
+
     .simple-table th,
     .simple-table td {
         padding: 8px;
@@ -598,6 +609,7 @@ body {
 
 /* Desktop - No Hamburger */
 @media (min-width: 769px) {
+
     .hamburger-btn,
     .sidebar-overlay {
         display: none !important;
@@ -627,6 +639,7 @@ body {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -648,6 +661,7 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -659,6 +673,7 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+
     to {
         opacity: 0;
         transform: translateY(30px);
@@ -802,42 +817,42 @@ body {
         width: 95%;
         max-width: none;
     }
-    
+
     .modal-header {
         padding: 16px 20px;
     }
-    
+
     .modal-header h3 {
         font-size: 16px;
     }
-    
+
     .modal-body {
         padding: 24px 20px;
     }
-    
+
     .modal-icon-warning {
         width: 60px;
         height: 60px;
     }
-    
+
     .modal-icon-warning svg {
         width: 36px;
         height: 36px;
     }
-    
+
     .modal-message {
         font-size: 14px;
     }
-    
+
     .modal-title {
         font-size: 16px;
     }
-    
+
     .modal-footer {
         padding: 16px 20px;
         flex-direction: column;
     }
-    
+
     .btn-cancel,
     .btn-delete {
         width: 100%;

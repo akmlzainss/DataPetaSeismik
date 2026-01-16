@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
-use App\Models\LokasiMarker;
+use App\Models\GridKotak;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,7 @@ class DashboardController extends Controller
     {
         // ========== STATISTIK UTAMA (4 CARDS) ==========
         $totalSurvei = DataSurvei::count();
-        $totalMarker = LokasiMarker::count();
+        $totalGridTerisi = GridKotak::where('status', 'filled')->count();
         $totalAdmin = Admin::count();
         $surveiBulanIni = DataSurvei::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
@@ -82,10 +82,10 @@ class DashboardController extends Controller
             ? round((($surveiBulanIni - $surveiBulanLalu) / $surveiBulanLalu) * 100, 1)
             : ($surveiBulanIni > 0 ? 100 : 0);
 
-        // ========== STATUS MARKER (QUICK INFO) ==========
-        $surveiDenganMarker = DataSurvei::has('lokasi')->count();
-        $surveiTanpaMarker = DataSurvei::doesntHave('lokasi')->count();
-        $persentaseMarker = $totalSurvei > 0 ? round(($surveiDenganMarker / $totalSurvei) * 100, 1) : 0;
+        // ========== STATUS GRID (QUICK INFO) ==========
+        $surveiDenganGrid = DataSurvei::has('gridKotak')->count();
+        $surveiTanpaGrid = DataSurvei::doesntHave('gridKotak')->count();
+        $persentaseGrid = $totalSurvei > 0 ? round(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0;
 
         // Jika request AJAX untuk pagination
         if ($request->ajax() && $request->has('tahun_page')) {
@@ -97,7 +97,7 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'totalSurvei',
-            'totalMarker',
+            'totalGridTerisi',
             'totalAdmin',
             'surveiBulanIni',
             'surveiPerTipe',
@@ -106,9 +106,9 @@ class DashboardController extends Controller
             'trendBulanan',
             'topWilayah',
             'pertumbuhanBulanan',
-            'surveiDenganMarker',
-            'surveiTanpaMarker',
-            'persentaseMarker'
+            'surveiDenganGrid',
+            'surveiTanpaGrid',
+            'persentaseGrid'
         ));
     }
 }

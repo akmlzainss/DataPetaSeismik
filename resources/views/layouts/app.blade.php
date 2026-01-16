@@ -68,6 +68,150 @@
             gap: 36px !important;
             list-style: none !important;
         }
+
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            color: #003366;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .profile-trigger:hover {
+            background: rgba(0, 51, 102, 0.1);
+        }
+
+        .profile-trigger .fa-user-circle {
+            font-size: 24px;
+        }
+
+        .dropdown-arrow {
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .profile-trigger.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .profile-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        .profile-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .profile-header .fa-user-circle {
+            font-size: 40px;
+            color: #003366;
+        }
+
+        .profile-header strong {
+            display: block;
+            color: #003366;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .profile-header small {
+            display: block;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .profile-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 0 16px;
+        }
+
+        .profile-logout {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: #dc3545;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .profile-logout:hover {
+            background: #fee;
+        }
+
+        /* Responsive Profile Dropdown for Mobile */
+        @media (max-width: 968px) {
+            .profile-dropdown {
+                width: 100%;
+            }
+
+            .profile-trigger {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px 16px;
+                background: rgba(0, 51, 102, 0.05);
+                border-radius: 8px;
+            }
+
+            .profile-trigger .fa-user-circle {
+                font-size: 20px;
+            }
+
+            .profile-menu {
+                position: static;
+                width: 100%;
+                margin-top: 12px;
+                transform: none;
+            }
+
+            .profile-menu.show {
+                transform: none;
+            }
+
+            .profile-name {
+                flex: 1;
+                text-align: left;
+            }
+        }
     </style>
 
     {{-- Custom Styles dari child pages --}}
@@ -113,6 +257,43 @@
                     <a href="{{ route('kontak') }}" class="{{ Request::routeIs('kontak') ? 'active' : '' }}">
                         Kontak
                     </a>
+                </li>
+                
+                {{-- Login/Logout Pegawai ESDM --}}
+                <li style="position: relative;">
+                    @auth('pegawai')
+                        {{-- Profile Dropdown Trigger --}}
+                        <div class="profile-dropdown">
+                            <button class="profile-trigger" id="profileTrigger" onclick="toggleProfileDropdown()">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="profile-name">{{ Auth::guard('pegawai')->user()->nama }}</span>
+                                <i class="fas fa-chevron-down dropdown-arrow"></i>
+                            </button>
+                            
+                            {{-- Dropdown Menu --}}
+                            <div class="profile-menu" id="profileMenu">
+                                <div class="profile-header">
+                                    <i class="fas fa-user-circle"></i>
+                                    <div>
+                                        <strong>{{ Auth::guard('pegawai')->user()->nama }}</strong>
+                                        <small>{{ Auth::guard('pegawai')->user()->email }}</small>
+                                    </div>
+                                </div>
+                                <div class="profile-divider"></div>
+                                <form action="{{ route('pegawai.logout') }}" method="POST" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" class="profile-logout">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ route('pegawai.login') }}" class="{{ Request::routeIs('pegawai.login') ? 'active' : '' }}">
+                            Login
+                        </a>
+                    @endauth
                 </li>
             </ul>
 
@@ -408,6 +589,26 @@
         window.addEventListener('load', function() {
             hideLoading();
         });
+
+        // Profile Dropdown Toggle
+        function toggleProfileDropdown() {
+            const menu = document.getElementById('profileMenu');
+            const trigger = document.getElementById('profileTrigger');
+            
+            menu.classList.toggle('show');
+            trigger.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.querySelector('.profile-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                const menu = document.getElementById('profileMenu');
+                const trigger = document.getElementById('profileTrigger');
+                if (menu) menu.classList.remove('show');
+                if (trigger) trigger.classList.remove('active');
+            }
+        });
     </script>
 
     {{-- Custom Scripts dari child pages --}}
@@ -415,4 +616,5 @@
 </body>
 
 </html>
+
 

@@ -66,12 +66,17 @@
             </svg>
             Keamanan
         </button>
-        <button class="settings-tab" data-tab="sistem">
+        <button class="settings-tab" data-tab="user">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path
-                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
             </svg>
-            Sistem
+            User
+        </button>
+        <button class="settings-tab" data-tab="approval">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Approval Pegawai
         </button>
     </div>
 
@@ -305,99 +310,375 @@
         </div>
     </div>
 
-    {{-- TAB 3: SISTEM --}}
-    <div id="sistem" class="settings-tab-content">
-        {{-- Cache Management Card --}}
+    {{-- TAB 3: USER (Pegawai ESDM) - TABLE WITH CRUD --}}
+    <div id="user" class="settings-tab-content">
+        {{-- Pegawai ESDM Table --}}
         <div class="settings-card">
             <div class="settings-card-header">
                 <div class="settings-card-title">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                        <path
-                            d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
                     </svg>
-                    Manajemen Cache
+                    Daftar Akun Pegawai ESDM
                 </div>
-                <div class="settings-card-subtitle">Kelola cache aplikasi untuk performa optimal</div>
+                <div class="settings-card-subtitle">Manage akun Pegawai ESDM ESDM yang terdaftar di sistem ({{ $pegawaiInternal->total() }} total)</div>
             </div>
             <div class="settings-card-body">
-                <div class="info-box-settings warning">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                        <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                    </svg>
-                    <div>
-                        <strong>Informasi Cache</strong>
-                        <p>Membersihkan cache dapat membantu menyelesaikan masalah tampilan atau data yang tidak sinkron. Proses ini aman dan tidak akan menghapus data penting.</p>
+                @if ($pegawaiInternal->count() > 0)
+                    {{-- Table Responsive Wrapper --}}
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #003366;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">#</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">Nama</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">Email</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">NIP</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">Jabatan</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #003366;">Status</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #003366;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($pegawaiInternal as $index => $pegawai)
+                                    <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                        <td style="padding: 12px; color: #666;">{{ $pegawaiInternal->firstItem() + $index }}</td>
+                                        <td style="padding: 12px;">
+                                            <strong style="color: #003366;">{{ $pegawai->nama }}</strong>
+                                        </td>
+                                        <td style="padding: 12px;">
+                                            <span style="color: #666; font-size: 14px;">
+                                                <i class="fas fa-envelope" style="margin-right: 5px; color: #003366;"></i>
+                                                {{ $pegawai->email }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 12px; color: #666;">{{ $pegawai->nip ?? '-' }}</td>
+                                        <td style="padding: 12px; color: #666;">{{ $pegawai->jabatan ?? '-' }}</td>
+                                        <td style="padding: 12px; text-align: center;">
+                                            @if ($pegawai->is_approved)
+                                                <span style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                                    <i class="fas fa-check-circle"></i> Approved
+                                                </span>
+                                            @else
+                                                <span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                                    <i class="fas fa-clock"></i> Pending
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td style="padding: 12px; text-align: center;">
+                                            <button onclick="openEditModal({{ $pegawai->id }}, '{{ addslashes($pegawai->nama) }}', '{{ $pegawai->email }}', '{{ $pegawai->nip }}', '{{ $pegawai->jabatan }}', {{ $pegawai->is_approved ? 'true' : 'false' }})" 
+                                                    style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; font-size: 13px;" 
+                                                    title="Edit">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button onclick="confirmDeletePegawai({{ $pegawai->id }}, '{{ addslashes($pegawai->nama) }}')" 
+                                                    style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;" 
+                                                    title="Hapus">
+                                                <i class="fas fa-trash"></i> Hapus
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                </div>
 
-                <form action="{{ route('admin.pengaturan.clear.cache') }}" method="POST" style="margin-top: 20px;">
-                    @csrf
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save" style="background: #dc3545; border-color: #dc3545;">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-                            </svg>
-                            Bersihkan Cache Aplikasi
-                        </button>
+                    {{-- Pagination --}}
+                    <div class="pagination-wrapper" style="margin-top: 20px;">
+                        {{ $pegawaiInternal->links() }}
+                        @if ($pegawaiInternal->hasPages())
+                            <div class="pagination-info" style="text-align: center; color: #666; margin-top: 10px; font-size: 14px;">
+                                Menampilkan {{ $pegawaiInternal->firstItem() }} - {{ $pegawaiInternal->lastItem() }} dari {{ $pegawaiInternal->total() }} pegawai
+                            </div>
+                        @endif
                     </div>
-                </form>
+                @else
+                    <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 8px;">
+                        <i class="fas fa-users" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                        <h3 style="color: #666; margin-bottom: 10px;">Belum Ada Pegawai Terdaftar</h3>
+                        <p style="color: #999;">Pegawai akan muncul di sini setelah mereka mendaftar di sistem.</p>
+                    </div>
+                @endif
             </div>
         </div>
 
-        {{-- System Info Card --}}
+        {{-- Statistics Card --}}
         <div class="settings-card">
             <div class="settings-card-header">
                 <div class="settings-card-title">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                        <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
                     </svg>
-                    Informasi Sistem
+                    Statistik Pegawai
                 </div>
-                <div class="settings-card-subtitle">Detail teknis aplikasi</div>
+                <div class="settings-card-subtitle">Ringkasan akun Pegawai ESDM</div>
             </div>
             <div class="settings-card-body">
                 <div class="security-info-grid">
                     <div class="security-info-item">
-                        <div class="security-info-icon">
+                        <div class="security-info-icon" style="background: #d4edda; color: #155724;">
                             <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H3v-2h9v2zm9-4H3v-2h18v2zm0-4H3V7h18v2z" />
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                             </svg>
                         </div>
                         <div class="security-info-content">
-                            <div class="security-info-label">Versi Laravel</div>
-                            <div class="security-info-value">{{ app()->version() }}</div>
+                            <div class="security-info-label">Pegawai Ter-Approve</div>
+                            <div class="security-info-value">{{ \App\Models\PegawaiInternal::approved()->count() }}</div>
                         </div>
                     </div>
 
                     <div class="security-info-item">
-                        <div class="security-info-icon">
+                        <div class="security-info-icon" style="background: #fff3cd; color: #856404;">
                             <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                             </svg>
                         </div>
                         <div class="security-info-content">
-                            <div class="security-info-label">Versi PHP</div>
-                            <div class="security-info-value">{{ PHP_VERSION }}</div>
+                            <div class="security-info-label">Pending Approval</div>
+                            <div class="security-info-value">{{ \App\Models\PegawaiInternal::pendingApproval()->count() }}</div>
                         </div>
                     </div>
 
                     <div class="security-info-item">
-                        <div class="security-info-icon">
+                        <div class="security-info-icon" style="background: #d1ecf1; color: #0c5460;">
                             <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
                             </svg>
                         </div>
                         <div class="security-info-content">
-                            <div class="security-info-label">Environment</div>
-                            <div class="security-info-value">{{ app()->environment() }}</div>
+                            <div class="security-info-label">Total Pegawai</div>
+                            <div class="security-info-value">{{ \App\Models\PegawaiInternal::count() }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- TAB 4: APPROVAL PEGAWAI - PENDING APPROVALS --}}
+    <div id="approval" class="settings-tab-content">
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-title">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    Approval Pegawai ESDM Pending
+                </div>
+                <div class="settings-card-subtitle">Daftar pegawai yang menunggu persetujuan admin ({{ \App\Models\PegawaiInternal::pendingApproval()->count() }} pending)</div>
+            </div>
+            <div class="settings-card-body">
+                @php
+                    $pendingPegawai = \App\Models\PegawaiInternal::pendingApproval()->latest()->paginate(10, ['*'], 'pending');
+                @endphp
+
+                @if ($pendingPegawai->count() > 0)
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                            <thead>
+                                <tr style="background: #fff3cd; border-bottom: 2px solid #856404;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #856404;">#</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #856404;">Nama</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #856404;">Email</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #856404;">NIP</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #856404;">Jabatan</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #856404;">Tgl Daftar</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #856404;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($pendingPegawai as $index => $pegawai)
+                                    <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.background='#fffbf0'" onmouseout="this.style.background='white'">
+                                        <td style="padding: 12px; color: #666;">{{ $pendingPegawai->firstItem() + $index }}</td>
+                                        <td style="padding: 12px;">
+                                            <strong style="color: #856404;">{{ $pegawai->nama }}</strong>
+                                        </td>
+                                        <td style="padding: 12px;">
+                                            <span style="color: #666; font-size: 14px;">
+                                                <i class="fas fa-envelope"></i> {{ $pegawai->email }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 12px; color: #666;">{{ $pegawai->nip ?? '-' }}</td>
+                                        <td style="padding: 12px; color: #666;">{{ $pegawai->jabatan ?? '-' }}</td>
+                                        <td style="padding: 12px; text-align: center; color: #666; font-size: 13px;">
+                                            {{ $pegawai->created_at->format('d M Y') }}
+                                        </td>
+                                        <td style="padding: 12px; text-align: center;">
+                                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                                {{-- Approve Button --}}
+                                                <form method="POST" action="{{ route('admin.pengaturan.pegawai.approve', $pegawai->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    <button type="submit" style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.3s;">
+                                                        <i class="fas fa-check"></i> Approve
+                                                    </button>
+                                                </form>
+
+                                                {{-- Reject Button --}}
+                                                <form method="POST" action="{{ route('admin.pengaturan.pegawai.reject', $pegawai->id) }}" style="display: inline;" onsubmit="return confirm('Yakin ingin menolak pegawai ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.3s;">
+                                                        <i class="fas fa-times"></i> Reject
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- Pagination --}}
+                    @if ($pendingPegawai->hasPages())
+                        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-top: 1px solid #eee;">
+                            <div style="color: #666; font-size: 14px;">
+                                Menampilkan {{ $pendingPegawai->firstItem() }} - {{ $pendingPegawai->lastItem() }} dari {{ $pendingPegawai->total() }} pegawai pending
+                            </div>
+                            <div>
+                                {{ $pendingPegawai->links() }}
+                            </div>
+                        </div>
+                    @endif
+                @else
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-check-circle" style="font-size: 48px; color: #28a745; margin-bottom: 15px;"></i>
+                        <p style="font-size: 16px;">Tidak ada pegawai yang menunggu approval.</p>
+                        <p style="font-size: 14px; color: #999; margin-top: 8px;">Semua pendaftaran sudah diproses.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL EDIT PEGAWAI --}}
+    <div id="editPegawaiModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-container" style="background: white; width: 90%; max-width: 500px; border-radius: 12px; padding: 30px; position: relative;">
+            <button onclick="closeEditModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">×</button>
+            
+            <h3 style="color: #003366; margin-bottom: 20px; font-size: 20px;">
+                <i class="fas fa-user-edit"></i> Edit Data Pegawai
+            </h3>
+            
+            <form id="editPegawaiForm" method="POST" action="">
+                @csrf
+                @method('PUT')
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Nama Lengkap <span style="color: red;">*</span></label>
+                    <input type="text" name="nama" id="edit_nama" required class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Email ESDM <span style="color: red;">*</span></label>
+                    <input type="email" name="email" id="edit_email" required class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">NIP</label>
+                    <input type="text" name="nip" id="edit_nip" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Jabatan</label>
+                    <input type="text" name="jabatan" id="edit_jabatan" class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Status Approval <span style="color: red;">*</span></label>
+                    <select name="is_approved" id="edit_is_approved" required class="form-input" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="1">✅ Approved (Aktif)</option>
+                        <option value="0">⏳ Pending / Revoke</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Ubah ke "Pending" untuk mencabut akses login pegawai
+                    </small>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        Batal
+                    </button>
+                    <button type="submit" style="background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-save"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- MODAL DELETE CONFIRMATION --}}
+    <div id="deletePegawaiModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-container" style="background: white; width: 90%; max-width: 400px; border-radius: 12px; padding: 30px; text-align: center;">
+            <div style="width: 60px; height: 60px; background: #fee; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 30px; color: #dc3545;"></i>
+            </div>
+            
+            <h3 style="color: #003366; margin-bottom: 10px; font-size: 18px;">Konfirmasi Hapus</h3>
+            <p style="color: #666; margin-bottom: 20px;">
+                Apakah Anda yakin ingin menghapus pegawai <strong id="deletePegawaiName"></strong>?<br>
+                Data yang sudah dihapus <strong>tidak dapat dikembalikan</strong>.
+            </p>
+            
+            <form id="deletePegawaiForm" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" onclick="closeDeleteModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        Batal
+                    </button>
+                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-trash"></i> Ya, Hapus
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- JavaScript for Pegawai Modals --}}
+    <script>
+    function openEditModal(id, nama, email, nip, jabatan, isApproved) {
+        document.getElementById('edit_nama').value = nama;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_nip').value = nip || '';
+        document.getElementById('edit_jabatan').value = jabatan || '';
+        document.getElementById('edit_is_approved').value = isApproved ? '1' : '0';
+        
+        // Set form action
+        document.getElementById('editPegawaiForm').action = `/bbspgl-admin/pengaturan/pegawai/${id}`;
+        
+        // Show modal
+        document.getElementById('editPegawaiModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editPegawaiModal').style.display = 'none';
+    }
+
+    function confirmDeletePegawai(id, nama) {
+        document.getElementById('deletePegawaiName').textContent = nama;
+        
+        // Set form action
+        document.getElementById('deletePegawaiForm').action = `/bbspgl-admin/pengaturan/pegawai/${id}`;
+        
+        // Show modal
+        document.getElementById('deletePegawaiModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deletePegawaiModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('editPegawaiModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+
+    document.getElementById('deletePegawaiModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+    </script>
 
 @endsection
 
@@ -452,3 +733,4 @@
         });
     </script>
 @endpush
+

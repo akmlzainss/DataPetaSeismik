@@ -149,6 +149,42 @@
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    {{-- File Scan Asli (untuk Pegawai ESDM) --}}
+                    <div class="form-group full-width" style="background: #f0f8ff; padding: 20px; border-radius: 8px; border-left: 4px solid #003366;">
+                        <label class="form-label">
+                            <i class="fas fa-file-archive"></i> File Scan Asli (Opsional - Untuk Pegawai ESDM)
+                        </label>
+
+                        @if ($dataSurvei->file_scan_asli)
+                            <div class="current-file-info" style="background: #e7f3ff; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #003366;">
+                                <strong style="color: #003366;"><i class="fas fa-file-check"></i> File Saat Ini:</strong><br>
+                                <span style="color: #666; font-size: 14px;">
+                                    {{ basename($dataSurvei->file_scan_asli) }}
+                                    @if($dataSurvei->ukuran_file_asli)
+                                        ({{ number_format($dataSurvei->ukuran_file_asli / 1048576, 2) }} MB -  {{ strtoupper($dataSurvei->format_file_asli) }})
+                                    @endif
+                                </span>
+                            </div>
+                        @endif
+
+                        <input type="file" name="file_scan_asli" class="form-file" 
+                               accept=".pdf,.tiff,.tif,.png,.jpeg,.jpg,.zip,.rar"
+                               id="fileScanAsli">
+                        <span class="help-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Format: PDF, TIFF, PNG, JPEG, ZIP, RAR • Maksimal <strong>600MB</strong><br>
+                            @if ($dataSurvei->file_scan_asli)
+                                Upload file baru akan menggantikan file yang ada.
+                            @else
+                                File ini hanya bisa diunduh oleh Pegawai ESDM ESDM yang sudah login.
+                            @endif
+                        </span>
+                        @error('file_scan_asli')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                        <div id="fileScanInfo" style="margin-top: 10px; display: none;"></div>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -196,6 +232,39 @@
                 placeholder: 'Perbarui penjelasan survei ini...'
             });
 
+            // File Scan Asli validation
+            const fileScanInput = document.getElementById('fileScanAsli');
+            const maxScanSize = 600 * 1024 * 1024; // 600MB
+
+            if (fileScanInput) {
+                fileScanInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    const infoDiv = document.getElementById('fileScanInfo');
+                    
+                    if (file) {
+                        let errors = [];
+                        
+                        // Check file size
+                        if (file.size > maxScanSize) {
+                            errors.push('Ukuran file terlalu besar. Maksimal 600MB. File Anda: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                        }
+                        
+                        if (errors.length > 0) {
+                            infoDiv.style.cssText = 'color: #dc3545; background: #fff5f5; padding: 10px; border-radius: 4px; border: 1px solid #f5c2c7; display: block;';
+                            infoDiv.innerHTML = '⚠️ ' + errors.join('<br>⚠️ ');
+                            this.value = ''; // Clear the input
+                        } else {
+                            // Show success info
+                            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                            infoDiv.style.cssText = 'color: #198754; background: #f0fff4; padding: 10px; border-radius: 4px; border: 1px solid #c3e6cb; display: block;';
+                            infoDiv.innerHTML = '✓ File siap diupload: <strong>' + file.name + '</strong> (' + sizeMB + ' MB)';
+                        }
+                    } else {
+                        infoDiv.style.display = 'none';
+                    }
+                });
+            }
+
             // Submit: simpan isi Quill ke textarea tersembunyi
             document.getElementById('uploadForm').onsubmit = function() {
                 document.getElementById('quill-hidden').value = quill.root.innerHTML;
@@ -208,3 +277,4 @@
         });
     </script>
 @endpush
+

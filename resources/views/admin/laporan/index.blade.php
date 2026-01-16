@@ -756,13 +756,13 @@
         </div>
     </div>
 
-    {{-- ========== STATISTIK MARKER ========== --}}
+    {{-- ========== STATISTIK GRID PETA ========== --}}
     <div class="report-grid-2">
         <div class="report-card">
             <div class="report-card-header">
                 <div>
-                    <div class="report-card-title">Status Lokasi Marker</div>
-                    <div class="report-card-subtitle">Survei dengan dan tanpa marker</div>
+                    <div class="report-card-title">Status Grid Peta</div>
+                    <div class="report-card-subtitle">Survei dengan dan tanpa lokasi grid</div>
                 </div>
             </div>
             <div class="report-card-body">
@@ -776,27 +776,27 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Dengan Marker</strong></td>
+                            <td><strong>Sudah Di-assign ke Grid</strong></td>
                             <td style="text-align: center; color: #28a745; font-weight: 700;">
-                                {{ number_format($surveiDenganMarker) }}</td>
+                                {{ number_format($surveiDenganGrid) }}</td>
                             <td style="text-align: right;">
-                                <strong>{{ $totalSurvei > 0 ? number_format(($surveiDenganMarker / $totalSurvei) * 100, 1) : 0 }}%</strong>
+                                <strong>{{ $totalSurvei > 0 ? number_format(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0 }}%</strong>
                                 <div class="progress-bar">
                                     <div class="progress-fill"
-                                        style="width: {{ $totalSurvei > 0 ? ($surveiDenganMarker / $totalSurvei) * 100 : 0 }}%; background: linear-gradient(90deg, #28a745 0%, #5cb85c 100%);">
+                                        style="width: {{ $totalSurvei > 0 ? ($surveiDenganGrid / $totalSurvei) * 100 : 0 }}%; background: linear-gradient(90deg, #28a745 0%, #5cb85c 100%);">
                                     </div>
                                 </div>
                             </td>
                         </tr>
                         <tr>
-                            <td><strong>Tanpa Marker</strong></td>
+                            <td><strong>Belum Di-assign ke Grid</strong></td>
                             <td style="text-align: center; color: #dc3545; font-weight: 700;">
-                                {{ number_format($surveiTanpaMarker) }}</td>
+                                {{ number_format($surveiTanpaGrid) }}</td>
                             <td style="text-align: right;">
-                                <strong>{{ $totalSurvei > 0 ? number_format(($surveiTanpaMarker / $totalSurvei) * 100, 1) : 0 }}%</strong>
+                                <strong>{{ $totalSurvei > 0 ? number_format(($surveiTanpaGrid / $totalSurvei) * 100, 1) : 0 }}%</strong>
                                 <div class="progress-bar">
                                     <div class="progress-fill"
-                                        style="width: {{ $totalSurvei > 0 ? ($surveiTanpaMarker / $totalSurvei) * 100 : 0 }}%; background: linear-gradient(90deg, #dc3545 0%, #e74a3b 100%);">
+                                        style="width: {{ $totalSurvei > 0 ? ($surveiTanpaGrid / $totalSurvei) * 100 : 0 }}%; background: linear-gradient(90deg, #dc3545 0%, #e74a3b 100%);">
                                     </div>
                                 </div>
                             </td>
@@ -829,16 +829,16 @@
                     </div>
                     <div style="padding: 20px; background: #e8f5e9; border-radius: 8px;">
                         <div style="font-size: 24px; font-weight: bold; color: #388e3c;">
-                            {{ $totalSurvei > 0 ? number_format(($surveiDenganMarker / $totalSurvei) * 100, 1) : 0 }}%
+                            {{ $totalSurvei > 0 ? number_format(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0 }}%
                         </div>
-                        <div style="font-size: 12px; color: #666; margin-top: 4px;">Kelengkapan Marker</div>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">Kelengkapan Grid</div>
                     </div>
                 </div>
                 <div
                     style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
                     <div style="font-size: 12px; color: #856404;">
-                        <strong>Tips:</strong> Gunakan filter untuk melihat data spesifik dan export untuk mendapatkan
-                        laporan lengkap.
+                        <strong>Tips:</strong> Assign data survei ke grid peta melalui menu Grid Peta untuk melengkapi
+                        informasi lokasi.
                     </div>
                 </div>
             </div>

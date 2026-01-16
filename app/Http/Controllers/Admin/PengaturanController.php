@@ -20,6 +20,9 @@ class PengaturanController extends Controller
     {
         $admin = Auth::guard('admin')->user();
         
+        // Pegawai Internal dengan pagination 8 per page
+        $pegawaiInternal = \App\Models\PegawaiInternal::orderBy('created_at', 'desc')->paginate(8);
+        
         // System Info
         $systemInfo = [
             'app_name' => 'Sistem Informasi Survei Seismik',
@@ -32,7 +35,7 @@ class PengaturanController extends Controller
             'disk_usage' => $this->getDiskUsage(),
         ];
         
-        return view('admin.pengaturan.index', compact('admin', 'systemInfo'));
+        return view('admin.pengaturan.index', compact('admin', 'systemInfo', 'pegawaiInternal'));
     }
 
     /**
@@ -151,6 +154,96 @@ class PengaturanController extends Controller
             return redirect()->back()->with('success', 'Cache berhasil dibersihkan!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update data pegawai internal
+     */
+    public function updatePegawai(Request $request, $id)
+    {
+        $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+        
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|ends_with:@esdm.go.id|unique:pegawai_internal,email,' . $pegawai->id,
+            'nip' => 'nullable|string|max:50',
+            'jabatan' => 'nullable|string|max:100',
+            'is_approved' => 'required|boolean',
+        ], [
+            'nama.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.ends_with' => 'Email harus menggunakan domain @esdm.go.id',
+            'email.unique' => 'Email sudah digunakan pegawai lain',
+            'is_approved.required' => 'Status approval wajib dipilih',
+        ]);
+        
+        try {
+            $pegawai->update([
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'nip' => $request->nip,
+                'jabatan' => $request->jabatan,
+                'is_approved' => $request->is_approved,
+            ]);
+            
+            $statusText = $request->is_approved ? 'approved' : 'revoked';
+            return redirect()->route('admin.pengaturan.index')->with('success', "Data pegawai berhasil diperbarui! Status: {$statusText}");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui data pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete pegawai internal
+     */
+    public function deletePegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            $nama = $pegawai->nama;
+            $pegawai->delete();
+            
+            return redirect()->route('admin.pengaturan.index')->with('success', "Pegawai {$nama} berhasil dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Approve pegawai pending
+     */
+    public function approvePegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            
+            // Update is_approved menjadi true
+            $pegawai->update([
+                'is_approved' => true,
+            ]);
+            
+            return redirect()->route('admin.pengaturan.index')
+                ->with('success', "Pegawai {$pegawai->nama} berhasil di-approve!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal approve pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject pegawai pending (delete)
+     */
+    public function rejectPegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            $nama = $pegawai->nama;
+            $pegawai->delete();
+            
+            return redirect()->route('admin.pengaturan.index')
+                ->with('success', "Pegawai {$nama} berhasil ditolak dan dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal reject pegawai: ' . $e->getMessage());
         }
     }
 }

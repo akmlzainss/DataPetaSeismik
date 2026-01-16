@@ -32,6 +32,12 @@ return [
             'driver' => 'session',
             'provider' => 'admins', // Menggunakan provider yang sama (admins)
         ],
+
+        // --- GUARD UNTUK PEGAWAI INTERNAL ---
+        'pegawai' => [
+            'driver' => 'session',
+            'provider' => 'pegawai_internal',
+        ],
     ],
 
     /*
@@ -49,6 +55,12 @@ return [
             'driver' => 'eloquent',
             // Pastikan ini menunjuk ke Model Admin yang Anda buat
             'model' => App\Models\Admin::class, 
+        ],
+
+        // --- PROVIDER UNTUK PEGAWAI INTERNAL ---
+        'pegawai_internal' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\PegawaiInternal::class,
         ],
 
         // Jika Anda ingin tetap menggunakan 'users' sebagai nama provider default
