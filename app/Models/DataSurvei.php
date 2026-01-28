@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DataSurvei extends Model
 {
@@ -32,17 +31,8 @@ class DataSurvei extends Model
         'format_file_asli',    // Format: pdf, tiff, png, dll
     ];
 
-    /**
-     * Relasi: Satu DataSurvei memiliki satu LokasiMarker.
-     * Anda dapat memanggil $survei->lokasi
-     * 
-     * @deprecated Sistem lama berbasis marker point. Gunakan gridKotak() untuk sistem grid baru.
-     */
-    public function lokasi(): HasOne
-    {
-        // Menghubungkan kolom 'id' di tabel data_survei dengan kolom 'id_data_survei' di tabel lokasi_marker
-        return $this->hasOne(LokasiMarker::class, 'id_data_survei');
-    }
+    // Relasi lokasi() dihapus - sistem marker lama sudah tidak digunakan
+    // Gunakan gridKotak() untuk sistem grid baru
 
     /**
      * Relasi many-to-many dengan GridKotak (SISTEM BARU)

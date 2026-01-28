@@ -33,7 +33,7 @@ class ExportController extends Controller
         $tipe = $request->input('tipe') ?: $exportTipe;
 
         // Build query with time range filter
-        $query = DataSurvei::with(['pengunggah', 'lokasi']);
+        $query = DataSurvei::with(['pengunggah', 'gridKotak']);
 
         // Apply time range filter
         if ($exportRange) {
@@ -61,8 +61,8 @@ class ExportController extends Controller
         // Statistik
         $totalSurvei = $surveiData->count();
         $surveiPerTipe = $surveiData->groupBy('tipe')->map->count();
-        $surveiDenganMarker = $surveiData->filter(function ($item) {
-            return $item->lokasi !== null;
+        $surveiDenganGrid = $surveiData->filter(function ($item) {
+            return $item->gridKotak->count() > 0;
         })->count();
 
         $spreadsheet = new Spreadsheet();
@@ -100,10 +100,10 @@ class ExportController extends Controller
         $row++;
         $sheet->setCellValue('A' . $row, 'Total Survei:');
         $sheet->setCellValue('B' . $row, $totalSurvei);
-        $sheet->setCellValue('D' . $row, 'Survei dengan Marker:');
-        $sheet->setCellValue('E' . $row, $surveiDenganMarker);
-        $sheet->setCellValue('G' . $row, 'Persentase Marker:');
-        $sheet->setCellValue('H' . $row, $totalSurvei > 0 ? round(($surveiDenganMarker / $totalSurvei) * 100, 1) . '%' : '0%');
+        $sheet->setCellValue('D' . $row, 'Survei dengan Grid:');
+        $sheet->setCellValue('E' . $row, $surveiDenganGrid);
+        $sheet->setCellValue('G' . $row, 'Persentase Grid:');
+        $sheet->setCellValue('H' . $row, $totalSurvei > 0 ? round(($surveiDenganGrid / $totalSurvei) * 100, 1) . '%' : '0%');
 
         // Distribusi per tipe
         $row += 2;
@@ -124,7 +124,7 @@ class ExportController extends Controller
 
         // Header tabel data
         $row += 3;
-        $headers = ['No', 'Tanggal Upload', 'Judul Survei', 'Tipe', 'Tahun', 'Wilayah', 'Ketua Tim', 'Status Marker'];
+        $headers = ['No', 'Tanggal Upload', 'Judul Survei', 'Tipe', 'Tahun', 'Wilayah', 'Ketua Tim', 'Status Grid'];
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . $row, $header);
@@ -148,7 +148,7 @@ class ExportController extends Controller
             $sheet->setCellValue('E' . $row, $survei->tahun);
             $sheet->setCellValue('F' . $row, $survei->wilayah);
             $sheet->setCellValue('G' . $row, $survei->ketua_tim);
-            $sheet->setCellValue('H' . $row, $survei->lokasi ? 'Ada Marker' : 'Belum Ada');
+            $sheet->setCellValue('H' . $row, $survei->gridKotak->count() > 0 ? 'Grid ' . $survei->gridKotak->first()->nomor_kotak : 'Belum di-assign');
 
             // Style data rows
             $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
@@ -206,7 +206,7 @@ class ExportController extends Controller
         $tipe = $request->input('tipe') ?: $exportTipe;
 
         // Build query with time range filter
-        $query = DataSurvei::with(['pengunggah', 'lokasi']);
+        $query = DataSurvei::with(['pengunggah', 'gridKotak']);
 
         // Apply time range filter
         if ($exportRange) {
@@ -257,7 +257,7 @@ class ExportController extends Controller
             ->groupBy('tipe')
             ->get();
 
-        $surveiDenganMarker = DataSurvei::has('lokasi')
+        $surveiDenganGrid = DataSurvei::has('gridKotak')
             ->when($tahun, function ($query) use ($tahun) {
                 return $query->whereYear('created_at', $tahun);
             })
@@ -279,7 +279,7 @@ class ExportController extends Controller
             'surveiData' => $surveiData,
             'totalSurvei' => $totalSurvei,
             'surveiPerTipe' => $surveiPerTipe,
-            'surveiDenganMarker' => $surveiDenganMarker,
+            'surveiDenganGrid' => $surveiDenganGrid,
             'filterText' => $filterText,
             'tahun' => $tahun,
             'bulan' => $bulan,

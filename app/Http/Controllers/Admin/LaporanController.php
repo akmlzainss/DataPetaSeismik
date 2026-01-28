@@ -101,7 +101,7 @@ class LaporanController extends Controller
 
         // ========== LAPORAN SURVEI TERBARU (DENGAN PAGINATION) ==========
 
-        $surveiTerbaru = DataSurvei::with(['pengunggah', 'lokasi'])
+        $surveiTerbaru = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->when($exportRange, function ($query) use ($exportRange) {
                 $dateRange = $this->getDateRangeFromString($exportRange);
                 if ($dateRange) {

@@ -6,6 +6,253 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('css/public-peta.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Grid Label - Properly centered */
+        .grid-label {
+            background: none !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 40px !important;
+            height: 20px !important;
+        }
+        
+        .grid-label span {
+            font-size: 9px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            text-shadow: 
+                1px 1px 0 #fff,
+                -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff;
+        }
+        
+        /* Hidden state saat zoom out */
+        .grid-label.hidden {
+            display: none !important;
+        }
+        
+        /* ============================================= */
+        /* GRID POPUP STYLING - IMPROVED VERSION */
+        /* ============================================= */
+        
+        .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            padding: 0 !important;
+            border-radius: 10px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+        }
+        
+        .grid-popup-content {
+            min-width: 300px;
+            max-width: 360px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Header Popup */
+        .grid-popup-header {
+            background: linear-gradient(135deg, #003366 0%, #004d99 100%);
+            color: white;
+            padding: 14px 18px;
+            border-bottom: 3px solid #ffd700;
+        }
+        
+        .grid-popup-header h4 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .grid-popup-status {
+            font-size: 13px;
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .grid-popup-status i {
+            font-size: 11px;
+        }
+        
+        /* Survei List Container */
+        .grid-survei-list {
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 12px;
+            background: #f8fafc;
+        }
+        
+        /* Custom Scrollbar untuk list */
+        .grid-survei-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .grid-survei-list::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+        
+        .grid-survei-list::-webkit-scrollbar-thumb {
+            background: #003366;
+            border-radius: 3px;
+        }
+        
+        .grid-survei-list::-webkit-scrollbar-thumb:hover {
+            background: #004d99;
+        }
+        
+        /* Individual Survey Item */
+        .grid-survei-item {
+            padding: 12px 14px;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .grid-survei-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .grid-survei-item:hover {
+            background: #f0f7ff;
+            border-color: #0077cc;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+        
+        /* Survey Title */
+        .grid-survei-title {
+            font-weight: 700;
+            color: #003366;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Survey Meta Info */
+        .grid-survei-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+            font-size: 12px;
+            color: #5a6c7d;
+            margin-bottom: 12px;
+        }
+        
+        .grid-survei-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f4f8;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+        }
+        
+        .grid-survei-meta i {
+            font-size: 11px;
+            color: #003366;
+        }
+        
+        /* Detail Button - Fixed Blue Background */
+        .grid-popup-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 16px;
+            background: #003366 !important;
+            color: white !important;
+            text-decoration: none !important;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        
+        .grid-popup-btn:hover {
+            background: #004d99 !important;
+            color: white !important;
+            text-decoration: none !important;
+        }
+        
+        .grid-popup-btn:visited {
+            color: white !important;
+        }
+        
+        .grid-popup-btn i {
+            font-size: 12px;
+        }
+        
+        /* Empty State */
+        .grid-empty-message {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 24px 16px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .grid-empty-message i {
+            font-size: 24px;
+            color: #adb5bd;
+        }
+        
+        /* Multiple data indicator badge */
+        .survei-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffd700;
+            color: #003366;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* Leaflet Popup Close Button Styling */
+        .leaflet-container a.leaflet-popup-close-button {
+            top: 12px;
+            right: 12px;
+            color: white !important;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: all 0.2s ease;
+        }
+
+        .leaflet-container a.leaflet-popup-close-button:hover {
+            color: #ffd700 !important; /* Kuning emas saat hover */
+            transform: scale(1.1);
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -13,7 +260,7 @@
         <div class="container-custom">
             <h1 class="hero-title">Peta Sebaran Survei Geologi</h1>
             <p class="hero-subtitle">Visualisasi interaktif lokasi dan data hasil survei geologi kelautan di seluruh wilayah
-                Indonesia.</p>
+                Indonesia menggunakan sistem grid.</p>
         </div>
     </div>
 
@@ -23,11 +270,11 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon-wrapper icon-blue">
-                        <i class="fas fa-map-marker-alt"></i>
+                        <i class="fas fa-th"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ $stats['total_marker'] }}</div>
-                        <div class="stat-label">Titik Lokasi</div>
+                        <div class="stat-value">{{ $stats['total_grid'] }}</div>
+                        <div class="stat-label">Total Grid</div>
                     </div>
                 </div>
 
@@ -43,11 +290,11 @@
 
                 <div class="stat-card">
                     <div class="stat-icon-wrapper icon-orange">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-map-marked-alt"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-value">{{ $stats['tahun_terbaru'] }}</div>
-                        <div class="stat-label">Data Tahun Terakhir</div>
+                        <div class="stat-value">{{ $stats['survei_terpetakan'] ?? 0 }}</div>
+                        <div class="stat-label">Survei Terpetakan</div>
                     </div>
                 </div>
             </div>
@@ -59,7 +306,8 @@
                     <div class="map-header">
                         <h2 class="section-title"><i class="fas fa-globe-asia"></i> Eksplorasi Peta</h2>
                         <div class="map-legend">
-                            <span class="legend-item"><span class="dot dot-blue"></span> Area Survei</span>
+                            <span class="legend-item"><span class="dot" style="background: #8fbc8f;"></span> Grid Terisi</span>
+                            <span class="legend-item"><span class="dot" style="background: #fff; border: 1px solid #999;"></span> Grid Kosong</span>
                         </div>
                     </div>
                     
@@ -75,13 +323,18 @@
                             <option value="HR">HR</option>
                             <option value="Lainnya">Lainnya</option>
                         </select>
+                        <select id="filterStatus" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-width: 140px;">
+                            <option value="">Semua Grid</option>
+                            <option value="filled">Grid Terisi</option>
+                            <option value="empty">Grid Kosong</option>
+                        </select>
                         <button type="button" id="applyFilterBtn" style="padding: 8px 16px; background: #003366; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
                             <i class="fas fa-search"></i> Terapkan
                         </button>
                         <button type="button" id="resetFilterBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
                             <i class="fas fa-undo"></i> Reset
                         </button>
-                        <span id="filterStatus" style="font-size: 13px; color: #666;"></span>
+                        <span id="filterStatusText" style="font-size: 13px; color: #666;"></span>
                     </div>
                     <div class="map-frame">
                         <div id="map">
@@ -102,8 +355,7 @@
                             telah dilaksanakan oleh BBSPGL.
                         </p>
                         <p class="info-text">
-                            Setiap penanda (marker) pada peta merepresentasikan lokasi spesifik di mana pengambilan data
-                            survei dilakukan.
+                            Setiap kotak grid pada peta merepresentasikan area spesifik di mana data survei tersedia.
                         </p>
                     </div>
 
@@ -112,7 +364,7 @@
                         <ul class="guide-list">
                             <li>
                                 <div class="guide-icon"><i class="fas fa-mouse-pointer"></i></div>
-                                <span><strong>Klik Marker</strong> untuk melihat ringkasan informasi survei.</span>
+                                <span><strong>Klik Grid</strong> untuk melihat daftar survei dalam area tersebut.</span>
                             </li>
                             <li>
                                 <div class="guide-icon"><i class="fas fa-external-link-alt"></i></div>
@@ -124,6 +376,24 @@
                             </li>
                         </ul>
                     </div>
+                    
+                    <div class="info-card">
+                        <h3 class="info-card-title">Statistik Tipe Data</h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px; background: #e3f2fd; border-radius: 4px;">
+                                <span><strong>2D</strong></span>
+                                <span>{{ $stats['tipe_data']['2D'] ?? 0 }} survei</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px; background: #e8f5e9; border-radius: 4px;">
+                                <span><strong>3D</strong></span>
+                                <span>{{ $stats['tipe_data']['3D'] ?? 0 }} survei</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px; background: #fff3e0; border-radius: 4px;">
+                                <span><strong>HR</strong></span>
+                                <span>{{ $stats['tipe_data']['HR'] ?? 0 }} survei</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,38 +404,29 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Create custom blue icon like admin
-            const blueIcon = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-            console.log('Blue marker icon configured successfully');
+            console.log('Grid-based map initializing...');
 
-            // Data markers dari database
-            const markersData = @json($markers);
+            // Data grids dari controller
+            const gridsData = @json($grids);
 
-            console.log('Markers data loaded:', markersData);
-            console.log('Markers count:', markersData.length);
+            console.log('Grids data loaded:', gridsData);
+            console.log('Grids count:', gridsData.length);
 
-            // BATAS PETA INDONESIA (DIPERLUAS)
-            // Diperluas agar wilayah laut (terutama Aceh/Barat dan Utara) tidak terpotong
-            const indonesiaBounds = L.latLngBounds(
-                L.latLng(-15.0, 90.0), // South-West (Lebih ke barat dan selatan)
-                L.latLng(10.0, 145.0) // North-East (Lebih ke utara dan timur)
+            // BATAS PETA ASIA TENGGARA (MAKSIMAL ZOOM OUT)
+            // Mencakup: Myanmar, Thailand, Vietnam, Filipina, Malaysia, Indonesia, Australia Utara
+            const seaBounds = L.latLngBounds(
+                L.latLng(-20.0, 75.0), // South-West (mencakup Sri Lanka/India selatan hingga Australia utara)
+                L.latLng(25.0, 155.0) // North-East (mencakup China selatan, Jepang selatan, Papua)
             );
 
-            // Initialize map - same as admin
+            // Initialize map - Default view di Indonesia, tapi bisa zoom out ke Asia Tenggara
             const map = L.map('map', {
-                maxBounds: indonesiaBounds,
+                maxBounds: seaBounds,
                 maxBoundsViscosity: 1.0,
-                minZoom: 5,
+                minZoom: 4,  // Zoom out sedang (tidak terlalu jauh)
                 maxZoom: 18,
-                zoomControl: true // Enable default zoom control
-            }).fitBounds(indonesiaBounds);
+                zoomControl: true
+            }).setView([-2.5, 118], 5); // Default: Pusat Indonesia, zoom level 5
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -177,154 +438,146 @@
                 document.getElementById('loading-overlay').style.display = 'none';
             }, 300);
 
-            // Store markers
-            let allMarkers = [];
+            // Store grid rectangles and labels
+            let gridRectangles = [];
+            let gridLabels = [];
+            
+            // Zoom threshold untuk tampilkan label
+            const LABEL_ZOOM_THRESHOLD = 5;
+            
+            // Function untuk toggle label visibility berdasarkan zoom
+            function updateLabelsVisibility() {
+                const currentZoom = map.getZoom();
+                const showLabels = currentZoom >= LABEL_ZOOM_THRESHOLD;
+                
+                gridLabels.forEach(marker => {
+                    const el = marker.getElement();
+                    if (el) {
+                        if (showLabels) {
+                            el.classList.remove('hidden');
+                        } else {
+                            el.classList.add('hidden');
+                        }
+                    }
+                });
+            }
+            
+            // Listen to zoom changes
+            map.on('zoomend', updateLabelsVisibility);
 
-            // Create markers
-            function createMarker(markerData) {
-                const {
-                    pusat_lintang,
-                    pusat_bujur,
-                    judul,
-                    tahun,
-                    tipe,
-                    wilayah,
-                    deskripsi,
-                    gambar_pratinjau,
-                    id_data_survei
-                } = markerData;
-
-                // FIXED: Convert string coordinates to numbers
-                const lat = parseFloat(pusat_lintang);
-                const lng = parseFloat(pusat_bujur);
-
-                // Validate coordinates (check after conversion to number)
-                if (isNaN(lat) || isNaN(lng) || lat === null || lng === null) {
-                    console.error('Invalid coordinates for marker:', markerData);
-                    console.error('Converted values:', {
-                        lat,
-                        lng
-                    });
+            // Create grid rectangles
+            function createGridRectangle(gridData) {
+                const { id, nomor_kotak, bounds, center, total_data, is_filled, survei_list } = gridData;
+                
+                if (!bounds || bounds.length !== 2) {
+                    console.error('Invalid bounds for grid:', gridData);
                     return null;
                 }
 
-                console.log('Creating marker for:', judul, 'at', lat, lng);
+                // Create rectangle
+                const rectangle = L.rectangle(bounds, {
+                    color: '#999',
+                    fillColor: is_filled ? '#8fbc8f' : '#fff',
+                    fillOpacity: is_filled ? 0.4 : 0.15,
+                    weight: 1
+                }).addTo(map);
 
-                // Create marker with blue icon
-                const marker = L.marker([lat, lng], {
-                    icon: blueIcon,
-                    title: judul
-                });
-
-                // Create popup content with Quill editor support
-                const safeJudul = judul ? judul.replace(/</g, '&lt;').replace(/>/g, '&gt;') :
-                    'Judul tidak tersedia';
-
-                // Process deskripsi to support Quill HTML content
-                let processedDeskripsi = 'Deskripsi tidak tersedia';
-                if (deskripsi) {
-                    // Create a temporary div to parse HTML and extract text preview
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = deskripsi;
-
-                    // Get text content and limit to 150 characters
-                    const textContent = tempDiv.textContent || tempDiv.innerText || '';
-                    processedDeskripsi = textContent.length > 150 ?
-                        textContent.substring(0, 150) + '...' : textContent;
+                // Label nomor di center
+                if (center && center.length === 2) {
+                    const labelIcon = L.divIcon({
+                        className: 'grid-label',
+                        html: `<span>${nomor_kotak}</span>`,
+                        iconSize: [40, 20],
+                        iconAnchor: [20, 10]
+                    });
+                    
+                    const labelMarker = L.marker(center, {
+                        icon: labelIcon,
+                        interactive: false
+                    }).addTo(map);
+                    
+                    gridLabels.push(labelMarker);
                 }
 
-                const popupContent = `
-<div class="popup-content">
-<h4 class="popup-title">${safeJudul}</h4>
+                // Create popup content
+                const dataLabel = total_data > 1 ? `${total_data} Data Survei` : (total_data === 1 ? '1 Data Survei' : 'Belum ada data');
+                const statusIcon = is_filled ? '<i class="fas fa-database"></i>' : '<i class="fas fa-inbox"></i>';
+                
+                let popupContent = `
+                    <div class="grid-popup-content">
+                        <div class="grid-popup-header">
+                            <h4><i class="fas fa-th-large"></i> Grid ${nomor_kotak}</h4>
+                            <div class="grid-popup-status">${statusIcon} ${dataLabel}</div>
+                        </div>
+                `;
 
-<div class="popup-meta">
-<span class="popup-badge tipe-${tipe.toLowerCase()}">${tipe}</span>
-<span class="popup-badge">${tahun}</span>
-</div>
+                if (survei_list && survei_list.length > 0) {
+                    popupContent += '<div class="grid-survei-list">';
+                    survei_list.forEach((survei, index) => {
+                        const safeJudul = survei.judul ? survei.judul.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                        const safeWilayah = survei.wilayah ? (survei.wilayah.length > 25 ? survei.wilayah.substring(0, 25) + '...' : survei.wilayah) : 'N/A';
+                        popupContent += `
+                            <div class="grid-survei-item">
+                                <div class="grid-survei-title">${safeJudul}</div>
+                                <div class="grid-survei-meta">
+                                    <span><i class="fas fa-calendar-alt"></i> ${survei.tahun || 'N/A'}</span>
+                                    <span><i class="fas fa-layer-group"></i> ${survei.tipe || 'N/A'}</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> ${safeWilayah}</span>
+                                </div>
+                                <a href="/katalog/${survei.id}?from_peta=1" class="grid-popup-btn">
+                                    <i class="fas fa-eye"></i> Lihat Detail
+                                </a>
+                            </div>
+                        `;
+                    });
+                    popupContent += '</div>';
+                } else {
+                    popupContent += `
+                        <div class="grid-empty-message">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Belum ada data survei di grid ini</span>
+                        </div>
+                    `;
+                }
 
-<p class="popup-description">${processedDeskripsi}</p>
+                popupContent += '</div>';
 
-<div class="popup-actions">
-<span class="popup-coordinates">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
-<a href="/katalog/${id_data_survei}?from_peta=1" class="popup-detail-btn">
-Lihat Detail
-</a>
-</div>
-</div>
-`;
-
-                // Bind popup with options
-                marker.bindPopup(popupContent, {
-                    maxWidth: 350,
-                    minWidth: 250,
+                // Bind popup
+                rectangle.bindPopup(popupContent, {
+                    maxWidth: 400,
+                    minWidth: 320,
                     autoPan: true,
-                    closeButton: true,
-                    autoClose: false,
-                    closeOnClick: false
+                    closeButton: true
                 });
 
-                // VITAL: Remove the default click listener added by bindPopup
-                // This prevents the conflict where Leaflet opens it and our custom handler closes it immediately
-                marker.off('click');
-
-                // Add custom click event to handle toggle logic properly
-                marker.on('click', function(e) {
-                    if (this.isPopupOpen()) {
-                        // If open, close it
-                        this.closePopup();
-                    } else {
-                        // If closed, close all other popups first
-                        map.eachLayer(function(layer) {
-                            if (layer instanceof L.Marker && layer !== marker) {
-                                layer.closePopup();
-                            }
-                        });
-                        // Then open this one
-                        this.openPopup();
-                    }
+                // Store reference
+                gridRectangles.push({
+                    rectangle: rectangle,
+                    data: gridData
                 });
 
-                // Add to map immediately
-                marker.addTo(map);
-
-                // Add to markers array with filter property
-                allMarkers.push({
-                    marker: marker,
-                    tipe: tipe,
-                    id: id_data_survei
-                });
-
-                console.log('Marker added to map successfully:', judul);
-
-                return marker;
+                return rectangle;
             }
 
-            // Create all markers
-            if (markersData.length > 0) {
-                console.log('Creating markers:', markersData.length);
+            // Create all grids
+            if (gridsData.length > 0) {
+                console.log('Creating grid rectangles:', gridsData.length);
 
-                markersData.forEach(markerData => {
+                gridsData.forEach(gridData => {
                     try {
-                        const createdMarker = createMarker(markerData);
-                        if (createdMarker) {
-                            console.log('Marker created and added successfully');
-                        } else {
-                            console.error('Failed to create marker');
-                        }
+                        createGridRectangle(gridData);
                     } catch (error) {
-                        console.error('Error creating marker:', error, markerData);
+                        console.error('Error creating grid rectangle:', error, gridData);
                     }
                 });
 
-                console.log('Total markers created:', allMarkers.length);
-
-                // TIDAK auto zoom ke marker - biarkan user yang zoom sendiri
-                // Peta akan tetap menampilkan seluruh Indonesia seperti saat init
+                console.log('Total grids created:', gridRectangles.length);
             } else {
-                console.log('No marker data available');
+                console.log('No grid data available');
             }
 
-
+            // Initial label visibility
+            updateLabelsVisibility();
 
             // Error handling for map
             map.on('tileerror', function(e) {
@@ -338,45 +591,60 @@ Lihat Detail
                 }, 100);
             });
 
-            // Additional debug: Check if markers are actually on the map
-            setTimeout(() => {
-                console.log('All markers array length:', allMarkers.length);
-                console.log('Markers successfully loaded on map');
-            }, 1000);
-
             // ============ FILTER FUNCTIONALITY ============
             const filterTipe = document.getElementById('filterTipe');
+            const filterStatusSelect = document.getElementById('filterStatus');
             const applyFilterBtn = document.getElementById('applyFilterBtn');
             const resetFilterBtn = document.getElementById('resetFilterBtn');
-            const filterStatus = document.getElementById('filterStatus');
+            const filterStatusText = document.getElementById('filterStatusText');
 
             function applyFilter() {
                 const selectedTipe = filterTipe.value;
+                const selectedStatus = filterStatusSelect.value;
                 let visibleCount = 0;
 
-                allMarkers.forEach(item => {
-                    if (!selectedTipe || item.tipe === selectedTipe) {
-                        item.marker.addTo(map);
+                gridRectangles.forEach(item => {
+                    const { rectangle, data } = item;
+                    let show = true;
+                    
+                    // Filter by status
+                    if (selectedStatus === 'filled' && !data.is_filled) {
+                        show = false;
+                    } else if (selectedStatus === 'empty' && data.is_filled) {
+                        show = false;
+                    }
+                    
+                    // Filter by tipe (hanya jika grid terisi)
+                    if (show && selectedTipe && data.survei_list) {
+                        const hasTipe = data.survei_list.some(s => s.tipe === selectedTipe);
+                        if (!hasTipe && data.is_filled) {
+                            show = false;
+                        }
+                    }
+                    
+                    if (show) {
+                        rectangle.addTo(map);
                         visibleCount++;
                     } else {
-                        map.removeLayer(item.marker);
+                        map.removeLayer(rectangle);
                     }
                 });
 
-                if (selectedTipe) {
-                    filterStatus.textContent = `Menampilkan ${visibleCount} dari ${allMarkers.length} marker (Tipe: ${selectedTipe})`;
-                } else {
-                    filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
-                }
-                console.log('Filter applied:', selectedTipe, 'Visible:', visibleCount);
+                let statusMsg = `Menampilkan ${visibleCount} dari ${gridRectangles.length} grid`;
+                if (selectedTipe) statusMsg += ` (Tipe: ${selectedTipe})`;
+                if (selectedStatus) statusMsg += ` (${selectedStatus === 'filled' ? 'Terisi' : 'Kosong'})`;
+                filterStatusText.textContent = statusMsg;
+                
+                console.log('Filter applied:', { selectedTipe, selectedStatus, visibleCount });
             }
 
             function resetFilter() {
                 filterTipe.value = '';
-                allMarkers.forEach(item => {
-                    item.marker.addTo(map);
+                filterStatusSelect.value = '';
+                gridRectangles.forEach(item => {
+                    item.rectangle.addTo(map);
                 });
-                filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
+                filterStatusText.textContent = `Menampilkan semua ${gridRectangles.length} grid`;
                 console.log('Filter reset');
             }
 
@@ -384,9 +652,12 @@ Lihat Detail
             applyFilterBtn?.addEventListener('click', applyFilter);
             resetFilterBtn?.addEventListener('click', resetFilter);
             filterTipe?.addEventListener('change', applyFilter);
+            filterStatusSelect?.addEventListener('change', applyFilter);
 
             // Initial status
-            filterStatus.textContent = `Menampilkan semua ${allMarkers.length} marker`;
+            filterStatusText.textContent = `Menampilkan semua ${gridRectangles.length} grid`;
+            
+            console.log('Grid map initialization complete');
         });
     </script>
 @endpush

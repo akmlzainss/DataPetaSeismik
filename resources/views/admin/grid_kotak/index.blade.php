@@ -7,232 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('css/admin-grid.css') }}">
+    
+    {{-- Custom Styles yang mungkin belum tercover --}}
     <style>
-        .grid-container {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 20px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            border-left: 4px solid #667eea;
-            transition: all 0.2s ease;
-        }
-        
-        .stat-card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
-        .stat-card.success {
-            border-left-color: #28a745;
-        }
-        
-        .stat-card.warning {
-            border-left-color: #ff9800;
-        }
-        
-        .stat-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            flex-shrink: 0;
-        }
-        
-        .stat-icon.primary {
-            background: rgba(102, 126, 234, 0.12);
-            color: #667eea;
-        }
-        
-        .stat-icon.success {
-            background: rgba(40, 167, 69, 0.12);
-            color: #28a745;
-        }
-        
-        .stat-icon.warning {
-            background: rgba(255, 152, 0, 0.12);
-            color: #ff9800;
-        }
-        
-        .stat-content {
-            flex: 1;
-        }
-        
-        .stat-content .title {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 500;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .stat-content .value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1e293b;
-            line-height: 1.2;
-        }
-        
-        .stat-content .description {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-        
-        .stat-content .highlight {
-            color: #28a745;
-            font-weight: 600;
-        }
-        
-        .stat-content .highlight.warning {
-            color: #ff9800;
-        }
-        
-        #map {
-            height: 600px;
-            width: 100%;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        
-        /* Select2 Custom Styling */
-        .select-container {
-            margin: 20px 0;
-        }
-        
-        .select-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #1a365d;
-            font-size: 14px;
-        }
-        
-        .select2-container--default .select2-selection--single {
-            height: 46px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            background: #f8fafc;
-            transition: all 0.2s ease;
-        }
-        
-        .select2-container--default .select2-selection--single:hover {
-            border-color: #667eea;
-            background: white;
-        }
-        
-        .select2-container--default.select2-container--focus .select2-selection--single {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-            background: white;
-        }
-        
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 42px;
-            padding-left: 16px;
-            color: #2d3748;
-            font-size: 14px;
-        }
-        
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 44px;
-            right: 12px;
-        }
-        
-        .select2-container--default .select2-selection--single .select2-selection__placeholder {
-            color: #a0aec0;
-        }
-        
-        .select2-dropdown {
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
-            margin-top: 4px;
-        }
-        
-        .select2-results__option {
-            padding: 12px 16px;
-            font-size: 14px;
-        }
-        
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background: #ffed00;
-            color: #1a365d;
-        }
-        
-        .alert {
-            padding: 16px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid;
-        }
-        
-        .alert-info {
-            background: linear-gradient(135deg, #e8f4fd 0%, #dbeafe 100%);
-            color: #1e40af;
-            border-left-color: #3b82f6;
-        }
-        
-        .alert-info strong {
-            color: #1e3a8a;
-        }
-        
-        .alert-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
-            border-left-color: #f59e0b;
-        }
-        
-        /* Grid Label - Properly centered */
-        .grid-label {
-            background: none !important;
-            border: none !important;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            width: 40px !important;
-            height: 20px !important;
-        }
-        
-        .grid-label span {
-            font-size: 9px;
-            font-weight: 600;
-            color: #333;
-            white-space: nowrap;
-            text-shadow: 
-                1px 1px 0 #fff,
-                -1px -1px 0 #fff,
-                1px -1px 0 #fff,
-                -1px 1px 0 #fff;
-            /* Tidak perlu transform - flexbox sudah menangani centering */
-        }
-        
-        /* Hidden state saat zoom out */
-        .grid-label.hidden {
-            display: none !important;
-        }
+        /* Placeholder jika ada style tambahan khusus */
     </style>
 @endpush
 
@@ -322,6 +101,57 @@
         {{-- Map Container --}}
         <div id="map"></div>
     </div>
+
+    {{-- Custom Confirmation Modal for Assign --}}
+    <div id="confirmAssignModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-modal-header">
+                <h3><i class="fas fa-map-marker-alt"></i> Konfirmasi Assign Data</h3>
+            </div>
+            <div class="confirm-modal-body">
+                <p>Apakah Anda yakin ingin meng-assign data survei ini ke grid?</p>
+                <div class="highlight-box">
+                    <strong>Grid:</strong> <span id="modalGridNomor">-</span><br>
+                    <strong>Data Survei:</strong> <span id="modalSurveiJudul">-</span>
+                </div>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" class="confirm-modal-btn confirm-modal-btn-cancel" onclick="closeConfirmModal()">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+                <button type="button" class="confirm-modal-btn confirm-modal-btn-confirm" id="confirmAssignBtn">
+                    <i class="fas fa-check"></i> Ya, Assign
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Custom Confirmation Modal for Unassign/Delete --}}
+    <div id="confirmUnassignModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="confirm-modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border-bottom-color: #ffc107;">
+                <h3><i class="fas fa-trash-alt"></i> Konfirmasi Hapus dari Grid</h3>
+            </div>
+            <div class="confirm-modal-body">
+                <p>Apakah Anda yakin ingin menghapus data survei ini dari grid?</p>
+                <div class="highlight-box">
+                    <strong>Grid:</strong> <span id="modalUnassignGridNomor">-</span><br>
+                    <strong>Data Survei:</strong> <span id="modalUnassignSurveiJudul">-</span>
+                </div>
+                <div class="warning-text">
+                    <i class="fas fa-info-circle"></i> Data survei akan tetap ada di sistem, hanya dihapus dari grid ini.
+                </div>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" class="confirm-modal-btn confirm-modal-btn-cancel" onclick="closeUnassignModal()">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+                <button type="button" class="confirm-modal-btn confirm-modal-btn-danger" id="confirmUnassignBtn">
+                    <i class="fas fa-trash-alt"></i> Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -330,24 +160,82 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // Initialize Select2
+    $(document).ready(function() {
+        // Initialize Select2 with proper clear functionality
         $('#surveiSelect').select2({
             placeholder: '-- Pilih Data Survei --',
-            allowClear: true
+            allowClear: true,
+            width: '100%'
         });
 
-        // Initialize Leaflet Map
-        const map = L.map('map').setView([-2.5, 118], 5);
+        // Store grid rectangles and labels
+        let gridRectangles = {};
+        let gridLabels = [];
+        window.selectedSurveiId = null;
+        window.selectedSurveiJudul = null;
+        
+        // Pending assign data (for modal confirmation)
+        window.pendingAssign = {
+            gridId: null,
+            surveiId: null,
+            rectangle: null,
+            grid: null
+        };
+        
+        // Pending unassign data (for modal confirmation)
+        window.pendingUnassign = {
+            gridId: null,
+            surveiId: null,
+            nomorKotak: null,
+            judulSurvei: null
+        };
+
+        // Listen to survei selection change
+        $('#surveiSelect').on('change', function() {
+            window.selectedSurveiId = $(this).val();
+            if (window.selectedSurveiId) {
+                const selectedOption = $(this).find('option:selected');
+                window.selectedSurveiJudul = selectedOption.data('judul') || selectedOption.text();
+                toastInfo('Data survei dipilih! Sekarang klik kotak grid di peta untuk assign data.', 'Survei Dipilih');
+            } else {
+                window.selectedSurveiJudul = null;
+            }
+        });
+        
+        // Handle Select2 clear event (tombol X)
+        $('#surveiSelect').on('select2:clear', function(e) {
+            window.selectedSurveiId = null;
+            window.selectedSurveiJudul = null;
+            toastInfo('Pilihan data survei dikosongkan.', 'Dibatalkan');
+        });
+        
+        // Also handle select2:unselecting for better UX
+        $('#surveiSelect').on('select2:unselecting', function(e) {
+            $(this).data('unselecting', true);
+        }).on('select2:opening', function(e) {
+            if ($(this).data('unselecting')) {
+                $(this).removeData('unselecting');
+                e.preventDefault();
+            }
+        });
+
+        // Initialize Leaflet Map - Asia Tenggara bounds
+        const seaBounds = L.latLngBounds(
+            L.latLng(-20.0, 75.0), // South-West
+            L.latLng(25.0, 155.0) // North-East
+        );
+        
+        const map = L.map('map', {
+            maxBounds: seaBounds,
+            maxBoundsViscosity: 1.0,
+            minZoom: 4,
+            maxZoom: 18
+        }).setView([-2.5, 118], 5);
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-
-        // Store grid rectangles and labels
-        let gridRectangles = {};
-        let gridLabels = [];
-        let selectedSurveiId = null;
         
         // Zoom threshold untuk tampilkan label (label muncul di zoom >= 7)
         const LABEL_ZOOM_THRESHOLD = 5;
@@ -368,14 +256,6 @@
         
         // Listen to zoom changes
         map.on('zoomend', updateLabelsVisibility);
-
-        // Listen to survei selection
-        $('#surveiSelect').on('change', function() {
-            selectedSurveiId = $(this).val();
-            if (selectedSurveiId) {
-                alert('Data survei dipilih! Sekarang klik kotak grid di peta untuk assign data.');
-            }
-        });
 
         // Load all grids from server
         fetch('{{ route('admin.grid_kotak.data') }}')
@@ -414,35 +294,88 @@
                     // Simpan label untuk kontrol visibility
                     gridLabels.push(labelMarker);
 
-                    // Popup content
+                    // Popup content - IMPROVED VERSION WITH DELETE
+                    const total_data = grid.total_data || 0;
+                    const dataLabel = total_data > 1 ? `${total_data} Data Survei` : (total_data === 1 ? '1 Data Survei' : 'Belum ada data');
+                    const statusIcon = total_data > 0 ? '<i class="fas fa-database"></i>' : '<i class="fas fa-inbox"></i>';
+                    
                     let popupContent = `
-                        <div style="min-width: 200px;">
-                            <h4 style="margin: 0 0 8px 0;">Grid ${grid.nomor_kotak}</h4>
-                            <p style="margin: 4px 0;"><strong>Status:</strong> ${grid.total_data > 0 ? 'Terisi (' + grid.total_data + ' data)' : 'Kosong'}</p>
+                        <div class="grid-popup-content" data-grid-id="${grid.id}">
+                            <div class="grid-popup-header">
+                                <h4><i class="fas fa-th-large"></i> Grid ${grid.nomor_kotak}</h4>
+                                <div class="grid-popup-status">${statusIcon} ${dataLabel}</div>
+                            </div>
                     `;
 
                     if (grid.data_survei && grid.data_survei.length > 0) {
-                        popupContent += '<hr style="margin: 8px 0;"><strong>Data Survei:</strong><ul style="margin: 4px 0; padding-left: 20px;">';
-                        grid.data_survei.forEach(survei => {
-                            popupContent += `<li>${survei.judul} (${survei.tahun})</li>`;
+                        popupContent += '<div class="grid-survei-list">';
+                        grid.data_survei.forEach((survei, index) => {
+                            const safeJudul = survei.judul ? survei.judul.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                            const safeWilayah = survei.wilayah ? (survei.wilayah.length > 25 ? survei.wilayah.substring(0, 25) + '...' : survei.wilayah) : 'N/A';
+                            popupContent += `
+                                <div class="grid-survei-item" id="survei-item-${survei.id}">
+                                    <div class="grid-survei-title">${safeJudul}</div>
+                                    <div class="grid-survei-meta">
+                                        <span><i class="fas fa-calendar-alt"></i> ${survei.tahun || 'N/A'}</span>
+                                        <span><i class="fas fa-layer-group"></i> ${survei.tipe || 'N/A'}</span>
+                                    </div>
+                                    <div class="grid-survei-meta" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                                        <span><i class="fas fa-map-marker-alt"></i> ${safeWilayah}</span>
+                                    </div>
+                                    <div class="grid-popup-actions">
+                                        <a href="/bbspgl-admin/data-survei/${survei.id}?from=grid_kotak" class="grid-popup-btn">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                        <a href="/bbspgl-admin/data-survei/${survei.id}/edit" class="grid-popup-btn grid-popup-btn-edit">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="grid-popup-btn grid-popup-btn-delete" onclick="unassignSurvei(${grid.id}, ${survei.id}, '${grid.nomor_kotak}', '${safeJudul.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-trash-alt"></i> Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
                         });
-                        popupContent += '</ul>';
+                        popupContent += '</div>';
+                    } else {
+                        popupContent += `
+                            <div class="grid-empty-message">
+                                <i class="fas fa-folder-open"></i>
+                                <span>Belum ada data survei di grid ini</span>
+                            </div>
+                        `;
                     }
 
                     popupContent += '</div>';
 
-                    rectangle.bindPopup(popupContent);
+                    rectangle.bindPopup(popupContent, {
+                        maxWidth: 420,
+                        minWidth: 340,
+                        autoPan: true,
+                        closeButton: true
+                    });
 
-                    // Click event untuk assign
+                    // Click event untuk assign - menggunakan modal
                     rectangle.on('click', function() {
-                        if (!selectedSurveiId) {
-                            alert('Pilih data survei terlebih dahulu dari dropdown!');
+                        if (!window.selectedSurveiId) {
+                            toastWarning('Pilih data survei terlebih dahulu dari dropdown!', 'Belum Memilih Survei');
                             return;
                         }
 
-                        if (confirm(`Assign data survei ke Grid ${grid.nomor_kotak}?`)) {
-                            assignSurveiToGrid(grid.id, selectedSurveiId, rectangle, grid);
-                        }
+                        // Set pending data dan tampilkan modal
+                        window.pendingAssign = {
+                            gridId: grid.id,
+                            surveiId: window.selectedSurveiId,
+                            rectangle: rectangle,
+                            grid: grid
+                        };
+                        
+                        // Update modal content
+                        document.getElementById('modalGridNomor').textContent = grid.nomor_kotak;
+                        document.getElementById('modalSurveiJudul').textContent = window.selectedSurveiJudul || 'Data Survei';
+                        
+                        // Show modal
+                        document.getElementById('confirmAssignModal').classList.add('show');
                     });
 
                     gridRectangles[grid.id] = rectangle;
@@ -450,11 +383,11 @@
             })
             .catch(error => {
                 console.error('Error loading grids:', error);
-                alert('Gagal memuat data grid!');
+                toastError('Gagal memuat data grid!', 'Error');
             });
 
         // Function to assign survei to grid
-        function assignSurveiToGrid(gridId, surveiId, rectangle, grid) {
+        window.assignSurveiToGrid = function(gridId, surveiId, rectangle, grid) {
             fetch('{{ route('admin.grid_kotak.assign') }}', {
                 method: 'POST',
                 headers: {
@@ -470,7 +403,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('✓ ' + data.message);
+                    toastSuccess(data.message, 'Berhasil');
                     
                     // Update rectangle color
                     rectangle.setStyle({
@@ -482,20 +415,121 @@
                     // Remove option from dropdown
                     $('#surveiSelect option[value="' + surveiId + '"]').remove();
                     $('#surveiSelect').val('').trigger('change');
-                    selectedSurveiId = null;
+                    window.selectedSurveiId = null;
 
                     // Reload page to refresh stats
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
                 } else {
-                    alert('❌ ' + data.message);
+                    toastError(data.message, 'Gagal');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi error saat assign data!');
+                toastError('Terjadi error saat assign data!', 'Error');
             });
-        }
+        };
+
+        // Function to unassign/remove survei from grid - menggunakan modal
+        window.unassignSurvei = function(gridId, surveiId, nomorKotak, judulSurvei) {
+            // Set pending data untuk modal
+            window.pendingUnassign = {
+                gridId: gridId,
+                surveiId: surveiId,
+                nomorKotak: nomorKotak,
+                judulSurvei: judulSurvei
+            };
+            
+            // Update modal content
+            document.getElementById('modalUnassignGridNomor').textContent = nomorKotak;
+            document.getElementById('modalUnassignSurveiJudul').textContent = judulSurvei;
+            
+            // Show modal
+            document.getElementById('confirmUnassignModal').classList.add('show');
+        };
+
+        // ============================================
+        // MODAL FUNCTIONS
+        // ============================================
+        
+        // Close Assign Modal
+        window.closeConfirmModal = function() {
+            document.getElementById('confirmAssignModal').classList.remove('show');
+            window.pendingAssign = { gridId: null, surveiId: null, rectangle: null, grid: null };
+        };
+        
+        // Close Unassign Modal  
+        window.closeUnassignModal = function() {
+            document.getElementById('confirmUnassignModal').classList.remove('show');
+            window.pendingUnassign = { gridId: null, surveiId: null, nomorKotak: null, judulSurvei: null };
+        };
+        
+        // Confirm Assign Button Handler
+        document.getElementById('confirmAssignBtn').addEventListener('click', function() {
+            if (window.pendingAssign.gridId && window.pendingAssign.surveiId) {
+                closeConfirmModal();
+                assignSurveiToGrid(
+                    window.pendingAssign.gridId, 
+                    window.pendingAssign.surveiId, 
+                    window.pendingAssign.rectangle, 
+                    window.pendingAssign.grid
+                );
+            }
+        });
+        
+        // Confirm Unassign Button Handler
+        document.getElementById('confirmUnassignBtn').addEventListener('click', function() {
+            if (window.pendingUnassign.gridId && window.pendingUnassign.surveiId) {
+                closeUnassignModal();
+                executeUnassign(window.pendingUnassign.gridId, window.pendingUnassign.surveiId);
+            }
+        });
+        
+        // Execute the actual unassign API call
+
+        window.executeUnassign = function(gridId, surveiId) {
+            toastInfo('Menghapus data survei dari grid...', 'Processing');
+
+            fetch(`/bbspgl-admin/grid-kotak/unassign/${gridId}/${surveiId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastSuccess(data.message, 'Berhasil');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toastError(data.message, 'Gagal');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastError('Terjadi error saat menghapus data dari grid!', 'Error');
+            });
+        };
+        
+        // Close modals when clicking outside
+        document.getElementById('confirmAssignModal').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmModal();
+        });
+        
+        document.getElementById('confirmUnassignModal').addEventListener('click', function(e) {
+            if (e.target === this) closeUnassignModal();
+        });
+        
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+                closeUnassignModal();
+            }
+        });
+    }); // End of document.ready
     </script>
 @endpush

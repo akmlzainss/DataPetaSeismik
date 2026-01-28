@@ -47,7 +47,7 @@ class GridKotakController extends Controller
     public function getGridData()
     {
         try {
-            $grids = GridKotak::all();
+            $grids = GridKotak::with(['dataSurvei'])->get();
 
             return response()->json([
                 'success' => true,
@@ -59,7 +59,15 @@ class GridKotakController extends Controller
                         'center' => $grid->center_array,
                         'status' => $grid->status,
                         'total_data' => $grid->total_data,
-                        'data_survei' => [], // Simplified for now
+                        'data_survei' => $grid->dataSurvei->map(function($survei) {
+                            return [
+                                'id' => $survei->id,
+                                'judul' => $survei->judul,
+                                'tahun' => $survei->tahun,
+                                'tipe' => $survei->tipe,
+                                'wilayah' => $survei->wilayah,
+                            ];
+                        }),
                     ];
                 }),
             ]);

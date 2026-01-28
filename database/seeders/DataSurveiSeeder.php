@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\DataSurvei;
-use App\Models\LokasiMarker;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -279,84 +278,7 @@ class DataSurveiSeeder extends Seeder
         return "Survei kelautan di daerah {$daerah}. Data seismik untuk penelitian potensi sumber daya alam.";
     }
 
-    /**
-     * Coba buat lokasi marker dengan geocoding
-     */
-    private function tryCreateLokasiMarker($survei, $daerah)
-    {
-        try {
-            // ✅ Cek apakah marker sudah ada untuk survei ini
-            $existingMarker = LokasiMarker::where('id_data_survei', $survei->id)->exists();
-            
-            if ($existingMarker) {
-                $this->command->info("  ↪ Marker sudah ada untuk: {$survei->judul}");
-                return;
-            }
 
-            // Bersihkan nama daerah untuk geocoding
-            $lokasiGeocode = $this->cleanDaerahForGeocoding($daerah);
-            
-            // Coba geocoding
-            $response = Http::withHeaders([
-                'User-Agent' => 'BBSPGL-Seismic-Admin/1.0 (admin@bbspgl.esdm.go.id)'
-            ])->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $lokasiGeocode . ', Indonesia',
-                'format' => 'json',
-                'limit' => 1,
-            ]);
-
-            $json = $response->json();
-
-            if ($json && count($json) > 0) {
-                $lat = (float) $json[0]['lat'];
-                $lon = (float) $json[0]['lon'];
-
-                LokasiMarker::create([
-                    'id_data_survei' => $survei->id,
-                    'pusat_lintang' => $lat,
-                    'pusat_bujur' => $lon,
-                ]);
-
-                $this->command->info("  ✓ Berhasil geocoding untuk: {$survei->judul}");
-            } else {
-                $this->command->warn("  ⚠ Gagal geocoding untuk: {$survei->judul} ({$lokasiGeocode})");
-            }
-        } catch (\Exception $e) {
-            $this->command->error("  ✗ Error geocoding untuk {$survei->judul}: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Bersihkan nama daerah untuk geocoding yang lebih baik
-     */
-    private function cleanDaerahForGeocoding($daerah)
-    {
-        // Hapus awalan yang tidak diperlukan
-        $daerah = str_replace([
-            'Perairan ',
-            'Selat ', 
-            'Teluk ',
-            'Kawasan ',
-            'Pulau ',
-            'Pantai ',
-            'Lembar Peta ',
-            '(Lembar peta ',
-            'dan Sekitarnya',
-            'dan sekitarnya',
-            'Kupang)',
-            'Likupang)',
-            'Minahasa Utara, Sulawesi Utara',
-        ], '', $daerah);
-
-        // Hapus dalam kurung
-        $daerah = preg_replace('/\([^)]*\)/', '', $daerah);
-        
-        // Hapus karakter khusus yang mengganggu
-        $daerah = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $daerah);
-        
-        // Hapus spasi berlebihan
-        $daerah = preg_replace('/\s+/', ' ', trim($daerah));
-        
-        return $daerah;
-    }
+    // Fungsi marker dihapus - sistem sudah menggunakan Grid Kotak
+    // Sekarang data survei di-assign ke grid kotak secara manual oleh admin via UI
 }
