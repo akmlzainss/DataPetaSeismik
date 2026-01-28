@@ -55,7 +55,7 @@
                         </svg>
                     </div>
                     <h3>Alamat Kantor</h3>
-                    <p>Jl. Diponegoro No.57<br>Bandung 40122, Indonesia</p>
+                    <p>Jl. Dr. Djunjunan No.236, Husen Sastranegara,<br>Kec. Cicendo, Kota Bandung, Jawa Barat 40174</p>
                     <span class="help-time">Kunjungan dengan perjanjian</span>
                 </div>
             </div>

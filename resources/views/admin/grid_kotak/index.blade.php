@@ -388,6 +388,18 @@
 
         // Function to assign survei to grid
         window.assignSurveiToGrid = function(gridId, surveiId, rectangle, grid) {
+            // Debug logging
+            console.log('=== ASSIGN DEBUG ===');
+            console.log('gridId:', gridId, 'type:', typeof gridId);
+            console.log('surveiId:', surveiId, 'type:', typeof surveiId);
+            
+            // Validate before sending
+            if (!gridId || !surveiId) {
+                console.error('Missing gridId or surveiId!');
+                toastError('Data tidak lengkap! gridId atau surveiId kosong.', 'Error');
+                return;
+            }
+            
             fetch('{{ route('admin.grid_kotak.assign') }}', {
                 method: 'POST',
                 headers: {
@@ -396,8 +408,8 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    grid_kotak_id: gridId,
-                    data_survei_id: surveiId
+                    grid_kotak_id: parseInt(gridId),
+                    data_survei_id: parseInt(surveiId)
                 })
             })
             .then(response => response.json())
@@ -468,21 +480,27 @@
         // Confirm Assign Button Handler
         document.getElementById('confirmAssignBtn').addEventListener('click', function() {
             if (window.pendingAssign.gridId && window.pendingAssign.surveiId) {
+                // PENTING: Simpan nilai ke variabel lokal SEBELUM close modal
+                // karena closeConfirmModal() akan mereset pendingAssign ke null
+                const gridId = window.pendingAssign.gridId;
+                const surveiId = window.pendingAssign.surveiId;
+                const rectangle = window.pendingAssign.rectangle;
+                const grid = window.pendingAssign.grid;
+                
                 closeConfirmModal();
-                assignSurveiToGrid(
-                    window.pendingAssign.gridId, 
-                    window.pendingAssign.surveiId, 
-                    window.pendingAssign.rectangle, 
-                    window.pendingAssign.grid
-                );
+                assignSurveiToGrid(gridId, surveiId, rectangle, grid);
             }
         });
         
         // Confirm Unassign Button Handler
         document.getElementById('confirmUnassignBtn').addEventListener('click', function() {
             if (window.pendingUnassign.gridId && window.pendingUnassign.surveiId) {
+                // PENTING: Simpan nilai ke variabel lokal SEBELUM close modal
+                const gridId = window.pendingUnassign.gridId;
+                const surveiId = window.pendingUnassign.surveiId;
+                
                 closeUnassignModal();
-                executeUnassign(window.pendingUnassign.gridId, window.pendingUnassign.surveiId);
+                executeUnassign(gridId, surveiId);
             }
         });
         

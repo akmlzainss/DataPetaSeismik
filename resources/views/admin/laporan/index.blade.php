@@ -582,39 +582,23 @@
             </div>
         </div>
 
-        {{-- LAPORAN PER WILAYAH (TOP 10) --}}
+        {{-- DISTRIBUSI GRID --}}
         <div class="report-card">
             <div class="report-card-header">
                 <div>
-                    <div class="report-card-title">Top 10 Wilayah Survei</div>
-                    <div class="report-card-subtitle">Wilayah dengan jumlah survei terbanyak</div>
+                    <div class="report-card-title">Distribusi Grid Peta</div>
+                    <div class="report-card-subtitle">Data survei yang ter-assign ke setiap grid kotak</div>
                 </div>
             </div>
             <div class="report-card-body">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Wilayah</th>
-                            <th style="text-align: right;">Jumlah Survei</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($laporanPerWilayah as $index => $item)
-                            <tr>
-                                <td style="width: 50px; font-weight: 600; color: #003366;">{{ $index + 1 }}</td>
-                                <td>{{ $item->wilayah }}</td>
-                                <td style="text-align: right; font-weight: 600;">{{ number_format($item->total) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" style="text-align: center; color: #999; padding: 40px;">
-                                    Tidak ada data untuk filter yang dipilih
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                <div id="grid-table-container">
+                    @include('admin.partials.distribusi-grid-table', ['distribusiGrid' => $distribusiGrid])
+                </div>
+                
+                {{-- Pagination Controls --}}
+                <div id="grid-pagination-container" class="pagination-container" style="margin-top: 16px;">
+                    @include('admin.partials.pagination-controls', ['paginator' => $distribusiGrid, 'pageParam' => 'grid_page'])
+                </div>
             </div>
         </div>
     </div>
@@ -1136,16 +1120,30 @@
                 }
             });
 
-            // AJAX Pagination for Reports
+            // AJAX Pagination for Reports (survei dan grid)
             $(document).on('click', '.ajax-page-btn', function(e) {
                 e.preventDefault();
 
                 const page = $(this).data('page');
                 const pageParam = $(this).closest('.ajax-pagination').data('page-param');
 
-                // Show loading
-                $('#survei-loading').show();
-                $('#survei-table-container').hide();
+                // Determine which container to update based on pageParam
+                let tableContainer, paginationContainer, loadingContainer;
+                if (pageParam === 'grid_page') {
+                    tableContainer = '#grid-table-container';
+                    paginationContainer = '#grid-pagination-container';
+                    loadingContainer = '#grid-loading';
+                } else {
+                    tableContainer = '#survei-table-container';
+                    paginationContainer = '#survei-pagination-container';
+                    loadingContainer = '#survei-loading';
+                }
+
+                // Show loading (if exists)
+                if ($(loadingContainer).length) {
+                    $(loadingContainer).show();
+                }
+                $(tableContainer).css('opacity', '0.5');
 
                 // Build URL with current filters
                 const url = new URL(window.location.href);
@@ -1158,17 +1156,21 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
-                        $('#survei-table-container').html(response.html).show();
-                        $('#survei-pagination-container').html(response.pagination);
-                        $('#survei-loading').hide();
+                        $(tableContainer).html(response.html).css('opacity', '1');
+                        $(paginationContainer).html(response.pagination);
+                        if ($(loadingContainer).length) {
+                            $(loadingContainer).hide();
+                        }
 
                         // Update URL without page reload
                         window.history.pushState({}, '', url.toString());
                     },
                     error: function() {
                         toastError('Terjadi kesalahan saat memuat data', 'Error');
-                        $('#survei-loading').hide();
-                        $('#survei-table-container').show();
+                        if ($(loadingContainer).length) {
+                            $(loadingContainer).hide();
+                        }
+                        $(tableContainer).css('opacity', '1');
                     }
                 });
             });

@@ -325,9 +325,30 @@
             </div>
             <div class="settings-card-body">
                 @if ($pegawaiInternal->count() > 0)
+                    {{-- Search Input --}}
+                    <div style="margin-bottom: 20px;">
+                        <div style="position: relative; max-width: 400px;">
+                            <input type="text" 
+                                   id="searchPegawai" 
+                                   placeholder="Cari nama, email, NIP, atau jabatan..." 
+                                   style="width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s;"
+                                   onfocus="this.style.borderColor='#003366'; this.style.boxShadow='0 0 0 3px rgba(0,51,102,0.1)';"
+                                   onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
+                            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                            <span id="searchResultCount" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #666; font-size: 13px;"></span>
+                        </div>
+                    </div>
+
+                    {{-- No Results Message --}}
+                    <div id="noSearchResults" style="display: none; text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                        <i class="fas fa-search" style="font-size: 36px; color: #ccc; margin-bottom: 12px;"></i>
+                        <h4 style="color: #666; margin: 0 0 8px 0;">Tidak ada hasil</h4>
+                        <p style="color: #999; margin: 0; font-size: 14px;">Coba kata kunci pencarian yang berbeda</p>
+                    </div>
+
                     {{-- Table Responsive Wrapper --}}
                     <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                        <table id="pegawaiTable" style="width: 100%; border-collapse: collapse; min-width: 800px;">
                             <thead>
                                 <tr style="background: #f8f9fa; border-bottom: 2px solid #003366;">
                                     <th style="padding: 12px; text-align: left; font-weight: 600; color: #003366;">#</th>
@@ -678,6 +699,110 @@
     document.getElementById('deletePegawaiModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeDeleteModal();
     });
+
+    // ========== SEARCH FUNCTIONALITY ==========
+    const searchInput = document.getElementById('searchPegawai');
+    const pegawaiTable = document.getElementById('pegawaiTable');
+    const noResultsDiv = document.getElementById('noSearchResults');
+    const resultCountSpan = document.getElementById('searchResultCount');
+
+    if (searchInput && pegawaiTable) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const rows = pegawaiTable.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+            const totalCount = rows.length;
+
+            rows.forEach(row => {
+                // Get text content from searchable columns (nama, email, nip, jabatan)
+                const nama = row.cells[1]?.textContent.toLowerCase() || '';
+                const email = row.cells[2]?.textContent.toLowerCase() || '';
+                const nip = row.cells[3]?.textContent.toLowerCase() || '';
+                const jabatan = row.cells[4]?.textContent.toLowerCase() || '';
+                
+                const matchesSearch = nama.includes(searchTerm) || 
+                                      email.includes(searchTerm) || 
+                                      nip.includes(searchTerm) || 
+                                      jabatan.includes(searchTerm);
+
+                if (matchesSearch) {
+                    row.style.display = '';
+                    visibleCount++;
+                    
+                    // Highlight matching text if search term exists
+                    if (searchTerm.length > 0) {
+                        highlightText(row.cells[1], searchTerm);
+                        highlightText(row.cells[2], searchTerm);
+                        highlightText(row.cells[3], searchTerm);
+                        highlightText(row.cells[4], searchTerm);
+                    } else {
+                        removeHighlight(row.cells[1]);
+                        removeHighlight(row.cells[2]);
+                        removeHighlight(row.cells[3]);
+                        removeHighlight(row.cells[4]);
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results message
+            if (visibleCount === 0 && searchTerm.length > 0) {
+                noResultsDiv.style.display = 'block';
+                pegawaiTable.closest('div').style.display = 'none';
+            } else {
+                noResultsDiv.style.display = 'none';
+                pegawaiTable.closest('div').style.display = '';
+            }
+
+            // Update result count
+            if (searchTerm.length > 0) {
+                resultCountSpan.textContent = `${visibleCount}/${totalCount}`;
+            } else {
+                resultCountSpan.textContent = '';
+            }
+        });
+    }
+
+    function highlightText(cell, term) {
+        if (!cell) return;
+        
+        // Get text nodes only (avoid messing with icons/html)
+        const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT, null, false);
+        const textNodes = [];
+        while(walker.nextNode()) textNodes.push(walker.currentNode);
+        
+        textNodes.forEach(node => {
+            const text = node.textContent;
+            const regex = new RegExp(`(${escapeRegExp(term)})`, 'gi');
+            if (regex.test(text)) {
+                const span = document.createElement('span');
+                span.innerHTML = text.replace(regex, '<mark style="background:#ffe066; padding:1px 2px; border-radius:2px;">$1</mark>');
+                node.parentNode.replaceChild(span, node);
+            }
+        });
+    }
+
+    function removeHighlight(cell) {
+        if (!cell) return;
+        const marks = cell.querySelectorAll('mark');
+        marks.forEach(mark => {
+            const text = document.createTextNode(mark.textContent);
+            mark.parentNode.replaceChild(text, mark);
+        });
+        // Clean up wrapper spans
+        const spans = cell.querySelectorAll('span:not([style])');
+        spans.forEach(span => {
+            if (span.childNodes.length === 1 && span.childNodes[0].nodeType === Node.TEXT_NODE) {
+                const text = document.createTextNode(span.textContent);
+                span.parentNode.replaceChild(text, span);
+            }
+        });
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
     </script>
 
 @endsection

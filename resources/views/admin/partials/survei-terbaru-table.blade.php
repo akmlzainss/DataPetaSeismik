@@ -6,7 +6,7 @@
             <th>Judul Survei</th>
             <th>Tipe</th>
             <th>Wilayah</th>
-            <th style="text-align: center;">Marker</th>
+            <th style="text-align: center;">Grid</th>
             <th>Diunggah Oleh</th>
         </tr>
     </thead>
@@ -23,7 +23,7 @@
                 </td>
                 <td>{{ Str::limit($survei->wilayah, 30) }}</td>
                 <td style="text-align: center;">
-                    @if ($survei->lokasi)
+                    @if ($survei->gridKotak->count() > 0)
                         <span style="color: #28a745; font-weight: 600;">✓ Ada</span>
                     @else
                         <span style="color: #999;">— Belum</span>

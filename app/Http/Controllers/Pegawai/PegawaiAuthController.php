@@ -163,4 +163,52 @@ class PegawaiAuthController extends Controller
 
         return redirect()->route('beranda');
     }
+
+    /**
+     * Handle password update (AJAX)
+     */
+    public function updatePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'current_password' => ['required'],
+                'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+            ], [
+                'current_password.required' => 'Password saat ini wajib diisi.',
+                'new_password.required' => 'Password baru wajib diisi.',
+                'new_password.min' => 'Password baru minimal 8 karakter.',
+                'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            ]);
+
+            $pegawai = Auth::guard('pegawai')->user();
+
+            // Verify current password
+            if (!Hash::check($request->current_password, $pegawai->kata_sandi)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password saat ini tidak valid.',
+                ], 422);
+            }
+
+            // Update password
+            $pegawai->update([
+                'kata_sandi' => Hash::make($request->new_password),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password berhasil diubah!',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->errors()[array_key_first($e->errors())][0],
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengubah password.',
+            ], 500);
+        }
+    }
 }

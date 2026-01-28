@@ -84,7 +84,7 @@
     </div>
 
     <div class="meta">
-        <span><strong>Tanggal Export:</strong> {{ $tanggalExport }}</span>
+        <span><strong>Tanggal Unduh:</strong> {{ $tanggalExport }}</span>
         @if($tahun)<span><strong>Tahun:</strong> {{ $tahun }}</span>@endif
         @if($bulan)<span><strong>Bulan:</strong> {{ $bulan }}</span>@endif
         @if($tipe)<span><strong>Tipe:</strong> {{ $tipe }}</span>@endif
@@ -95,12 +95,13 @@
         <thead>
             <tr>
                 <th style="width: 30px;">No</th>
-                <th style="width: 200px;">Judul Survei</th>
-                <th style="width: 50px;">Tahun</th>
-                <th style="width: 60px;">Tipe</th>
-                <th style="width: 150px;">Wilayah</th>
-                <th style="width: 100px;">Ketua Tim</th>
-                <th style="width: 100px;">Tanggal Upload</th>
+                <th style="width: 180px;">Judul Survei</th>
+                <th style="width: 45px;">Tahun</th>
+                <th style="width: 50px;">Tipe</th>
+                <th style="width: 130px;">Wilayah</th>
+                <th style="width: 90px;">Ketua Tim</th>
+                <th style="width: 80px;">Tanggal Upload</th>
+                <th style="width: 85px;">Status Grid</th>
             </tr>
         </thead>
         <tbody>
@@ -117,10 +118,17 @@
                 <td>{{ $survei->wilayah }}</td>
                 <td>{{ $survei->ketua_tim ?? '-' }}</td>
                 <td>{{ $survei->created_at->format('d/m/Y') }}</td>
+                <td style="text-align: center;">
+                    @if($survei->gridKotak->count() > 0)
+                        <span style="color: #28a745; font-weight: bold;">✓ Grid {{ $survei->gridKotak->first()->nomor_kotak }}</span>
+                    @else
+                        <span style="color: #999;">— Belum</span>
+                    @endif
+                </td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" style="text-align: center; color: #666;">
+                <td colspan="8" style="text-align: center; color: #666;">
                     Tidak ada data survei ditemukan
                 </td>
             </tr>

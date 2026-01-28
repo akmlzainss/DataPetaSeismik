@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
 use App\Models\Admin;
+use App\Models\GridKotak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -62,29 +63,12 @@ class LaporanController extends Controller
             ->orderBy('tahun', 'DESC')
             ->get();
 
-        // ========== LAPORAN PER WILAYAH ==========
+        // ========== DISTRIBUSI GRID (dengan pagination) ==========
 
-        $laporanPerWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
-            ->when($exportRange, function ($query) use ($exportRange) {
-                $dateRange = $this->getDateRangeFromString($exportRange);
-                if ($dateRange) {
-                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
-                }
-                return $query;
-            })
-            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
-                return $query->whereYear('created_at', $tahun);
-            })
-            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
-                return $query->whereMonth('created_at', $bulan);
-            })
-            ->when($tipe, function ($query) use ($tipe) {
-                return $query->where('tipe', $tipe);
-            })
-            ->groupBy('wilayah')
-            ->orderBy('total', 'DESC')
-            ->limit(10)
-            ->get();
+        $distribusiGrid = GridKotak::withCount('dataSurvei')
+            ->orderBy('data_survei_count', 'DESC')
+            ->orderBy('nomor_kotak', 'ASC')
+            ->paginate(10, ['*'], 'grid_page');
 
         // ========== LAPORAN AKTIVITAS ADMIN ==========
 
@@ -161,10 +145,18 @@ class LaporanController extends Controller
             ]);
         }
 
+        // Jika request AJAX untuk pagination distribusi grid
+        if ($request->ajax() && $request->has('grid_page')) {
+            return response()->json([
+                'html' => view('admin.partials.distribusi-grid-table', compact('distribusiGrid'))->render(),
+                'pagination' => view('admin.partials.pagination-controls', ['paginator' => $distribusiGrid, 'pageParam' => 'grid_page'])->render()
+            ]);
+        }
+
         return view('admin.laporan.index', compact(
             'laporanPerTipe',
             'laporanPerTahun',
-            'laporanPerWilayah',
+            'distribusiGrid',
             'aktivitasAdmin',
             'surveiTerbaru',
             'statistikBulanan',
@@ -196,50 +188,163 @@ class LaporanController extends Controller
     }
 
     /**
- * Export laporan ke Excel (CSV format)
- */
-public function exportExcel(Request $request)
-{
-    $data = $this->getReportData($request);
-    
-    $filename = 'laporan-survei-' . date('Y-m-d-His') . '.csv';
-    
-    $headers = [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => "attachment; filename=\"$filename\"",
-    ];
-    
-    $callback = function() use ($data) {
-        $file = fopen('php://output', 'w');
+     * Export laporan ke Excel (XLSX format dengan styling)
+     */
+    public function exportExcel(Request $request)
+    {
+        $data = $this->getReportData($request);
         
-        // Header row - dengan kolom Status Grid
-        fputcsv($file, ['No', 'Judul', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload', 'Status Grid']);
+        // Create new Spreadsheet object
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Survei');
         
-        // Data rows
+        // ========== HEADER SECTION ==========
+        // Title
+        $sheet->setCellValue('A1', 'LAPORAN DATA SURVEI SEISMIK');
+        $sheet->mergeCells('A1:H1');
+        $sheet->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '003366']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // Subtitle
+        $sheet->setCellValue('A2', 'Balai Besar Survei dan Pemetaan Geologi Kelautan');
+        $sheet->mergeCells('A2:H2');
+        $sheet->getStyle('A2')->applyFromArray([
+            'font' => ['size' => 12, 'color' => ['rgb' => '666666']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // Export info
+        $filterInfo = 'Tanggal Unduh: ' . $data['tanggalExport'];
+        if ($data['tahun']) $filterInfo .= ' | Tahun: ' . $data['tahun'];
+        if ($data['bulan']) $filterInfo .= ' | Bulan: ' . $data['bulan'];
+        if ($data['tipe']) $filterInfo .= ' | Tipe: ' . $data['tipe'];
+        $filterInfo .= ' | Total Data: ' . count($data['surveiTerbaru']) . ' survei';
+        
+        $sheet->setCellValue('A3', $filterInfo);
+        $sheet->mergeCells('A3:H3');
+        $sheet->getStyle('A3')->applyFromArray([
+            'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => '888888']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // ========== TABLE HEADER ==========
+        $headerRow = 5;
+        $headers = ['No', 'Judul Survei', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload', 'Status Grid'];
+        
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $headerRow, $header);
+            $col++;
+        }
+        
+        // Header styling
+        $sheet->getStyle('A' . $headerRow . ':H' . $headerRow)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '003366'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+            ],
+        ]);
+        $sheet->getRowDimension($headerRow)->setRowHeight(25);
+        
+        // ========== DATA ROWS ==========
+        $row = $headerRow + 1;
         $no = 1;
+        
         foreach ($data['surveiTerbaru'] as $survei) {
-            // Cek apakah survei memiliki grid
             $statusGrid = $survei->gridKotak->count() > 0 
-                ? 'Grid ' . $survei->gridKotak->first()->nomor_kotak 
-                : 'Belum di-assign';
+                ? '✓ Grid ' . $survei->gridKotak->first()->nomor_kotak 
+                : '— Belum di-assign';
             
-            fputcsv($file, [
-                $no++,
-                $survei->judul,
-                $survei->tahun,
-                $survei->tipe,
-                $survei->wilayah,
-                $survei->ketua_tim ?? '-',
-                $survei->created_at->format('d/m/Y H:i'),
-                $statusGrid,
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $survei->judul);
+            $sheet->setCellValue('C' . $row, $survei->tahun);
+            $sheet->setCellValue('D' . $row, $survei->tipe);
+            $sheet->setCellValue('E' . $row, $survei->wilayah);
+            $sheet->setCellValue('F' . $row, $survei->ketua_tim ?? '-');
+            $sheet->setCellValue('G' . $row, $survei->created_at->format('d/m/Y H:i'));
+            $sheet->setCellValue('H' . $row, $statusGrid);
+            
+            // Alternate row colors
+            if ($no % 2 == 0) {
+                $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F8F9FA'],
+                    ],
+                ]);
+            }
+            
+            // Status Grid coloring
+            if ($survei->gridKotak->count() > 0) {
+                $sheet->getStyle('H' . $row)->applyFromArray([
+                    'font' => ['color' => ['rgb' => '28A745'], 'bold' => true],
+                ]);
+            } else {
+                $sheet->getStyle('H' . $row)->applyFromArray([
+                    'font' => ['color' => ['rgb' => '999999']],
+                ]);
+            }
+            
+            $row++;
+        }
+        
+        // Data borders
+        $lastRow = $row - 1;
+        if ($lastRow >= $headerRow + 1) {
+            $sheet->getStyle('A' . ($headerRow + 1) . ':H' . $lastRow)->applyFromArray([
+                'borders' => [
+                    'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'DDDDDD']],
+                ],
+                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
             ]);
         }
         
-        fclose($file);
-    };
-    
-    return response()->stream($callback, 200, $headers);
-}
+        // ========== COLUMN WIDTHS ==========
+        $sheet->getColumnDimension('A')->setWidth(6);   // No
+        $sheet->getColumnDimension('B')->setWidth(40);  // Judul
+        $sheet->getColumnDimension('C')->setWidth(10);  // Tahun
+        $sheet->getColumnDimension('D')->setWidth(12);  // Tipe
+        $sheet->getColumnDimension('E')->setWidth(35);  // Wilayah
+        $sheet->getColumnDimension('F')->setWidth(25);  // Ketua Tim
+        $sheet->getColumnDimension('G')->setWidth(18);  // Tanggal Upload
+        $sheet->getColumnDimension('H')->setWidth(20);  // Status Grid
+        
+        // Center align specific columns
+        $sheet->getStyle('A' . ($headerRow + 1) . ':A' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C' . ($headerRow + 1) . ':D' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('G' . ($headerRow + 1) . ':H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        
+        // ========== FOOTER ==========
+        $footerRow = $lastRow + 2;
+        $sheet->setCellValue('A' . $footerRow, 'Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi Data Peta Seismik BBSPGL');
+        $sheet->mergeCells('A' . $footerRow . ':H' . $footerRow);
+        $sheet->getStyle('A' . $footerRow)->applyFromArray([
+            'font' => ['size' => 9, 'italic' => true, 'color' => ['rgb' => '888888']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // ========== OUTPUT ==========
+        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.xlsx';
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
 
     /**
      * Get report data for export
