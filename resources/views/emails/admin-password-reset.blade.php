@@ -188,7 +188,7 @@
         <div class="footer">
             <p><strong>Balai Besar Survei dan Pemetaan Geologi</strong></p>
             <p>Kementerian Energi dan Sumber Daya Mineral</p>
-            <p>Jl. Diponegoro No. 57 Bandung 40122</p>
+            <p>Jl. Dr. Djunjunan No.236, Husen Sastranegara, Kec. Cicendo, Kota Bandung, Jawa Barat 40174</p>
             <p style="margin-top: 15px;">© {{ date('Y') }} BBSPGL - Email otomatis, mohon tidak membalas</p>
         </div>
     </div>

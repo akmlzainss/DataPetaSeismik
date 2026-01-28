@@ -130,6 +130,17 @@ Route::middleware('guest:pegawai')->prefix('pegawai')->name('pegawai.')->group(f
     Route::get('/masuk', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/masuk', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'login'])
         ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:5,1'));
+
+    // Forgot Password Routes
+    Route::get('/lupa-password', [App\Http\Controllers\Pegawai\PegawaiForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/lupa-password', [App\Http\Controllers\Pegawai\PegawaiForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('password.email')
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:3,1'));
+    Route::get('/reset-password/{token}', [App\Http\Controllers\Pegawai\PegawaiForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::get('/reset-password', [App\Http\Controllers\Pegawai\PegawaiForgotPasswordController::class, 'showResetFormFromQuery'])->name('password.reset.query');
+    Route::post('/reset-password', [App\Http\Controllers\Pegawai\PegawaiForgotPasswordController::class, 'reset'])
+        ->name('password.update.reset')
+        ->when(!app()->environment('local', 'testing'), fn($route) => $route->middleware('throttle:3,1'));
 });
 
 // Email verification (tidak perlu login)
@@ -139,6 +150,9 @@ Route::get('/pegawai/verify/{token}', [App\Http\Controllers\Pegawai\PegawaiAuthC
 // Authenticated Pegawai
 Route::middleware(['auth:pegawai'])->prefix('pegawai')->name('pegawai.')->group(function () {
     Route::post('/keluar', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'logout'])->name('logout');
+    
+    // Ubah Password (AJAX)
+    Route::put('/ubah-password', [App\Http\Controllers\Pegawai\PegawaiAuthController::class, 'updatePassword'])->name('password.update');
 });
 
 // Protected Download - Hanya untuk pegawai internal yang sudah login & verified

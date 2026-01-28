@@ -178,6 +178,34 @@
             background: #fee;
         }
 
+        .profile-menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .profile-menu-item:hover {
+            background: #f5f5f5;
+            color: #003366;
+        }
+
+        .profile-menu-item i {
+            color: #003366;
+            width: 16px;
+            text-align: center;
+        }
+
         /* Responsive Profile Dropdown for Mobile */
         @media (max-width: 968px) {
             .profile-dropdown {
@@ -279,6 +307,14 @@
                                         <small>{{ Auth::guard('pegawai')->user()->email }}</small>
                                     </div>
                                 </div>
+                                <div class="profile-divider"></div>
+                                
+                                {{-- Menu Items --}}
+                                <button type="button" class="profile-menu-item" onclick="showPasswordModal()">
+                                    <i class="fas fa-key"></i>
+                                    <span>Ubah Password</span>
+                                </button>
+                                
                                 <div class="profile-divider"></div>
                                 <form action="{{ route('pegawai.logout') }}" method="POST" style="margin: 0;">
                                     @csrf
@@ -388,7 +424,7 @@
                             <path
                                 d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                         </svg>
-                        <span>Jl. Diponegoro No.57<br>Bandung 40122, Indonesia</span>
+                        <span>Jl. Dr. Djunjunan No.236, Husen Sastranegara,<br>Kec. Cicendo, Kota Bandung, Jawa Barat 40174</span>
                     </div>
                     <div class="footer-contact-item">
                         <svg viewBox="0 0 24 24">
@@ -492,6 +528,72 @@
             if (e.target === this) closeSitemap();
         });
     </script>
+
+    {{-- ========== MODAL UBAH PASSWORD ========== --}}
+    @auth('pegawai')
+    <div id="passwordModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10001; justify-content:center; align-items:center;">
+        <div class="password-modal-content" style="background:white; width:90%; max-width:420px; border-radius:16px; overflow:hidden; transform:scale(0.9); transition: transform 0.3s ease;">
+            {{-- Header --}}
+            <div style="background: linear-gradient(135deg, #003366 0%, #004080 100%); color:white; padding:24px; text-align:center;">
+                <i class="fas fa-key" style="font-size:36px; margin-bottom:12px; opacity:0.9;"></i>
+                <h3 style="margin:0 0 4px 0; font-size:20px;">Ubah Password</h3>
+                <p style="margin:0; font-size:13px; opacity:0.85;">Perbarui kata sandi akun Anda</p>
+            </div>
+            
+            {{-- Body --}}
+            <div style="padding:24px;">
+                {{-- Alert container --}}
+                <div id="passwordAlert" style="display:none; padding:12px; border-radius:8px; margin-bottom:16px; font-size:14px;"></div>
+                
+                <form id="passwordForm" class="no-loading">
+                    @csrf
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:6px; font-size:14px;">
+                            <i class="fas fa-lock" style="color:#003366; margin-right:6px;"></i>
+                            Password Saat Ini
+                        </label>
+                        <input type="password" name="current_password" id="currentPassword" 
+                            placeholder="Masukkan password saat ini" required
+                            style="width:100%; padding:12px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:6px; font-size:14px;">
+                            <i class="fas fa-key" style="color:#003366; margin-right:6px;"></i>
+                            Password Baru
+                        </label>
+                        <input type="password" name="new_password" id="newPassword" 
+                            placeholder="Masukkan password baru" required
+                            style="width:100%; padding:12px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                        <p style="font-size:11px; color:#666; margin:6px 0 0 0;">Minimal 8 karakter</p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; font-weight:600; color:#333; margin-bottom:6px; font-size:14px;">
+                            <i class="fas fa-check-double" style="color:#003366; margin-right:6px;"></i>
+                            Konfirmasi Password Baru
+                        </label>
+                        <input type="password" name="new_password_confirmation" id="newPasswordConfirm" 
+                            placeholder="Ulangi password baru" required
+                            style="width:100%; padding:12px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    </div>
+                    
+                    <div style="display:flex; gap:12px;">
+                        <button type="button" onclick="closePasswordModal()" 
+                            style="flex:1; padding:12px; background:#f5f5f5; color:#666; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+                            Batal
+                        </button>
+                        <button type="submit" id="savePasswordBtn"
+                            style="flex:1; padding:12px; background:linear-gradient(135deg, #003366 0%, #004080 100%); color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                            <i class="fas fa-save"></i>
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endauth
 
     {{-- ========== GLOBAL LOADING OVERLAY (TC016 FIX) ========== --}}
     <div id="globalLoadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
@@ -607,6 +709,113 @@
                 const trigger = document.getElementById('profileTrigger');
                 if (menu) menu.classList.remove('show');
                 if (trigger) trigger.classList.remove('active');
+            }
+        });
+
+        // ========== PASSWORD MODAL FUNCTIONS ==========
+        function showPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            if (modal) {
+                // Close profile dropdown first
+                const profileMenu = document.getElementById('profileMenu');
+                const profileTrigger = document.getElementById('profileTrigger');
+                if (profileMenu) profileMenu.classList.remove('show');
+                if (profileTrigger) profileTrigger.classList.remove('active');
+                
+                // Show modal
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.querySelector('.password-modal-content').style.transform = 'scale(1)';
+                }, 10);
+                
+                // Focus first input
+                document.getElementById('currentPassword')?.focus();
+            }
+        }
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            if (modal) {
+                modal.querySelector('.password-modal-content').style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    // Reset form
+                    document.getElementById('passwordForm')?.reset();
+                    hidePasswordAlert();
+                }, 300);
+            }
+        }
+
+        function showPasswordAlert(message, isSuccess) {
+            const alert = document.getElementById('passwordAlert');
+            if (alert) {
+                alert.textContent = message;
+                alert.style.display = 'block';
+                alert.style.background = isSuccess ? '#d4edda' : '#f8d7da';
+                alert.style.color = isSuccess ? '#155724' : '#721c24';
+                alert.style.borderLeft = isSuccess ? '4px solid #28a745' : '4px solid #dc3545';
+            }
+        }
+
+        function hidePasswordAlert() {
+            const alert = document.getElementById('passwordAlert');
+            if (alert) {
+                alert.style.display = 'none';
+            }
+        }
+
+        // Handle password form submit
+        document.getElementById('passwordForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('savePasswordBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            
+            const formData = new FormData(this);
+            
+            fetch('{{ route("pegawai.password.update") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    _method: 'PUT',
+                    current_password: formData.get('current_password'),
+                    new_password: formData.get('new_password'),
+                    new_password_confirmation: formData.get('new_password_confirmation')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                if (data.success) {
+                    showPasswordAlert(data.message || 'Password berhasil diubah!', true);
+                    document.getElementById('passwordForm').reset();
+                    setTimeout(() => {
+                        closePasswordModal();
+                    }, 1500);
+                } else {
+                    showPasswordAlert(data.message || 'Gagal mengubah password', false);
+                }
+            })
+            .catch(error => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showPasswordAlert('Terjadi kesalahan saat mengubah password', false);
+            });
+        });
+
+        // Close modal on outside click
+        document.getElementById('passwordModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePasswordModal();
             }
         });
     </script>

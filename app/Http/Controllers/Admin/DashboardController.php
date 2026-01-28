@@ -65,12 +65,22 @@ class DashboardController extends Controller
             ];
         }
 
-        // ========== TOP 10 WILAYAH ==========
-        $topWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
-            ->groupBy('wilayah')
-            ->orderBy('total', 'DESC')
-            ->take(10)
-            ->get();
+        // ========== SURVEI PER DEKADE ==========
+        $surveiPerDekade = DataSurvei::select(
+            DB::raw('FLOOR(tahun / 10) * 10 as dekade'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereNotNull('tahun')
+            ->groupBy('dekade')
+            ->orderBy('dekade', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'dekade' => $item->dekade . '-an',
+                    'tahun_awal' => (int) $item->dekade,
+                    'total' => $item->total
+                ];
+            });
 
         // ========== PERBANDINGAN BULAN INI VS BULAN LALU ==========
         $bulanLalu = now()->subMonth();
@@ -104,7 +114,7 @@ class DashboardController extends Controller
             'surveiTerbaru',
             'surveiPerTahun',
             'trendBulanan',
-            'topWilayah',
+            'surveiPerDekade',
             'pertumbuhanBulanan',
             'surveiDenganGrid',
             'surveiTanpaGrid',

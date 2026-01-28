@@ -277,18 +277,17 @@
         </div>
     </div>
 
-    {{-- ========== BAR CHART WILAYAH ========== --}}
+    {{-- ========== BAR CHART TIMELINE DEKADE ========== --}}
     <div class="chart-card">
         <div class="chart-title">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
             </svg>
-            Top 10 Wilayah Survei
+            Timeline Survei Per Dekade
         </div>
-        <div class="chart-subtitle">Wilayah dengan survei terbanyak</div>
+        <div class="chart-subtitle">Distribusi data survei seismik berdasarkan periode dekade</div>
         <div class="chart-container">
-            <canvas id="wilayahChart"></canvas>
+            <canvas id="dekadeChart"></canvas>
         </div>
     </div>
 
@@ -331,38 +330,82 @@
             </div>
         </div>
 
-        {{-- TOP 10 WILAYAH --}}
+        {{-- STATUS PEGAWAI ESDM --}}
         <div class="dashboard-card">
             <div class="card-header">
-                <h3>Top 10 Wilayah Survei</h3>
-                <span class="card-subtitle">Wilayah dengan survei terbanyak</span>
+                <h3>Status Pegawai ESDM</h3>
+                <span class="card-subtitle">Ringkasan pengguna pegawai internal</span>
             </div>
             <div class="card-body">
+                @php
+                    $totalPegawai = \App\Models\PegawaiInternal::count();
+                    $pegawaiApproved = \App\Models\PegawaiInternal::approved()->count();
+                    $pegawaiPending = \App\Models\PegawaiInternal::pendingApproval()->count();
+                    $pegawaiVerified = \App\Models\PegawaiInternal::whereNotNull('email_verified_at')->count();
+                @endphp
+                
+                {{-- Summary Stats --}}
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 16px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 28px; font-weight: 700; color: #2e7d32;">{{ number_format($pegawaiApproved) }}</div>
+                        <div style="font-size: 13px; color: #388e3c; font-weight: 500; margin-top: 4px;">✓ Approved</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 16px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 28px; font-weight: 700; color: #e65100;">{{ number_format($pegawaiPending) }}</div>
+                        <div style="font-size: 13px; color: #f57c00; font-weight: 500; margin-top: 4px;">⏳ Pending</div>
+                    </div>
+                </div>
+
+                {{-- Detail Stats --}}
                 <table class="simple-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Wilayah</th>
-                            <th style="text-align: right;">Total</th>
-                        </tr>
-                    </thead>
                     <tbody>
-                        @forelse($topWilayah ?? [] as $index => $wilayah)
-                            <tr>
-                                <td style="width: 50px; font-weight: 700; color: #003366;">
-                                    #{{ $index + 1 }}
-                                </td>
-                                <td>{{ Str::limit($wilayah->wilayah, 35) }}</td>
-                                <td style="text-align: right; font-weight: 600;">{{ number_format($wilayah->total) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" style="text-align: center; color: #999; padding: 30px;">Belum ada data
-                                </td>
-                            </tr>
-                        @endforelse
+                        <tr>
+                            <td style="display: flex; align-items: center; gap: 10px;">
+                                <span style="width: 32px; height: 32px; background: #e3f2fd; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="#1976d2">
+                                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                                    </svg>
+                                </span>
+                                Total Pegawai Terdaftar
+                            </td>
+                            <td style="text-align: right; font-weight: 700; font-size: 18px; color: #003366;">{{ number_format($totalPegawai) }}</td>
+                        </tr>
+                        <tr>
+                            <td style="display: flex; align-items: center; gap: 10px;">
+                                <span style="width: 32px; height: 32px; background: #e8f5e9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="#388e3c">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </span>
+                                Email Terverifikasi
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: #388e3c;">{{ number_format($pegawaiVerified) }}</td>
+                        </tr>
+                        <tr>
+                            <td style="display: flex; align-items: center; gap: 10px;">
+                                <span style="width: 32px; height: 32px; background: #f3e5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="#7b1fa2">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                    </svg>
+                                </span>
+                                Rasio Approval
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: #7b1fa2;">
+                                {{ $totalPegawai > 0 ? number_format(($pegawaiApproved / $totalPegawai) * 100, 1) : 0 }}%
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+
+                @if($pegawaiPending > 0)
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; text-align: center;">
+                        <a href="{{ route('admin.pengaturan.index') }}#approval" 
+                           style="color: #f57c00; font-weight: 600; text-decoration: none; font-size: 14px;">
+                            <i class="fas fa-bell" style="margin-right: 6px;"></i>
+                            {{ $pegawaiPending }} pegawai menunggu approval →
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -488,7 +531,6 @@
             // Data dari PHP
             const trendData = @json($trendBulanan);
             const tipeData = @json($surveiPerTipe);
-            const wilayahData = @json($topWilayah);
 
             // Chart 1: Trend Line Chart
             const trendCtx = document.getElementById('trendChart').getContext('2d');
@@ -558,19 +600,28 @@
                 }
             });
 
-            // Chart 3: Bar Chart Wilayah
-            const wilayahCtx = document.getElementById('wilayahChart').getContext('2d');
-            new Chart(wilayahCtx, {
+            // Chart 3: Bar Chart Timeline Dekade
+            const dekadeData = @json($surveiPerDekade);
+            const dekadeCtx = document.getElementById('dekadeChart').getContext('2d');
+            
+            // Generate gradient colors based on decade (older = lighter, newer = darker)
+            const dekadeColors = dekadeData.map((item, index) => {
+                const intensity = 0.4 + (index / dekadeData.length) * 0.5;
+                return `rgba(0, 51, 102, ${intensity})`;
+            });
+            
+            new Chart(dekadeCtx, {
                 type: 'bar',
                 data: {
-                    labels: wilayahData.map(item => item.wilayah.length > 20 ? item.wilayah.substring(0,
-                        20) + '...' : item.wilayah),
+                    labels: dekadeData.map(item => item.dekade),
                     datasets: [{
                         label: 'Jumlah Survei',
-                        data: wilayahData.map(item => item.total),
-                        backgroundColor: 'rgba(0, 51, 102, 0.8)',
+                        data: dekadeData.map(item => item.total),
+                        backgroundColor: dekadeColors,
                         borderColor: '#003366',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barThickness: 50
                     }]
                 },
                 options: {
@@ -579,6 +630,17 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const item = dekadeData[context[0].dataIndex];
+                                    return `Tahun ${item.tahun_awal} - ${item.tahun_awal + 9}`;
+                                },
+                                label: function(context) {
+                                    return `${context.raw} data survei`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -586,12 +648,18 @@
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 1
+                            },
+                            title: {
+                                display: true,
+                                text: 'Jumlah Survei',
+                                font: { weight: 'bold' }
                             }
                         },
                         x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
+                            title: {
+                                display: true,
+                                text: 'Periode Dekade',
+                                font: { weight: 'bold' }
                             }
                         }
                     }

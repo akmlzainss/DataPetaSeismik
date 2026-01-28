@@ -9,7 +9,7 @@ Proyek yang dikerjakan selama pelaksanaan Praktik Kerja Lapangan (PKL) adalah pe
 
 Latar belakang pengembangan sistem ini adalah kebutuhan BBSPGL untuk memiliki platform terpusat dalam mengelola data survei seismik yang selama ini tersimpan dalam berbagai format dan lokasi yang berbeda. Dengan adanya sistem berbasis web, data survei dapat diakses dengan mudah baik oleh pihak internal maupun masyarakat umum yang membutuhkan informasi tersebut.
 
-Sistem ini dibangun menggunakan framework Laravel dengan arsitektur Model-View-Controller (MVC) yang memisahkan logika bisnis, tampilan, dan pengelolaan data. Fitur utama yang dikembangkan meliputi manajemen data survei, visualisasi peta interaktif menggunakan sistem grid kotak, katalog publik untuk akses informasi, serta fitur ekspor laporan dalam format PDF dan Excel.
+Sistem ini dibangun menggunakan framework Laravel dengan arsitektur Model-View-Controller (MVC) yang memisahkan logika bisnis, tampilan, dan pengelolaan data. Fitur utama yang dikembangkan meliputi manajemen data survei, visualisasi peta interaktif menggunakan sistem grid persegi, katalog publik untuk akses informasi, serta fitur ekspor laporan dalam format PDF dan Excel.
 
 Pengembangan sistem dilakukan secara bertahap dimulai dari analisis kebutuhan, perancangan database dan antarmuka, implementasi fitur-fitur utama, hingga pengujian sistem. Selama proses pengembangan, dilakukan iterasi perbaikan berdasarkan masukan dan hasil evaluasi untuk memastikan sistem berjalan sesuai dengan kebutuhan pengguna.
 
