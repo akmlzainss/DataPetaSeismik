@@ -78,34 +78,44 @@
 
             <!-- Right Column: Sidebar -->
             <aside class="article-sidebar">
-                {{-- Location Map Section --}}
-                @if ($survey->lokasi)
+                {{-- Location Grid Section (SISTEM BARU) --}}
+                @if ($survey->gridKotak->count() > 0)
+                    @php
+                        $grid = $survey->gridKotak->first();
+                    @endphp
                     <div class="location-map-card">
                         <h3 class="filters-title"
                             style="margin-bottom: 1.5rem; border-bottom: 2px solid #ffed00; padding-bottom: 0.5rem; display: inline-block;">
-                            Lokasi Survei</h3>
+                            Lokasi Grid</h3>
 
                         <div class="location-info">
                             <div class="location-detail">
-                                <i class="fas fa-map-marker-alt"></i>
+                                <i class="fas fa-th"></i>
                                 <div>
-                                    <strong>{{ $survey->lokasi->nama_lokasi ?? $survey->wilayah }}</strong>
+                                    <strong>Grid {{ $grid->nomor_kotak }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ number_format($survey->lokasi->pusat_lintang, 6) }}°,
-                                        {{ number_format($survey->lokasi->pusat_bujur, 6) }}°
+                                        {{ $survey->wilayah }}
                                     </small>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="surveyLocationMap" class="survey-location-map"></div>
+                        <div id="surveyLocationMap" class="survey-location-map"
+                             data-grid-sw-lat="{{ $grid->bounds_sw_lat }}"
+                             data-grid-ne-lat="{{ $grid->bounds_ne_lat }}"
+                             data-grid-sw-lng="{{ $grid->bounds_sw_lng }}"
+                             data-grid-ne-lng="{{ $grid->bounds_ne_lng }}"
+                             data-grid-nomor="{{ $grid->nomor_kotak }}"></div>
 
-                        @if ($survey->lokasi->keterangan)
+                        @if($survey->gridKotak->count() > 1)
                             <div class="location-description">
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle"></i>
-                                    {{ $survey->lokasi->keterangan }}
+                                    Juga ditemukan di grid: 
+                                    @foreach($survey->gridKotak->skip(1) as $otherGrid)
+                                        <strong>{{ $otherGrid->nomor_kotak }}</strong>{{ !$loop->last ? ', ' : '' }}
+                                    @endforeach
                                 </small>
                             </div>
                         @endif
@@ -245,87 +255,81 @@
             @endif
 
             // ============================================================
-            // LOCATION MAP INITIALIZATION
+            // LOCATION MAP INITIALIZATION - GRID SYSTEM
             // ============================================================
-            @if ($survey->lokasi)
-                // Initialize location map
-                const locationMap = L.map('surveyLocationMap', {
-                    zoomControl: true,
-                    scrollWheelZoom: true,
-                    doubleClickZoom: true,
-                    boxZoom: false,
-                    keyboard: false,
-                    dragging: true,
-                    touchZoom: true
-                }).setView([{{ $survey->lokasi->pusat_lintang }}, {{ $survey->lokasi->pusat_bujur }}], 6);
+            @if ($survey->gridKotak->count() > 0)
+                // Initialize grid location map
+                const mapElement = document.getElementById('surveyLocationMap');
+                if (mapElement) {
+                    const swLat = parseFloat(mapElement.dataset.gridSwLat);
+                    const neLat = parseFloat(mapElement.dataset.gridNeLat);
+                    const swLng = parseFloat(mapElement.dataset.gridSwLng);
+                    const neLng = parseFloat(mapElement.dataset.gridNeLng);
+                    const gridNomor = mapElement.dataset.gridNomor;
+                    
+                    // Calculate center
+                    const centerLat = (swLat + neLat) / 2;
+                    const centerLng = (swLng + neLng) / 2;
+                    
+                    const locationMap = L.map('surveyLocationMap', {
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        doubleClickZoom: true,
+                        dragging: true,
+                        touchZoom: true
+                    }).setView([centerLat, centerLng], 7);
 
-                // Add tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 18,
-                    minZoom: 5
-                }).addTo(locationMap);
+                    // Add tile layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 18,
+                        minZoom: 4
+                    }).addTo(locationMap);
 
-                // Create blue icon same as main map page
-                const blueIcon = new L.Icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    shadowSize: [41, 41]
-                });
+                    // Create grid rectangle
+                    const bounds = [[swLat, swLng], [neLat, neLng]];
+                    const rectangle = L.rectangle(bounds, {
+                        color: '#999',
+                        fillColor: '#8fbc8f',
+                        fillOpacity: 0.4,
+                        weight: 1
+                    }).addTo(locationMap);
 
-                // Add marker for survey location
-                const surveyMarker = L.marker([{{ $survey->lokasi->pusat_lintang }},
-                    {{ $survey->lokasi->pusat_bujur }}
-                ], {
-                    icon: blueIcon,
-                    title: '{{ $survey->judul }}'
-                }).addTo(locationMap);
+                    // Add grid label
+                    const labelIcon = L.divIcon({
+                        className: 'grid-label',
+                        html: `<span style="font-size: 11px; font-weight: 600; color: #333; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff;">${gridNomor}</span>`,
+                        iconSize: [40, 20],
+                        iconAnchor: [20, 10]
+                    });
+                    L.marker([centerLat, centerLng], { icon: labelIcon, interactive: false }).addTo(locationMap);
 
-                // Create popup content
-                const popupContent = `
-                    <div style="text-align: center; min-width: 200px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        <h4 style="margin: 0 0 8px 0; color: #003366; font-size: 16px;">
-                            <i class="fas fa-map-marker-alt" style="color: #ffed00; margin-right: 6px;"></i>
-                            {{ $survey->lokasi->nama_lokasi ?? $survey->wilayah }}
-                        </h4>
-                        <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 6px;">
-                            <strong style="color: #003366;">{{ $survey->judul }}</strong><br>
-                            <small style="color: #666;">{{ $survey->tipe }} • {{ $survey->tahun }}</small>
-                        </div>
-                        <div style="margin: 8px 0; font-size: 13px; color: #666;">
-                            <i class="fas fa-crosshairs" style="margin-right: 4px;"></i>
-                            <strong>Koordinat:</strong><br>
-                            {{ number_format($survey->lokasi->pusat_lintang, 6) }}°, {{ number_format($survey->lokasi->pusat_bujur, 6) }}°
-                        </div>
-                        @if ($survey->lokasi->keterangan)
-                            <div style="margin-top: 8px; padding: 6px; background: #e8f5e8; border-radius: 4px; font-size: 12px; color: #666;">
-                                <i class="fas fa-info-circle" style="color: #28a745; margin-right: 4px;"></i>
-                                {{ $survey->lokasi->keterangan }}
+                    // Create popup content
+                    const popupContent = `
+                        <div style="text-align: center; min-width: 180px;">
+                            <h4 style="margin: 0 0 8px 0; color: #003366; font-size: 15px;">
+                                <i class="fas fa-th" style="color: #ffed00; margin-right: 6px;"></i>
+                                Grid ${gridNomor}
+                            </h4>
+                            <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                                <strong style="color: #003366;">{{ $survey->judul }}</strong><br>
+                                <small style="color: #666;">{{ $survey->tipe }} • {{ $survey->tahun }}</small>
                             </div>
-                        @endif
-                    </div>
-                `;
+                            <small style="color: #666;">{{ $survey->wilayah }}</small>
+                        </div>
+                    `;
 
-                // Bind popup to marker
-                surveyMarker.bindPopup(popupContent, {
-                    maxWidth: 300,
-                    className: 'survey-location-popup'
-                });
+                    rectangle.bindPopup(popupContent, {
+                        maxWidth: 300,
+                        className: 'survey-location-popup'
+                    });
 
-                // Auto-open popup after a short delay
-                setTimeout(() => {
-                    surveyMarker.openPopup();
-                }, 1000);
-
-                // Fit map bounds to show marker with more area around it
-                const bounds = L.latLngBounds([surveyMarker.getLatLng()]);
-                locationMap.fitBounds(bounds, {
-                    padding: [50, 50],
-                    maxZoom: 7 // Limit maximum zoom level
-                });
+                    // Fit map to grid bounds
+                    locationMap.fitBounds(bounds, {
+                        padding: [20, 20],
+                        maxZoom: 8
+                    });
+                }
             @endif
         });
 

@@ -6,6 +6,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}">
     <link href="{{ asset('assets/quill/quill.snow.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         #quill-editor {
             background: white;
@@ -105,6 +106,21 @@
                         @enderror
                     </div>
 
+                    {{-- Posisi Grid Peta --}}
+                    <div class="form-group full-width">
+                        <label class="form-label">Posisi Grid Peta (Opsional)</label>
+                        <select name="grid_kotak_id[]" id="gridSelect" class="form-select" multiple>
+                            @foreach($allGrids as $grid)
+                                <option value="{{ $grid->id }}" 
+                                    {{ $dataSurvei->gridKotak->contains('id', $grid->id) ? 'selected' : '' }}>
+                                    Grid {{ $grid->nomor_kotak }} 
+                                    ({{ $grid->status == 'filled' ? 'Terisi' : 'Kosong' }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <span class="help-text">Pilih satu atau lebih kotak grid untuk lokasi survei ini.</span>
+                    </div>
+
                     <!-- QUILL EDITOR -->
                     <div class="form-group full-width">
                         <label class="form-label">Deskripsi (Opsional)</label>
@@ -200,8 +216,19 @@
 @endsection
 
 @push('scripts')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('assets/quill/quill.js') }}"></script>
     <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('#gridSelect').select2({
+                placeholder: 'Pilih Grid (Cari nomor grid...)',
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const quill = new Quill('#quill-editor', {
                 theme: 'snow',

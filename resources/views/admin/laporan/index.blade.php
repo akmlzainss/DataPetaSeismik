@@ -1166,7 +1166,7 @@
                         window.history.pushState({}, '', url.toString());
                     },
                     error: function() {
-                        alert('Terjadi kesalahan saat memuat data');
+                        toastError('Terjadi kesalahan saat memuat data', 'Error');
                         $('#survei-loading').hide();
                         $('#survei-table-container').show();
                     }

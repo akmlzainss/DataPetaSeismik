@@ -14,7 +14,7 @@ class KatalogController extends Controller
     public function index(Request $request)
     {
         // Ambil data survei dari database dengan pagination
-        $query = DataSurvei::with(['pengunggah', 'lokasi'])
+        $query = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->orderBy('tahun', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -65,7 +65,7 @@ class KatalogController extends Controller
      */
     public function show($id)
     {
-        $survey = DataSurvei::with(['pengunggah', 'lokasi'])
+        $survey = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->findOrFail($id);
 
         // Check if request comes from peta (for custom breadcrumb)

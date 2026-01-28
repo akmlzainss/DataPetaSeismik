@@ -284,7 +284,7 @@
                 const fileError = document.querySelector('.file-error-js.error-message');
                 if (fileError) {
                     e.preventDefault();
-                    alert('Mohon perbaiki error file upload sebelum melanjutkan.');
+                    toastWarning('Mohon perbaiki error file upload sebelum melanjutkan.', 'File Error');
                     return false;
                 }
                 

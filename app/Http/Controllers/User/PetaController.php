@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\DataSurvei;
-use App\Models\LokasiMarker;
+use App\Models\GridKotak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,52 +13,60 @@ class PetaController extends Controller
 {
     /**
      * Menampilkan halaman Peta Interaktif (User) dengan data real-time.
+     * Menggunakan sistem Grid Kotak
      */
     public function index()
     {
-        // FIXED: Gunakan eager loading dengan properly defined relationships
-        // Ambil data marker dengan relasi survei melalui defined Eloquent relationships
+        // Ambil semua grid kotak dengan relasi data survei
+        $gridsData = GridKotak::with(['dataSurvei' => function ($query) {
+            $query->with('pengunggah');
+        }])->get();
 
-        $markers = LokasiMarker::with('survei')
-            ->has('survei') // Pastikan hanya yang ada relasi survei
-            ->get()
-            ->map(function ($marker) {
-                // Manual mapping data yang diperlukan untuk view
-                return [
-                    'id' => $marker->id,
-                    'id_data_survei' => $marker->id_data_survei,
-                    'pusat_lintang' => (float) $marker->pusat_lintang,
-                    'pusat_bujur' => $marker->pusat_bujur,
-                    'nama_lokasi' => $marker->nama_lokasi,
-                    'keterangan' => $marker->keterangan,
-                    // Data dari relasi survei
-                    'judul' => $marker->survei->judul ?? 'N/A',
-                    'tahun' => $marker->survei->tahun ?? 'N/A',
-                    'tipe' => $marker->survei->tipe ?? 'N/A',
-                    'wilayah' => $marker->survei->wilayah ?? 'N/A',
-                    'deskripsi' => $marker->survei->deskripsi ?? 'N/A',
-                    'gambar_pratinjau' => $marker->survei->gambar_pratinjau ?? null,
-                ];
-            });
+        // Format data grid untuk peta
+        $grids = $gridsData->map(function ($grid) {
+            return [
+                'id' => $grid->id,
+                'nomor_kotak' => $grid->nomor_kotak,
+                'bounds' => $grid->bounds_array,
+                'center' => $grid->center_array,
+                'status' => $grid->status,
+                'total_data' => $grid->total_data,
+                'is_filled' => $grid->total_data > 0,
+                // Data survei dalam grid ini
+                'survei_list' => $grid->dataSurvei->map(function ($survei) {
+                    return [
+                        'id' => $survei->id,
+                        'judul' => $survei->judul,
+                        'tahun' => $survei->tahun,
+                        'tipe' => $survei->tipe,
+                        'wilayah' => $survei->wilayah,
+                        'deskripsi' => $survei->deskripsi,
+                        'gambar_pratinjau' => $survei->gambar_pratinjau,
+                    ];
+                })->toArray(),
+            ];
+        });
 
         // Debug: Log data yang akan dikirim ke view
-        Log::info('Markers data for view:', $markers->toArray());
+        Log::info('Grids data for view:', ['count' => $grids->count()]);
 
-        // Tambah counter untuk statistik (FIXED: menggunakan data dari mapped collection)
+        // Statistik untuk tampilan
         $stats = [
-            'total_marker' => $markers->count(),
-            'total_survei' => $markers->pluck('id_data_survei')->unique()->count(),
-            'tahun_terbaru' => $markers->max('tahun'),
+            'total_grid' => $grids->count(),
+            'grid_terisi' => $grids->where('is_filled', true)->count(),
+            'grid_kosong' => $grids->where('is_filled', false)->count(),
+            'total_survei' => DataSurvei::count(),
+            'survei_terpetakan' => DataSurvei::has('gridKotak')->count(),
             'tipe_data' => [
-                '2D' => $markers->where('tipe', '2D')->count(),
-                '3D' => $markers->where('tipe', '3D')->count(),
-                'HR' => $markers->where('tipe', 'HR')->count()
+                '2D' => DataSurvei::where('tipe', '2D')->count(),
+                '3D' => DataSurvei::where('tipe', '3D')->count(),
+                'HR' => DataSurvei::where('tipe', 'HR')->count()
             ]
         ];
 
         // Debug: Log stats
         Log::info('Stats data for view:', $stats);
 
-        return view('User.peta.index', compact('markers', 'stats'));
+        return view('User.peta.index', compact('grids', 'stats'));
     }
 }

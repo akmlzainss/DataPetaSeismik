@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataSurveiController;
 use App\Http\Controllers\Admin\GridKotakController; // SISTEM GRID BARU
-use App\Http\Controllers\Admin\LokasiMarkerController; // DEPRECATED - Sistem marker lama
+// LokasiMarkerController removed - sistem marker lama sudah dihapus
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\PengaturanController;
@@ -61,14 +61,6 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
             'destroy' => 'data_survei.destroy',
         ]);
 
-    // Tambahan Route untuk JS (mengembalikan JSON)
-    // PENTING: Gunakan URI yang unik (e.g., /data-survei-json/ atau /data-survei/{id}/json)
-    // agar TIDAK menimpa route 'show' di atas.
-    Route::get('/data-survei-json/{dataSurvei}', [DataSurveiController::class, 'showJson'])
-        ->name('data_survei.show_json');
-
-
-
     // ==========================================
     // GRID KOTAK (SISTEM PETA SEISMIK BARU)
     // ==========================================
@@ -78,18 +70,7 @@ Route::prefix('bbspgl-admin')->name('admin.')->middleware('auth.admin')->group(f
     Route::delete('/grid-kotak/unassign/{gridKotak}/{dataSurvei}', [GridKotakController::class, 'unassign'])->name('grid_kotak.unassign');
     Route::get('/grid-kotak/{id}', [GridKotakController::class, 'show'])->name('grid_kotak.show');
 
-    // ==========================================
-    // LOKASI MARKER (DEPRECATED - SISTEM LAMA)
-    // ==========================================
-    // Routes di-comment karena sudah diganti dengan Grid Kotak system
-    // Uncomment jika ingin menggunakan sistem marker lama
-    /*
-    Route::get('/lokasi-marker', [LokasiMarkerController::class, 'index'])->name('lokasi_marker.index');
-    Route::post('/lokasi-marker', [LokasiMarkerController::class, 'store'])->name('lokasi_marker.store');
-    Route::put('/lokasi-marker/{id}', [LokasiMarkerController::class, 'update'])->name('lokasi_marker.update');
-    Route::delete('/lokasi-marker/{id}', [LokasiMarkerController::class, 'destroy'])->name('lokasi_marker.destroy');
-    Route::get('/geocode', [LokasiMarkerController::class, 'geocode'])->name('geocode');
-    */
+    // Lokasi Marker routes dihapus - sistem sudah diganti dengan Grid Kotak
 
     // Laporan
     Route::resource('laporan', LaporanController::class)->names('laporan');
