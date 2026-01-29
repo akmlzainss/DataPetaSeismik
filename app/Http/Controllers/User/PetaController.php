@@ -30,8 +30,8 @@ class PetaController extends Controller
                 'bounds' => $grid->bounds_array,
                 'center' => $grid->center_array,
                 'status' => $grid->status,
-                'total_data' => $grid->total_data,
-                'is_filled' => $grid->total_data > 0,
+                'total_data' => $grid->dataSurvei->count(), // Real-time count fix similar to admin
+                'is_filled' => $grid->dataSurvei->count() > 0, // Real-time status fix
                 // Data survei dalam grid ini
                 'survei_list' => $grid->dataSurvei->map(function ($survei) {
                     return [

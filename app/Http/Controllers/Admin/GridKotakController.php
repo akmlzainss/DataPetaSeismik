@@ -58,7 +58,7 @@ class GridKotakController extends Controller
                         'bounds' => $grid->bounds_array,
                         'center' => $grid->center_array,
                         'status' => $grid->status,
-                        'total_data' => $grid->total_data,
+                        'total_data' => $grid->dataSurvei->count(), // Gunakan real-time count agar akurat
                         'data_survei' => $grid->dataSurvei->map(function($survei) {
                             return [
                                 'id' => $survei->id,
@@ -109,9 +109,12 @@ class GridKotakController extends Controller
                 'assigned_at' => now(),
             ]);
 
-            // Update counter dan status grid
-            $gridKotak->increment('total_data');
-            $gridKotak->update(['status' => 'filled']);
+            // Update counter dan status grid dari real count
+            $totalData = $gridKotak->dataSurvei()->count();
+            $gridKotak->update([
+                'total_data' => $totalData,
+                'status' => 'filled'
+            ]);
 
             DB::commit();
 
@@ -158,15 +161,13 @@ class GridKotakController extends Controller
             // Detach data survei dari grid kotak
             $gridKotak->dataSurvei()->detach($dataSurvei->id);
 
-            // Update counter dan status grid
-            $gridKotak->decrement('total_data');
+            // Recalculate count untuk memastikan sinkronisasi
+            $totalData = $gridKotak->dataSurvei()->count();
             
-            if ($gridKotak->total_data <= 0) {
-                $gridKotak->update([
-                    'status' => 'empty',
-                    'total_data' => 0,
-                ]);
-            }
+            $gridKotak->update([
+                'total_data' => $totalData,
+                'status' => $totalData > 0 ? 'filled' : 'empty'
+            ]);
 
             DB::commit();
 

@@ -252,7 +252,24 @@ class DataSurveiController extends Controller
             }
         }
 
+        // AMBIL DULU ID grid yang terhubung sebelum dihapus
+        // agar kita bisa update counter 'total_data' di grid tersebut nanti
+        $connectedGridIds = $dataSurvei->gridKotak()->pluck('grid_kotak.id')->toArray();
+
+        // Hapus data (Pivot di grid_seismik akan terhapus otomatis via Cascade DB)
         $dataSurvei->delete();
+
+        // UPDATE COUNTER GRID yang terimbas
+        if (!empty($connectedGridIds)) {
+            $affectedGrids = \App\Models\GridKotak::whereIn('id', $connectedGridIds)->get();
+            foreach ($affectedGrids as $grid) {
+                $count = $grid->dataSurvei()->count();
+                $grid->update([
+                    'total_data' => $count,
+                    'status' => $count > 0 ? 'filled' : 'empty'
+                ]);
+            }
+        }
 
         return redirect()
             ->route('admin.data_survei.index')

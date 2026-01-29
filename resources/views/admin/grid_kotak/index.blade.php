@@ -269,12 +269,18 @@
                 console.log('Loaded', data.grids.length, 'grids');
 
                 data.grids.forEach(grid => {
+                    // FIX: Ensure total_data matches the actual loaded survey list
+                    // This fixes the issue where DB might say 1 but actual list is empty
+                    if (grid.data_survei && Array.isArray(grid.data_survei)) {
+                        grid.total_data = grid.data_survei.length;
+                    }
+
                     // Create rectangle - sangat transparan supaya peta terlihat
                     const isFilled = grid.total_data > 0;
                     const rectangle = L.rectangle(grid.bounds, {
                         color: '#999',
-                        fillColor: isFilled ? '#8fbc8f' : '#fff',
-                        fillOpacity: isFilled ? 0.4 : 0.15,
+                        fillColor: isFilled ? '#ffd700' : '#fff', // Changed to Yellow (#ffd700)
+                        fillOpacity: isFilled ? 0.5 : 0.15,
                         weight: 1
                     }).addTo(map);
 
@@ -419,8 +425,8 @@
                     
                     // Update rectangle color
                     rectangle.setStyle({
-                        color: '#28a745',
-                        fillColor: '#28a745',
+                        color: '#999',
+                        fillColor: '#ffd700', // Changed to Yellow
                         fillOpacity: 0.5
                     });
 
