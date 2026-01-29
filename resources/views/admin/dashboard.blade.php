@@ -4,145 +4,7 @@
 @section('title', 'Dashboard Admin - BBSPGL')
 
 @push('styles')
-    <style>
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            margin-bottom: 28px;  /* Spacing antar section */
-        }
-
-        /* Hilangkan margin-bottom di dalam grid */
-        .stats-grid .chart-card {
-            margin-bottom: 0;
-        }
-
-        .chart-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #003366;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chart-subtitle {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-
-        /* Dashboard Pagination Styles */
-        .dashboard-pagination {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .pagination-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 12px;
-            min-width: 40px;
-            height: 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            color: #003366;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            background: white;
-        }
-
-        .pagination-btn:hover:not(.disabled):not(.active) {
-            background: #f8f9fa;
-            border-color: #003366;
-            color: #003366;
-            text-decoration: none;
-            transform: translateY(-1px);
-        }
-
-        .pagination-btn.active {
-            background: #003366;
-            border-color: #003366;
-            color: white;
-            font-weight: 600;
-        }
-
-        .pagination-btn.disabled {
-            background: #f8f9fa;
-            border-color: #e9ecef;
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .pagination-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Loading Indicator */
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #003366;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* AJAX Pagination */
-        .ajax-pagination {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            justify-content: center;
-        }
-
-        .ajax-page-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ time() }}">
 @endpush
 
 @push('scripts')
@@ -388,7 +250,7 @@
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                                     </svg>
                                 </span>
-                                Rasio Approval
+                                Disetujui
                             </td>
                             <td style="text-align: right; font-weight: 600; color: #7b1fa2;">
                                 {{ $totalPegawai > 0 ? number_format(($pegawaiApproved / $totalPegawai) * 100, 1) : 0 }}%

@@ -4,7 +4,7 @@
 @section('title', 'Laporan & Statistik - Admin BBSPGL')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin-laporan.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-laporan.css') }}?v={{ time() }}">
     <style>
         .export-dropdown {
             position: relative;
@@ -49,50 +49,7 @@
             color: #003366;
         }
 
-        .pagination-wrapper {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .pagination {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            gap: 4px;
-        }
-
-        .pagination li {
-            display: inline-block;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: block;
-            padding: 8px 12px;
-            color: #003366;
-            text-decoration: none;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .pagination .active span {
-            background: #003366;
-            color: white;
-            border-color: #003366;
-        }
-
-        .pagination a:hover {
-            background: #f8f9fa;
-            border-color: #003366;
-        }
-
-        .pagination .disabled span {
-            color: #999;
-            background: #f8f9fa;
-        }
+        /* Pagination styling moved to admin-laporan.css */
 
         /* Period Button Styles */
         .period-btn {
@@ -525,7 +482,8 @@
     {{-- ========== TWO COLUMN REPORTS ========== --}}
     <div class="report-grid-2">
         {{-- LAPORAN PER TIPE SURVEI --}}
-        <div class="report-card">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="report-card">
             <div class="report-card-header">
                 <div>
                     <div class="report-card-title">Distribusi Per Tipe Survei</div>
@@ -582,6 +540,50 @@
             </div>
         </div>
 
+            {{-- TOP 6 GRID --}}
+            <div class="report-card">
+                <div class="report-card-header">
+                    <div>
+                        <div class="report-card-title">Top 6 Grid Peta</div>
+                        <div class="report-card-subtitle">Grid dengan data survei terbanyak</div>
+                    </div>
+                </div>
+                <div class="report-card-body">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Nomor Grid</th>
+                                <th style="text-align: right;">Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topGrid as $idx => $grid)
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #e9ecef; color: #555; border-radius: 50%; font-size: 11px; font-weight: 600;">
+                                                {{ $idx + 1 }}
+                                            </span>
+                                            Grid {{ $grid->nomor_kotak }}
+                                        </div>
+                                    </td>
+                                    <td style="text-align: right; font-weight: 700; color: #003366;">
+                                        {{ number_format($grid->data_survei_count) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: #999; padding: 20px;">
+                                        Belum ada data grid
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         {{-- DISTRIBUSI GRID --}}
         <div class="report-card">
             <div class="report-card-header">
@@ -596,7 +598,7 @@
                 </div>
                 
                 {{-- Pagination Controls --}}
-                <div id="grid-pagination-container" class="pagination-container" style="margin-top: 16px;">
+                <div id="grid-pagination-container" class="pagination-container" style="margin-top: 16px; display: flex; justify-content: center;">
                     @include('admin.partials.pagination-controls', ['paginator' => $distribusiGrid, 'pageParam' => 'grid_page'])
                 </div>
             </div>
@@ -730,7 +732,7 @@
 
             {{-- AJAX PAGINATION --}}
             @if ($surveiTerbaru->hasPages())
-                <div class="pagination-wrapper" id="survei-pagination-container">
+                <div class="pagination-wrapper" id="survei-pagination-container" style="display: flex; justify-content: center;">
                     @include('admin.partials.pagination-controls', [
                         'paginator' => $surveiTerbaru,
                         'pageParam' => 'survei_page',
