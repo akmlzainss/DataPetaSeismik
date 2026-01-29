@@ -306,7 +306,7 @@
                     <div class="map-header">
                         <h2 class="section-title"><i class="fas fa-globe-asia"></i> Eksplorasi Peta</h2>
                         <div class="map-legend">
-                            <span class="legend-item"><span class="dot" style="background: #8fbc8f;"></span> Grid Terisi</span>
+                            <span class="legend-item"><span class="dot" style="background: #ffd700;"></span> Grid Terisi</span>
                             <span class="legend-item"><span class="dot" style="background: #fff; border: 1px solid #999;"></span> Grid Kosong</span>
                         </div>
                     </div>
@@ -477,8 +477,8 @@
                 // Create rectangle
                 const rectangle = L.rectangle(bounds, {
                     color: '#999',
-                    fillColor: is_filled ? '#8fbc8f' : '#fff',
-                    fillOpacity: is_filled ? 0.4 : 0.15,
+                    fillColor: is_filled ? '#ffd700' : '#fff', // Changed to Yellow
+                    fillOpacity: is_filled ? 0.5 : 0.15,
                     weight: 1
                 }).addTo(map);
 

@@ -5,451 +5,195 @@
 
 ## 4.1 Gambaran Umum Proyek
 
-Proyek yang dikerjakan selama pelaksanaan Praktik Kerja Lapangan (PKL) adalah pengembangan **Sistem Informasi Data Peta Seismik** untuk Balai Besar Survei dan Pemetaan Geologi Laut (BBSPGL). Sistem ini merupakan aplikasi web yang dirancang untuk mengelola dan menampilkan data hasil survei geologi kelautan secara digital dan interaktif.
+**Sistem Informasi Data Peta Seismik** adalah sebuah aplikasi berbasis web yang dikembangkan untuk Balai Besar Survei dan Pemetaan Geologi Laut (BBSPGL). Proyek ini bertujuan untuk mendigitalisasi pengelolaan dan visualisasi data hasil survei seismik yang sebelumnya masih dikelola secara terpisah-pisah dan kurang terintegrasi.
 
-Latar belakang pengembangan sistem ini adalah kebutuhan BBSPGL untuk memiliki platform terpusat dalam mengelola data survei seismik yang selama ini tersimpan dalam berbagai format dan lokasi yang berbeda. Dengan adanya sistem berbasis web, data survei dapat diakses dengan mudah baik oleh pihak internal maupun masyarakat umum yang membutuhkan informasi tersebut.
+Latar belakang pengembangan sistem ini didasari oleh kebutuhan BBSPGL akan sebuah platform terpusat yang dapat menyimpan arsip data survei, menampilkannya dalam bentuk peta interaktif, serta memudahkan pencarian informasi bagi pihak internal maupun publik. Sebelum adanya sistem ini, pencarian data historis memerlukan waktu yang cukup lama dan visualisasi sebaran lokasi survei sulit dilakukan secara cepat.
 
-Sistem ini dibangun menggunakan framework Laravel dengan arsitektur Model-View-Controller (MVC) yang memisahkan logika bisnis, tampilan, dan pengelolaan data. Fitur utama yang dikembangkan meliputi manajemen data survei, visualisasi peta interaktif menggunakan sistem grid persegi, katalog publik untuk akses informasi, serta fitur ekspor laporan dalam format PDF dan Excel.
-
-Pengembangan sistem dilakukan secara bertahap dimulai dari analisis kebutuhan, perancangan database dan antarmuka, implementasi fitur-fitur utama, hingga pengujian sistem. Selama proses pengembangan, dilakukan iterasi perbaikan berdasarkan masukan dan hasil evaluasi untuk memastikan sistem berjalan sesuai dengan kebutuhan pengguna.
+Dengan sistem ini, data survei tidak hanya tersimpan rapi dalam database, tetapi juga dipetakan secara spasial menggunakan sistem grid pada peta digital. Hal ini memudahkan pengguna untuk melihat cakupan wilayah yang sudah disurvei dan mengidentifikasi area yang belum terpetakan.
 
 ---
 
-## 4.2 Analisis dan Perancangan Sistem
+## 4.2 Analisis Kebutuhan Sistem
 
-### 4.2.1 Analisis Kebutuhan Sistem
+Analisis kebutuhan sistem dilakukan untuk menentukan spesifikasi fitur dan batasan yang harus dipenuhi agar sistem dapat berjalan optimal dan menyelesaikan permasalahan yang ada.
 
-Berdasarkan hasil analisis yang dilakukan, kebutuhan sistem dapat dibagi menjadi dua kategori utama:
+### 4.2.1 Kebutuhan Fungsional
 
-#### A. Kebutuhan Fungsional
+Kebutuhan fungsional mendefinisikan fitur-fitur spesifik yang dapat dilakukan oleh sistem. Berdasarkan hasil analisis, berikut adalah kebutuhan fungsional utama:
 
-Kebutuhan fungsional adalah fungsi-fungsi yang harus dapat dilakukan oleh sistem. Berikut adalah kebutuhan fungsional sistem:
+1.  **Manajemen Pengguna (Autentikasi & Otorisasi)**
+    *   Sistem dapat memvalidasi login Admin untuk akses panel pengelolaan.
+    *   Sistem menyediakan fitur registrasi untuk Pegawai Internal dengan validasi domain email instansi (`@esdm.go.id`).
+    *   Sistem membedakan hak akses antara Admin, Pegawai Internal, dan Pengguna Publik.
 
-| No | Kebutuhan | Deskripsi |
-|----|-----------|-----------|
-| 1 | Autentikasi Admin | Sistem harus menyediakan mekanisme login dan logout untuk administrator |
-| 2 | Manajemen Data Survei | Admin dapat menambah, mengubah, menghapus, dan melihat data survei |
-| 3 | Manajemen Grid Kotak | Admin dapat mengelola lokasi grid pada peta dan menghubungkannya dengan data survei |
-| 4 | Katalog Publik | Pengguna umum dapat melihat daftar survei yang tersedia dengan fitur pencarian dan filter |
-| 5 | Peta Interaktif | Sistem menampilkan peta dengan visualisasi lokasi survei menggunakan grid kotak |
-| 6 | Ekspor Laporan | Admin dapat mengekspor data survei dalam format PDF dan Excel |
-| 7 | Dashboard Statistik | Sistem menampilkan ringkasan statistik data survei untuk admin |
-| 8 | Registrasi Pegawai | Pegawai internal dapat mendaftar dengan verifikasi email domain @esdm.go.id |
-| 9 | Download File Scan | Pegawai terverifikasi dapat mengunduh file scan asli hasil survei |
-| 10 | Halaman Informasi | Sistem menyediakan halaman tentang kami, kontak, FAQ, dan panduan |
+2.  **Manajemen Data Survei**
+    *   Admin dapat melakukan operasi CRUD (Create, Read, Update, Delete) terhadap data survei.
+    *   Setiap data survei mencakup informasi detail seperti Judul, Tahun, Tipe Survei, Wilayah, Deskripsi, dan Gambar Pratinjau.
+    *   Sistem mendukung upload gambar dan pengelolaan file terkait.
 
-#### B. Kebutuhan Non-Fungsional
+3.  **Visualisasi Peta & Grid Seismik**
+    *   Sistem mampu menampilkan peta interaktif (menggunakan Leaflet.js).
+    *   Admin dapat membuat dan mengelola Grid Kotak pada peta.
+    *   Sistem dapat menghubungkan (assign) data survei ke dalam grid tertentu.
+    *   Peta menampilkan indikator visual (warna) untuk membedakan grid yang kosong dan grid yang berisi data.
 
-Kebutuhan non-fungsional berkaitan dengan aspek kualitas sistem:
+4.  **Katalog & Pencarian**
+    *   Pengguna Publik dapat melihat katalog data survei.
+    *   Tersedia fitur pencarian berdasarkan kata kunci dan filter berdasarkan Tahun, Tipe, atau Wilayah.
+    *   Pengguna dapat melihat detail lengkap dari setiap item survei.
 
-| No | Kebutuhan | Deskripsi |
-|----|-----------|-----------|
-| 1 | Keamanan | Sistem menerapkan autentikasi, otorisasi, dan proteksi terhadap serangan umum (CSRF, XSS, SQL Injection) |
-| 2 | Responsif | Tampilan sistem dapat menyesuaikan dengan berbagai ukuran layar perangkat |
-| 3 | Performa | Halaman dapat dimuat dalam waktu kurang dari 3 detik |
-| 4 | Kemudahan Penggunaan | Antarmuka intuitif dan mudah digunakan oleh pengguna dengan berbagai tingkat keahlian |
-| 5 | Skalabilitas | Sistem dapat menangani penambahan data tanpa penurunan performa signifikan |
+5.  **Pelaporan (Reporting)**
+    *   Admin dapat mengekspor rekapitulasi data survei dalam format **PDF**.
+    *   Admin dapat mengekspor data dalam format **Excel** untuk pengolahan lebih lanjut.
 
-#### C. Identifikasi Pengguna (Aktor)
+### 4.2.2 Kebutuhan Non-Fungsional
 
-Sistem ini memiliki tiga jenis pengguna utama:
+Kebutuhan non-fungsional mencakup aspek performa, keamanan, dan lingkungan operasional sistem:
 
-1. **Administrator (Admin)**
-   - Bertanggung jawab mengelola seluruh data dalam sistem
-   - Memiliki akses penuh ke panel admin
-   - Dapat mengelola data survei, grid kotak, dan pengaturan sistem
+1.  **Perangkat Keras (Server/Development)**
+    *   Processor minimal setara Intel Core i3 / AMD Ryzen 3.
+    *   RAM minimal 4GB (8GB direkomendasikan).
+    *   Koneksi internet stabil untuk memuat peta dari penyedia layanan peta (OpenStreetMap).
 
-2. **Pegawai Internal**
-   - Pegawai BBSPGL dengan email domain @esdm.go.id
-   - Dapat mengakses katalog dan mengunduh file scan asli
-   - Memerlukan verifikasi email untuk aktivasi akun
+2.  **Perangkat Lunak**
+    *   Sistem Operasi: Windows/Linux/macOS.
+    *   Web Server: Apache/Nginx (via Laragon/XAMPP).
+    *   Bahasa Pemrograman: PHP (Framework Laravel).
+    *   Database: MySQL.
+    *   Browser: Google Chrome, Firefox, atau Microsoft Edge versi terbaru.
 
-3. **Pengguna Publik (User)**
-   - Masyarakat umum yang mengakses website
-   - Dapat melihat katalog survei dan peta interaktif
-   - Tidak memerlukan registrasi atau login
+3.  **Keamanan**
+    *   Password pengguna harus disimpan dalam bentuk terenkripsi (Bcrypt).
+    *   Validasi input untuk mencegah serangan seperti SQL Injection dan XSS.
+    *   Proteksi CSRF (Cross-Site Request Forgery) pada setiap form input.
 
----
-
-### 4.2.2 Perancangan Sistem
-
-#### A. Use Case Diagram
-
-Use Case Diagram menggambarkan interaksi antara aktor dengan sistem. Berikut adalah daftar use case berdasarkan aktor:
-
-**Tabel Use Case Admin:**
-| No | Use Case | Deskripsi |
-|----|----------|-----------|
-| 1 | Login | Admin melakukan autentikasi ke sistem |
-| 2 | Logout | Admin keluar dari sistem |
-| 3 | Kelola Data Survei | Admin menambah, mengubah, menghapus, dan melihat data survei |
-| 4 | Kelola Grid Kotak | Admin mengelola grid lokasi pada peta |
-| 5 | Assign Data ke Grid | Admin menghubungkan data survei dengan lokasi grid |
-| 6 | Export Laporan | Admin mengekspor data dalam format PDF/Excel |
-| 7 | Lihat Dashboard | Admin melihat statistik dan ringkasan data |
-| 8 | Kelola Pegawai | Admin menyetujui atau menolak registrasi pegawai |
-| 9 | Pengaturan Akun | Admin mengubah profil dan password |
-
-**Tabel Use Case Pegawai Internal:**
-| No | Use Case | Deskripsi |
-|----|----------|-----------|
-| 1 | Registrasi | Pegawai mendaftar akun baru |
-| 2 | Verifikasi Email | Pegawai mengaktifkan akun melalui link verifikasi |
-| 3 | Login | Pegawai masuk ke sistem |
-| 4 | Lihat Katalog | Pegawai melihat daftar data survei |
-| 5 | Download File Scan | Pegawai mengunduh file scan asli survei |
-
-**Tabel Use Case Pengguna Publik:**
-| No | Use Case | Deskripsi |
-|----|----------|-----------|
-| 1 | Lihat Beranda | User melihat halaman utama website |
-| 2 | Lihat Katalog | User menjelajahi katalog data survei |
-| 3 | Cari & Filter Data | User mencari data berdasarkan kriteria |
-| 4 | Lihat Peta Interaktif | User melihat peta dengan lokasi survei |
-| 5 | Lihat Detail Survei | User melihat informasi lengkap survei |
-| 6 | Hubungi Admin | User mengirim pesan melalui form kontak |
-
-*(Gambar Use Case Diagram dapat dilihat pada Lampiran)*
+4.  **Antarmuka Pengguna (UI/UX)**
+    *   Desain antarmuka harus responsif (dapat diakses via desktop maupun mobile).
+    *   Navigasi harus intuitif dan mudah dipahami oleh pengguna awam.
 
 ---
 
-#### B. Entity Relationship Diagram (ERD)
+## 4.3 Perancangan dan Pengembangan Sistem
 
-Perancangan database menggunakan Entity Relationship Diagram untuk menggambarkan hubungan antar entitas. Sistem ini memiliki lima entitas utama:
-
-**Tabel Entitas dan Atribut:**
-
-| Entitas | Atribut Utama | Keterangan |
-|---------|---------------|------------|
-| admin | id, nama, email, kata_sandi | Menyimpan data administrator |
-| data_survei | id, judul, tahun, tipe, wilayah, deskripsi, gambar_pratinjau | Menyimpan data hasil survei |
-| grid_kotak | id, nomor_kotak, bounds_sw_lat, bounds_sw_lng, bounds_ne_lat, bounds_ne_lng, status | Menyimpan data lokasi grid pada peta |
-| grid_seismik | id, grid_kotak_id, data_survei_id, assigned_by | Tabel pivot untuk relasi many-to-many |
-| pegawai_internal | id, nama, email, nip, jabatan, is_approved | Menyimpan data pegawai internal |
-
-**Relasi Antar Entitas:**
-
-| No | Entitas 1 | Relasi | Entitas 2 | Keterangan |
-|----|-----------|--------|-----------|------------|
-| 1 | admin | One to Many | data_survei | Satu admin dapat mengunggah banyak data survei |
-| 2 | data_survei | Many to Many | grid_kotak | Satu survei dapat berada di banyak grid, satu grid dapat memiliki banyak survei |
-| 3 | admin | One to Many | pegawai_internal | Satu admin dapat menyetujui banyak pegawai |
-
-*(Gambar ERD dapat dilihat pada Lampiran)*
-
----
-
-#### C. Flowchart Sistem
-
-**1. Flowchart Login Admin**
-
-```
-[Mulai] → [Tampilkan Form Login] → [Input Email & Password] → 
-[Validasi Input] → {Input Valid?}
-    ├─ Tidak → [Tampilkan Pesan Error] → [Tampilkan Form Login]
-    └─ Ya → [Cek Kredensial di Database] → {Kredensial Benar?}
-                ├─ Tidak → [Tampilkan Pesan Error] → [Tampilkan Form Login]
-                └─ Ya → [Buat Session] → [Redirect ke Dashboard] → [Selesai]
-```
-
-**2. Flowchart Tambah Data Survei**
-
-```
-[Mulai] → [Klik Tombol Tambah] → [Tampilkan Form Input] → 
-[Input Data Survei] → [Validasi Data] → {Data Valid?}
-    ├─ Tidak → [Tampilkan Pesan Error] → [Tampilkan Form Input]
-    └─ Ya → [Simpan ke Database] → {Upload Gambar?}
-                ├─ Ya → [Proses Upload Gambar] → [Simpan Path Gambar]
-                └─ Tidak → (lanjut)
-            → [Tampilkan Pesan Sukses] → [Redirect ke Daftar] → [Selesai]
-```
-
-**3. Flowchart Pencarian Katalog**
-
-```
-[Mulai] → [Tampilkan Halaman Katalog] → [Input Kata Kunci/Filter] → 
-[Kirim Query ke Server] → [Proses Pencarian di Database] → 
-{Data Ditemukan?}
-    ├─ Tidak → [Tampilkan Pesan "Tidak Ada Data"] → [Selesai]
-    └─ Ya → [Tampilkan Hasil Pencarian] → [Selesai]
-```
-
----
-
-#### D. Struktur Navigasi
-
-**1. Navigasi Portal Publik:**
-- Beranda
-- Katalog
-  - Daftar Survei
-  - Detail Survei
-- Peta Interaktif
-- Tentang Kami
-- Kontak
-- Informasi
-  - Panduan Pengguna
-  - FAQ
-  - Kebijakan Privasi
-
-**2. Navigasi Panel Admin:**
-- Dashboard
-- Data Survei
-  - Daftar
-  - Tambah Baru
-  - Edit
-  - Detail
-- Grid Kotak Seismik
-- Laporan
-  - Export PDF
-  - Export Excel
-- Pengaturan
-  - Profil
-  - Password
-  - Pegawai Internal
-
----
-
-## 4.3 Implementasi Proyek
+Tahap ini menjelaskan bagaimana sistem dirancang dan dikembangkan untuk memenuhi kebutuhan yang telah didefinisikan sebelumnya.
 
 ### 4.3.1 Proses Pengembangan Sistem
 
-Pengembangan Sistem Informasi Data Peta Seismik dilakukan menggunakan metodologi pengembangan iteratif dengan tahapan sebagai berikut:
+Proses pengembangan sistem mengikuti siklus hidup pengembangan perangkat lunak (SDLC) model **Waterfall**, yang terdiri dari tahapan berikut:
 
-**1. Tahap Persiapan**
-- Instalasi environment pengembangan (Laragon, PHP 8.2, Composer, Node.js)
-- Setup project Laravel dan konfigurasi database
-- Pembuatan struktur folder dan file dasar
+1.  **Analisis Kebutuhan**: Mengumpulkan informasi melalui wawancara dan observasi alur kerja pengelolaan data di BBSPGL saat ini.
+2.  **Perancangan Sistem (Design)**:
+    *   **Perancangan Database**: Membuat ERD (Entity Relationship Diagram) untuk memodelkan tabel `admin`, `users`, `data_survei`, `grid_kotak`, dan relasinya.
+    *   **Perancangan Antarmuka**: Membuat sketsa/wireframe halaman dashboard admin dan katalog publik.
+    *   **Perancangan Arsitektur**: Menentukan penggunaan arsitektur MVC (Model-View-Controller) pada Laravel.
+3.  **Implementasi (Coding)**: Penulisan kode program menggunakan Laravel untuk backend, Blade Template untuk frontend, dan MySQL untuk database.
+4.  **Pengujian (Testing)**: Melakukan pengujian fungsionalitas fitur (Black Box Testing) untuk memastikan tidak ada error.
+5.  **Deployment**: Instalasi sistem pada server lokal atau hosting untuk digunakan.
 
-**2. Tahap Pengembangan Database**
-- Perancangan skema database berdasarkan ERD
-- Pembuatan file migration untuk setiap tabel
-- Pembuatan model Eloquent dengan definisi relasi
-- Pembuatan seeder untuk data awal/testing
+### 4.3.2 Pembagian Tugas Tim
 
-**3. Tahap Pengembangan Backend**
-- Pembuatan controller untuk setiap modul
-- Implementasi logika bisnis dan validasi data
-- Pembuatan middleware untuk autentikasi dan otorisasi
-- Integrasi dengan library pihak ketiga (DomPDF, PhpSpreadsheet)
+*(Catatan: Jika PKL dilakukan mandiri, bagian ini dapat disesuaikan. Jika tim, sebutkan pembagian tugasnya. Di bawah ini adalah contoh untuk pengerjaan mandiri/dominan)*
 
-**4. Tahap Pengembangan Frontend**
-- Pembuatan layout utama menggunakan Blade template
-- Implementasi desain responsif dengan CSS
-- Integrasi Leaflet.js untuk peta interaktif
-- Implementasi JavaScript untuk interaksi dinamis
+Selama pelaksanaan proyek PKL ini, pengembangan sistem dilakukan secara **mandiri** oleh penulis. Oleh karena itu, penulis bertanggung jawab atas seluruh aspek pengembangan, meliputi:
 
-**5. Tahap Integrasi dan Pengujian**
-- Integrasi seluruh modul sistem
-- Pengujian fungsional setiap fitur
-- Perbaikan bug dan optimasi performa
-- Pengujian kompatibilitas browser
+*   **System Analyst**: Menganalisis kebutuhan user dan merancang alur sistem.
+*   **UI/UX Designer**: Merancang tampilan antarmuka website agar user-friendly.
+*   **Backend Developer**: Membangun logika server, API, controller, dan manajemen database.
+*   **Frontend Developer**: Mengimplementasikan desain ke dalam kode HTML, CSS, JavaScript, dan integrasi peta Leaflet.
+*   **Tester**: Melakukan uji coba sistem untuk mencari bug dan memastikan error handling berjalan baik.
 
 ---
 
-### 4.3.2 Pembagian Tugas dalam Tim
+## 4.4 Implementasi Sistem
 
-*(Sesuaikan dengan kondisi PKL kamu. Jika dikerjakan sendiri, bisa ditulis seperti ini:)*
+Subbab ini menjabarkan hasil nyata dari tahapan coding, dimana rancangan diubah menjadi aplikasi yang berfungsi.
 
-Pengembangan sistem ini dilakukan secara mandiri oleh penulis dengan bimbingan dari pembimbing lapangan. Berikut adalah pembagian waktu dan fokus pengerjaan:
+**1. Halaman Dashboard Admin**
+Halaman ini adalah pusat kontrol bagi administrator. Terdapat ringkasan statistik jumlah data survei, jumlah grid yang terisi, dan aktivitas terbaru. Dashboard dibangun menggunakan template admin yang responsif.
 
-| Minggu | Fokus Pengerjaan | Hasil |
-|--------|-----------------|-------|
-| 1-2 | Analisis kebutuhan dan perancangan | Dokumen spesifikasi, ERD, Use Case |
-| 3-4 | Setup project dan pengembangan database | Struktur project, migration, model |
-| 5-6 | Pengembangan modul admin | CRUD data survei, dashboard, autentikasi |
-| 7-8 | Pengembangan modul grid dan peta | Manajemen grid, integrasi Leaflet.js |
-| 9-10 | Pengembangan portal publik | Katalog, pencarian, halaman informasi |
-| 11-12 | Pengujian dan penyempurnaan | Bug fixing, optimasi, dokumentasi |
+**2. Fitur Peta Interaktif (Grid System)**
+Fitur unggulan sistem ini adalah peta interaktif.
+*   **Implementasi**: Menggunakan library **Leaflet.js**.
+*   **Fungsi**: Peta menampilkan grid-grid kotak di atas wilayah laut Indonesia.
+*   **Logika**: Setiap grid memiliki status (warna hijau/merah/transparan) tergantung ketersediaan data. Admin dapat mengklik grid untuk melihat atau menambahkan data survei ke koordinat tersebut.
 
----
+**3. Manajemen Data Survei**
+Formulir input data dibuat lengkap dengan validasi. Saat admin mengunggah data, sistem secara otomatis memproses file gambar dan menyimpannya di direktori `storage` yang aman. Data disimpan ke tabel MySQL dengan relasi ke tabel admin (pengunggah).
 
-### 4.3.3 Implementasi Fitur Utama
+**4. Portal Publik & Katalog**
+Sisi frontend untuk publik menampilkan data dalam bentuk kartu (cards) yang rapi. Fitur filter menggunakan parameter URL (`?tahun=2023&tipe=2D`) yang ditangani oleh controller untuk memfilter query database secara dinamis.
 
-#### A. Implementasi Autentikasi Admin
-
-Sistem autentikasi admin dibangun menggunakan fitur authentication guards dari Laravel. Admin memiliki tabel dan model terpisah dari user biasa untuk keamanan yang lebih baik.
-
-**Komponen yang diimplementasikan:**
-- Form login dengan validasi input
-- Proses autentikasi menggunakan email dan password
-- Session management untuk menjaga status login
-- Middleware untuk proteksi route admin
-- Fitur logout dan reset password
-
-**Teknologi yang digunakan:**
-- Laravel Authentication Guards
-- Bcrypt untuk enkripsi password
-- CSRF Token untuk keamanan form
+**5. Ekspor Laporan**
+Fitur pelaporan diimplementasikan menggunakan library tambahan:
+*   **DomPDF**: Untuk men-generate file PDF laporan data survei yang siap cetak.
+*   **PhpSpreadsheet**: Untuk membuat file Excel yang berisi raw data bagi keperluan analisis lebih lanjut oleh staff BBSPGL.
 
 ---
 
-#### B. Implementasi Manajemen Data Survei
+## 4.5 Pengujian dan Evaluasi Sistem
 
-Modul data survei merupakan inti dari sistem yang memungkinkan admin mengelola informasi hasil survei geologi kelautan.
+Pengujian dilakukan menggunakan metode **Black Box Testing**, dimana penguji fokus pada output yang dihasilkan sistem dari berbagai input tanpa melihat kode internalnya.
 
-**Fitur yang diimplementasikan:**
-- Daftar data survei dengan pagination
-- Form tambah data survei dengan validasi
-- Upload gambar pratinjau dengan resize otomatis
-- Form edit untuk memperbarui data
-- Fitur hapus dengan konfirmasi
-- Detail data survei dengan informasi lengkap
+**Skenario Pengujian Utama:**
 
-**Atribut data survei:**
-| Atribut | Tipe | Keterangan |
-|---------|------|------------|
-| Judul | Text | Judul/nama survei |
-| Ketua Tim | Text | Nama ketua tim survei |
-| Tahun | Year | Tahun pelaksanaan survei |
-| Tipe | Select | Tipe survei (2D, 3D, HR) |
-| Wilayah | Text | Wilayah/lokasi survei |
-| Deskripsi | Textarea | Deskripsi lengkap survei |
-| Gambar | File | Gambar pratinjau survei |
-| File Scan | File | File scan asli (khusus pegawai) |
+| No | Modul | Skenario | Hasil yang Diharapkan | Hasil Pengujian |
+|----|-------|----------|-----------------------|-----------------|
+| 1 | Login | Admin memasukkan email/password salah | Muncul pesan error "Kredensial tidak cocok" | **Berhasil** (Sesuai) |
+| 2 | CRUD Data | Admin menambah data survei baru | Data muncul di tabel dan notifikasi sukses tampil | **Berhasil** (Sesuai) |
+| 3 | Peta Grid | User mengklik grid pada peta | Popup info detail grid muncul | **Berhasil** (Sesuai) |
+| 4 | Search | User mencari kata kunci "Seismik 2D" | Hanya data yang mengandung kata tersebut yang tampil | **Berhasil** (Sesuai) |
+| 5 | Ekspor | Admin klik tombol "Export PDF" | File PDF terunduh dan formatnya rapi | **Berhasil** (Sesuai) |
+
+**Evaluasi:**
+Berdasarkan hasil pengujian, sistem berfungsi dengan baik dan stabil. Fitur-fitur krusial seperti manajemen data dan peta interaktif berjalan tanpa kendala error (bug) yang fatal. Antarmuka dinilai cukup responsif dan mudah dipahami.
 
 ---
 
-#### C. Implementasi Peta Interaktif dengan Sistem Grid
+## 4.6 Kendala yang Dihadapi
 
-Peta interaktif menggunakan library Leaflet.js untuk menampilkan lokasi survei dalam bentuk grid kotak pada peta Indonesia.
+Selama proses pengembangan sistem ini, terdapat beberapa kendala yang dihadapi, antara lain:
 
-**Komponen peta yang diimplementasikan:**
-- Base map menggunakan tile layer OpenStreetMap
-- Grid kotak dengan koordinat bounding box
-- Pewarnaan grid berdasarkan status (terisi/kosong)
-- Popup informasi saat grid diklik
-- Zoom dan pan control
-- Layer control untuk pengaturan tampilan
+1.  **Kendala Teknis - Integrasi Peta**:
+    Tantangan terbesar adalah mengintegrasikan logika database dengan peta Leaflet, khususnya dalam memetakan data survei ke dalam sistem grid yang akurat secara koordinat geografis. Menangani rendering banyak grid sekaligus sempat mempengaruhi performa browser.
 
-**Cara kerja sistem grid:**
-1. Peta Indonesia dibagi menjadi grid-grid kotak dengan nomor unik
-2. Setiap grid memiliki koordinat batas (southwest dan northeast)
-3. Data survei dihubungkan dengan grid melalui tabel pivot
-4. Grid yang memiliki data ditampilkan dengan warna berbeda
-5. Klik pada grid menampilkan popup dengan daftar survei terkait
+2.  **Kendala Data**:
+    Ketersediaan data dummy yang representatif untuk pengujian peta cukup terbatas pada awal pengembangan, sehingga perlu simulasi data manual.
+
+3.  **Penyesuaian Framework**:
+    Penyesuaian versi library pihak ketiga (seperti DomPDF dan export Excel) dengan versi Laravel yang digunakan memerlukan konfigurasi khusus agar tidak terjadi konflik dependensi.
+
+**Upaya Penanganan**:
+Untuk mengatasi kendala peta, dilakukan optimasi kode JavaScript dan penggunaan format data GeoJSON yang lebih efisien. Kendala library diatasi dengan membaca dokumentasi resmi dan melakukan update driver yang sesuai.
 
 ---
 
-#### D. Implementasi Katalog Publik
+## 4.7 Hasil dan Manfaat Sistem
 
-Katalog publik menyediakan akses bagi masyarakat umum untuk menjelajahi data survei yang tersedia.
+**Hasil Akhir**:
+Menghasilkan sebuah **Sistem Informasi Data Peta Seismik** berbasis web yang siap digunakan (deploy-ready). Sistem ini memiliki dua antarmuka utama: Panel Admin (Backend) untuk pengelolaan data, dan Portal Publik (Frontend) untuk penyajian informasi.
 
-**Fitur katalog:**
-- Tampilan grid kartu untuk setiap data survei
-- Pencarian berdasarkan judul dan deskripsi
-- Filter berdasarkan tahun, tipe, dan wilayah
-- Pagination untuk navigasi halaman
-- Halaman detail dengan informasi lengkap
+**Manfaat bagi Instansi (BBSPGL)**:
+1.  **Efisiensi Kerja**: Memangkas waktu pencarian data yang sebelumnya manual menjadi hitungan detik melalui fitur *search*.
+2.  **Keamanan Data**: Data tersimpan digital dalam database terpusat, mengurangi risiko kehilangan arsip fisik.
+3.  **Pemetaan Visual**: Memudahkan pimpinan atau peneliti melihat persebaran lokasi survei melalui peta visual yang informatif.
 
-**Implementasi pencarian dan filter:**
-- Query parameter dikirim melalui URL
-- Controller memproses filter dan membangun query database
-- Hasil ditampilkan dengan informasi jumlah data yang ditemukan
-- Tombol reset untuk menghapus semua filter
+**Manfaat bagi Pengguna**:
+Masyarakat atau peneliti eksternal dapat dengan mudah mengakses informasi ketersediaan data survei geologi kelautan tanpa harus datang langsung ke kantor, meningkatkan transparansi layanan publik.
 
 ---
 
-#### E. Implementasi Export Laporan
+## 4.8 Pembahasan Akhir
 
-Fitur export memungkinkan admin mengunduh data dalam format PDF dan Excel untuk keperluan dokumentasi dan pelaporan.
+Secara keseluruhan, pelaksanaan proyek pembuatan Sistem Informasi Data Peta Seismik ini telah berjalan lancar dan mencapai target yang ditetapkan. Sistem yang dibangun mampu menjawab rumusan masalah mengenai sulitnya pengelolaan dan visualisasi data survei.
 
-**Export PDF:**
-- Menggunakan library DomPDF
-- Template laporan dengan header dan footer
-- Tabel data survei dengan styling yang rapi
-- Statistik ringkasan data
+**Kelebihan Sistem**:
+*   Desain modern dan responsif.
+*   Fitur peta interaktif yang informatif (tidak hanya teks).
+*   Kemudahan penggunaan (User Friendly) bagi admin non-IT.
 
-**Export Excel:**
-- Menggunakan library PhpSpreadsheet
-- Format spreadsheet dengan header kolom
-- Data survei lengkap dalam format tabel
-- Auto-width untuk kolom
+**Keterbatasan**:
+*   Sistem saat ini baru mencakup data Seismik, belum terintegrasi penuh dengan jenis data geologi lainnya (seperti data batimetri atau geomagnet) dalam satu peta terpadu.
+*   Fitur pencarian peta masih berbasis visual klik, belum mendukung pencarian *spatial query* (misalnya: mencari data dalam radius 5 km dari titik koordinat tertentu).
 
----
-
-## 4.4 Pengujian dan Evaluasi
-
-Pengujian sistem dilakukan untuk memastikan seluruh fitur berfungsi sesuai dengan kebutuhan yang telah ditentukan. Metode pengujian yang digunakan adalah **Black Box Testing** yang berfokus pada fungsionalitas sistem tanpa melihat struktur kode internal.
-
-**Tabel Hasil Pengujian:**
-
-| No | Fitur yang Diuji | Skenario Pengujian | Hasil yang Diharapkan | Hasil Aktual | Status |
-|----|------------------|--------------------|-----------------------|--------------|--------|
-| 1 | Login Admin | Input email dan password valid | Redirect ke dashboard | Redirect ke dashboard | ✓ Berhasil |
-| 2 | Login Admin | Input password salah | Tampil pesan error | Tampil pesan error | ✓ Berhasil |
-| 3 | Tambah Data Survei | Input data lengkap dengan gambar | Data tersimpan di database | Data tersimpan | ✓ Berhasil |
-| 4 | Tambah Data Survei | Input data tanpa mengisi field wajib | Tampil validasi error | Tampil validasi error | ✓ Berhasil |
-| 5 | Edit Data Survei | Ubah judul survei | Judul berubah di database | Judul berubah | ✓ Berhasil |
-| 6 | Hapus Data Survei | Klik hapus dengan konfirmasi | Data terhapus dari database | Data terhapus | ✓ Berhasil |
-| 7 | Pencarian Katalog | Input kata kunci pencarian | Tampil data yang sesuai | Tampil data sesuai | ✓ Berhasil |
-| 8 | Filter Katalog | Pilih filter tahun | Tampil data sesuai tahun | Tampil data sesuai | ✓ Berhasil |
-| 9 | Peta Interaktif | Klik grid kotak | Tampil popup informasi | Tampil popup | ✓ Berhasil |
-| 10 | Export PDF | Klik tombol export PDF | File PDF terunduh | File terunduh | ✓ Berhasil |
-| 11 | Export Excel | Klik tombol export Excel | File Excel terunduh | File terunduh | ✓ Berhasil |
-| 12 | Registrasi Pegawai | Daftar dengan email @esdm.go.id | Akun terdaftar, email terkirim | Berhasil | ✓ Berhasil |
-| 13 | Responsif | Akses dari perangkat mobile | Tampilan menyesuaikan | Tampilan responsif | ✓ Berhasil |
-
-**Kesimpulan Pengujian:**
-
-Berdasarkan hasil pengujian yang dilakukan, seluruh fitur utama sistem berfungsi dengan baik sesuai dengan kebutuhan yang telah ditetapkan. Sistem dapat menangani berbagai skenario penggunaan termasuk penanganan error dan validasi input.
-
----
-
-## 4.5 Pembahasan Hasil
-
-### A. Hasil yang Dicapai
-
-Pengembangan Sistem Informasi Data Peta Seismik telah berhasil diselesaikan dengan fitur-fitur utama yang berfungsi sesuai dengan kebutuhan. Sistem ini menyediakan solusi digital untuk pengelolaan data survei geologi kelautan yang sebelumnya dikelola secara konvensional.
-
-**Fitur yang berhasil diimplementasikan:**
-1. Sistem autentikasi multi-level (admin dan pegawai internal)
-2. Manajemen data survei dengan fitur CRUD lengkap
-3. Visualisasi peta interaktif dengan sistem grid kotak
-4. Katalog publik dengan pencarian dan filter
-5. Export laporan dalam format PDF dan Excel
-6. Dashboard dengan statistik data
-7. Registrasi pegawai dengan verifikasi email
-
-### B. Manfaat Sistem
-
-**Bagi BBSPGL:**
-- Pengelolaan data survei menjadi lebih terstruktur dan terpusat
-- Kemudahan dalam pencarian dan akses data historis
-- Visualisasi lokasi survei membantu perencanaan survei baru
-- Pembuatan laporan menjadi lebih cepat dan efisien
-
-**Bagi Masyarakat:**
-- Akses informasi survei geologi kelautan menjadi lebih mudah
-- Transparansi data hasil survei pemerintah
-- Visualisasi peta memudahkan pemahaman sebaran lokasi survei
-
-**Bagi Pegawai Internal:**
-- Akses file scan asli untuk keperluan penelitian dan pekerjaan
-- Proses registrasi yang mudah dengan verifikasi email
-
-### C. Keterbatasan Sistem
-
-Meskipun sistem telah berjalan dengan baik, terdapat beberapa keterbatasan yang dapat menjadi bahan pengembangan di masa mendatang:
-
-1. **Fitur Pencarian Lanjutan**: Pencarian saat ini masih berbasis teks sederhana, belum mendukung pencarian spasial berdasarkan koordinat geografis.
-
-2. **Notifikasi Real-time**: Belum ada sistem notifikasi real-time untuk memberitahu admin tentang aktivitas penting seperti registrasi pegawai baru.
-
-3. **Multi-bahasa**: Sistem saat ini hanya tersedia dalam bahasa Indonesia, belum mendukung bahasa Inggris atau bahasa lainnya.
-
-4. **Mobile Application**: Sistem hanya tersedia dalam versi web, belum memiliki aplikasi mobile native.
-
-### D. Rekomendasi Pengembangan
-
-Untuk pengembangan sistem di masa mendatang, berikut adalah beberapa rekomendasi:
-
-1. Implementasi pencarian spasial menggunakan koordinat
-2. Penambahan fitur notifikasi menggunakan WebSocket
-3. Pengembangan API untuk integrasi dengan sistem lain
-4. Pembuatan aplikasi mobile untuk akses yang lebih fleksibel
-5. Penambahan fitur multi-bahasa
-6. Implementasi sistem backup otomatis
-
----
-
-*"Catatan: Sesuaikan isi dengan kondisi aktual PKL kamu, terutama pada bagian pembagian tugas tim, timeline, dan hasil pengujian."*
+**Rekomendasi Pengembangan**:
+Di masa depan, sistem ini dapat dikembangkan lebih lanjut dengan menambahkan fitur *WebGIS* yang lebih advanced, integrasi API dengan sistem kementerian pusat (ESDM), serta penambahan modul analitik data otomatis untuk kebutuhan riset.
