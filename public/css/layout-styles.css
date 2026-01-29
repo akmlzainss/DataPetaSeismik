@@ -1,0 +1,200 @@
+/* ========================================
+   NAVBAR & PROFILE DROPDOWN STYLES
+   (Migrated from inline styles in layouts/app.blade.php)
+   ======================================== */
+
+/* Force navbar to be visible */
+.navbar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    background: #ffed00 !important;
+    border-bottom: 3px solid #ffd500 !important;
+}
+
+.navbar-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.navbar-menu {
+    display: flex !important;
+    gap: 36px !important;
+    list-style: none !important;
+}
+
+/* Profile Dropdown Styles */
+.profile-dropdown {
+    position: relative;
+}
+
+.profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #003366;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.profile-trigger:hover {
+    background: rgba(0, 51, 102, 0.1);
+}
+
+.profile-trigger .fa-user-circle {
+    font-size: 24px;
+}
+
+.dropdown-arrow {
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+
+.profile-trigger.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.profile-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 1001;
+}
+
+.profile-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.profile-header .fa-user-circle {
+    font-size: 40px;
+    color: #003366;
+}
+
+.profile-header strong {
+    display: block;
+    color: #003366;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.profile-header small {
+    display: block;
+    color: #666;
+    font-size: 12px;
+}
+
+.profile-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 0 16px;
+}
+
+.profile-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: #dc3545;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 0 0 8px 8px;
+}
+
+.profile-logout:hover {
+    background: #fee;
+}
+
+.profile-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.profile-menu-item:hover {
+    background: #f5f5f5;
+    color: #003366;
+}
+
+.profile-menu-item i {
+    color: #003366;
+    width: 16px;
+    text-align: center;
+}
+
+/* Responsive Profile Dropdown for Mobile */
+@media (max-width: 968px) {
+    .profile-dropdown {
+        width: 100%;
+    }
+
+    .profile-trigger {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: rgba(0, 51, 102, 0.05);
+        border-radius: 8px;
+    }
+
+    .profile-trigger .fa-user-circle {
+        font-size: 20px;
+    }
+
+    .profile-menu {
+        position: static;
+        width: 100%;
+        margin-top: 12px;
+        transform: none;
+    }
+
+    .profile-menu.show {
+        transform: none;
+    }
+
+    .profile-name {
+        flex: 1;
+        text-align: left;
+    }
+}

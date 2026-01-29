@@ -3,7 +3,7 @@
 @section('title', 'Data Survei - Admin BBSPGL')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/data-survei.css') }}?v={{ time() }}">
     {{-- Asumsi file CSS ini berisi styling yang dibutuhkan untuk grid, card, dan modal/overlay --}}
 @endpush
 
@@ -139,7 +139,7 @@
             </div>
 
             <div class="pagination-wrapper">
-                {{ $dataSurvei->links() }}
+                {{ $dataSurvei->onEachSide(1)->links() }}
                 @if ($dataSurvei->hasPages())
                     <div class="pagination-info">
                          {{ $dataSurvei->firstItem() }} - {{ $dataSurvei->lastItem() }} dari

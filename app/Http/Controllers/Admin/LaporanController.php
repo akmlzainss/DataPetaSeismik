@@ -48,6 +48,13 @@ class LaporanController extends Controller
             ->groupBy('tipe')
             ->get();
 
+        // ========== TOP 6 GRID ==========
+
+        $topGrid = GridKotak::withCount('dataSurvei')
+            ->orderBy('data_survei_count', 'DESC')
+            ->take(6)
+            ->get();
+
         // ========== LAPORAN PER TAHUN (5 Tahun Terakhir) ==========
 
         $laporanPerTahun = DataSurvei::select(
@@ -155,6 +162,7 @@ class LaporanController extends Controller
 
         return view('admin.laporan.index', compact(
             'laporanPerTipe',
+            'topGrid',
             'laporanPerTahun',
             'distribusiGrid',
             'aktivitasAdmin',

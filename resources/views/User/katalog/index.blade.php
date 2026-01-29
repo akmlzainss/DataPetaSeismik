@@ -21,8 +21,13 @@
             <form method="GET" action="{{ route('katalog') }}">
                 <!-- Search Bar -->
                 <div class="search-container">
-                    <input type="text" name="search" class="search-input"
-                        placeholder="Cari judul atau deskripsi survei..." value="{{ request('search') }}">
+                    <div style="display: flex; gap: 0.8rem; align-items: center;">
+                        <input type="text" name="search" class="search-input"
+                            placeholder="Cari judul atau deskripsi survei..." value="{{ request('search') }}">
+                        <button type="submit" class="filter-button" style="flex: 0 0 auto; width: auto; padding: 0.8rem 1.5rem;">
+                            <i class="fas fa-search"></i> Cari
+                        </button>
+                    </div>
                 </div>
 
                 <div class="filters-grid">
@@ -111,9 +116,9 @@
 
             <!-- Pagination -->
             <div class="pagination-wrapper" id="pagination-section">
-                {{ $surveys->links() }}
+                {{ $surveys->onEachSide(1)->links() }}
                 <div class="pagination-info">
-                    Menampilkan {{ $surveys->firstItem() ?? 0 }} - {{ $surveys->lastItem() ?? 0 }} dari {{ $surveys->total() }} survei
+                    {{ $surveys->firstItem() ?? 0 }} - {{ $surveys->lastItem() ?? 0 }} dari {{ $surveys->total() }} survei
                     @if($surveys->hasPages())
                         | Halaman {{ $surveys->currentPage() }} dari {{ $surveys->lastPage() }}
                     @endif
