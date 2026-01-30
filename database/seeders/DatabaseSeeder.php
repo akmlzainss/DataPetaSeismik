@@ -21,6 +21,9 @@ class DatabaseSeeder extends Seeder
         // Panggil DataSurveiSeeder untuk data survei dan lokasi marker
         $this->call(DataSurveiSeeder::class);
 
+        $this->call(PegawaiInternalSeeder::class);
+
+
         // Seeder User bawaan (jika masih ingin dijalankan)
         // User::factory(10)->create(); 
 
