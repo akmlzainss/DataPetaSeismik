@@ -76,7 +76,7 @@
                1. Pilih data survei dari dropdown<br>
                 2. Klik kotak grid di peta<br>
                 3. Data akan otomatis ter-assign ke kotak tersebut<br>
-                4. Kotak akan berubah warna (hijau = terisi, abu-abu = kosong)
+                4. Kotak akan berubah warna (kuning = terisi, abu-abu = kosong)
             </div>
         @endif
 

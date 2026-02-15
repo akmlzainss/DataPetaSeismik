@@ -41,7 +41,7 @@ class PegawaiAuthController extends Controller
             'jabatan' => ['nullable', 'string', 'max:100'],
         ], [
             'email.unique' => 'Email ini sudah terdaftar.',
-            'email.regex' => 'Email harus menggunakan domain @esdm.go.id',
+            'email.regex' => 'Alamat Email yang diizinkan hanya @esdm.go.id',
             'kata_sandi.min' => 'Kata sandi minimal 8 karakter.',
             'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
