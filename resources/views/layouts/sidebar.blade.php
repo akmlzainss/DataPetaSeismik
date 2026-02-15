@@ -1,20 +1,20 @@
 <!-- resources/views/layouts/sidebar.blade.php -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
         <div class="logo-content">
             <img src="{{ asset('storage/logo-esdm2.png') }}" alt="Logo ESDM">
             <div class="logo-text">
-                <span>Balai Besar Survei dan</span><br>
+                <span>Balai Besar Survei dan</span>
                 <span>Pemetaan Geologi Kelautan</span>
             </div>
         </div>
     </div>
 
-
     <ul class="sidebar-menu">
-        <!-- DASHBOARD -->
+        {{-- DASHBOARD --}}
         <li>
-            <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}"
+                class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24">
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                 </svg>
@@ -22,7 +22,7 @@
             </a>
         </li>
 
-        <!-- DATA SURVEI -->
+        {{-- DATA SURVEI --}}
         <li>
             <a href="{{ route('admin.data_survei.index') }}"
                 class="{{ request()->routeIs('admin.data_survei.*') ? 'active' : '' }}">
@@ -34,7 +34,7 @@
             </a>
         </li>
 
-        <!-- GRID PETA -->
+        {{-- GRID PETA --}}
         <li>
             <a href="{{ route('admin.grid_kotak.index') }}"
                 class="{{ request()->routeIs('admin.grid_kotak.*') ? 'active' : '' }}">
@@ -46,7 +46,7 @@
             </a>
         </li>
 
-        <!-- LAPORAN -->
+        {{-- LAPORAN --}}
         <li>
             <a href="{{ route('admin.laporan.index') }}"
                 class="{{ request()->routeIs('admin.laporan.*') ? 'active' : '' }}">
@@ -58,7 +58,7 @@
             </a>
         </li>
 
-        <!-- PENGATURAN -->
+        {{-- PENGATURAN --}}
         <li>
             <a href="{{ route('admin.pengaturan.index') }}"
                 class="{{ request()->routeIs('admin.pengaturan.*') ? 'active' : '' }}">
@@ -69,12 +69,37 @@
                 <span>Pengaturan</span>
             </a>
         </li>
+
+        {{-- SEPARATOR --}}
+        <li style="padding: 8px 16px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">
+                Halaman Publik
+            </span>
+        </li>
+
+        {{-- LINK KE PUBLIC PAGES --}}
+        <li>
+            <a href="{{ route('beranda') }}" target="_blank" style="display: flex; align-items: center; gap: 10px;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>Beranda Publik</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('kontak') }}" target="_blank" style="display: flex; align-items: center; gap: 10px;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <span>Kontak / Contact</span>
+            </a>
+        </li>
     </ul>
 
     <div class="logout-btn">
-        <form action="{{ route('admin.logout') }}" method="POST" id="logoutForm">
+        <form action="{{ route('admin.logout') }}" method="POST" id="logoutFormAdmin">
             @csrf
-            <button type="button" onclick="showLogoutModal()">
+            <button type="button" onclick="showLogoutModalAdmin()">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
@@ -83,68 +108,73 @@
             </button>
         </form>
     </div>
+</aside>
 
-    {{-- Logout Confirmation Modal --}}
-    <div id="logoutModal" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Konfirmasi Logout</h3>
-                <button class="modal-close" onclick="closeLogoutModal()">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                    </svg>
-                </button>
+{{-- Logout Confirmation Modal --}}
+<div id="logoutModalAdmin" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Konfirmasi Logout</h3>
+            <button class="modal-close" onclick="closeLogoutModalAdmin()">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-icon-warning">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                    <path
+                        d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                </svg>
             </div>
-            <div class="modal-body">
-                <div class="modal-icon-warning">
-                    <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
-                        <path
-                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-                    </svg>
-                </div>
-                <p class="modal-message">Apakah Anda yakin ingin keluar dari sistem?</p>
-                <p class="modal-warning">Anda akan diarahkan ke halaman login.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
-                <button class="btn-delete" onclick="confirmLogout()">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                        <path
-                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-                    </svg>
-                    Ya, Keluar
-                </button>
-            </div>
+            <p class="modal-message">Apakah Anda yakin ingin keluar dari sistem?</p>
+            <p class="modal-warning">Anda akan diarahkan ke halaman login.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeLogoutModalAdmin()">Batal</button>
+            <button class="btn-delete" onclick="confirmLogoutAdmin()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path
+                        d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                </svg>
+                Ya, Keluar
+            </button>
         </div>
     </div>
+</div>
 
-    <script>
-        function showLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'flex';
-            setTimeout(() => {
-                document.querySelector('#logoutModal .modal-container').style.animation = 'slideUp 0.3s ease-out';
-            }, 10);
+<script>
+    function showLogoutModalAdmin() {
+        document.getElementById('logoutModalAdmin').style.display = 'flex';
+        setTimeout(() => {
+            document.querySelector('#logoutModalAdmin .modal-container').style.animation =
+                'slideUp 0.3s ease-out';
+        }, 10);
+    }
+
+    function closeLogoutModalAdmin() {
+        const modal = document.getElementById('logoutModalAdmin');
+        const container = modal.querySelector('.modal-container');
+        container.style.animation = 'slideDown 0.3s ease-out';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function confirmLogoutAdmin() {
+        document.getElementById('logoutFormAdmin').submit();
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('logoutModalAdmin')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLogoutModalAdmin();
         }
+    });
 
-        function closeLogoutModal() {
-            const modal = document.getElementById('logoutModal');
-            const container = modal.querySelector('.modal-container');
-            container.style.animation = 'slideDown 0.3s ease-out';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
-        }
-
-        function confirmLogout() {
-            document.getElementById('logoutForm').submit();
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('logoutModal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLogoutModal();
-            }
-        });
-    </script>
-</aside>
+    // Close sidebar when clicking menu item (mobile)
+    // Script ini disesuaikan karena include dipanggil di admin.blade
+    // Tapi logic nya tetap ada disini untuk encapsulation
+</script>

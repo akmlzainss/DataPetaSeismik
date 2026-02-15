@@ -378,7 +378,7 @@
                     </div>
                     
                     <div class="info-card">
-                        <h3 class="info-card-title">Statistik Tipe Data</h3>
+                        <h3 class="info-card-title">Statistik Tipe Survei</h3>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <div style="display: flex; justify-content: space-between; padding: 8px; background: #e3f2fd; border-radius: 4px;">
                                 <span><strong>2D</strong></span>
