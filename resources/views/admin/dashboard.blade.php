@@ -63,7 +63,7 @@
                     <span
                         style="color: {{ $persentaseGrid >= 75 ? '#28a745' : ($persentaseGrid >= 50 ? '#ffc107' : '#dc3545') }}; font-weight: 700;">
                         {{ $persentaseGrid }}%
-                    </span> dari 313 kotak total
+                    </span> dari total survei terpetakan
                 </div>
             </div>
         </div>
