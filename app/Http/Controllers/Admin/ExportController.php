@@ -23,6 +23,7 @@ class ExportController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        // Ambil parameter export (baru dan legacy)
         // Handle new export range parameters
         $exportRange = $request->input('export_range');
         $exportTipe = $request->input('export_tipe');
@@ -32,7 +33,7 @@ class ExportController extends Controller
         $bulan = $request->input('bulan');
         $tipe = $request->input('tipe') ?: $exportTipe;
 
-        // Build query with time range filter
+        // Build query dengan filter waktu
         $query = DataSurvei::with(['pengunggah', 'gridKotak']);
 
         // Apply time range filter
@@ -58,7 +59,7 @@ class ExportController extends Controller
 
         $surveiData = $query->orderBy('created_at', 'desc')->get();
 
-        // Statistik
+        // Statistik ringkas untuk header
         $totalSurvei = $surveiData->count();
         $surveiPerTipe = $surveiData->groupBy('tipe')->map->count();
         $surveiDenganGrid = $surveiData->filter(function ($item) {
@@ -71,7 +72,7 @@ class ExportController extends Controller
         // Header perusahaan
         $this->addCompanyHeader($sheet);
 
-        // Generate filter text
+        // Generate teks filter yang tampil di header
         if ($exportRange) {
             $filterText = $this->getExportRangeDescription($exportRange, $tipe);
         } else {
@@ -172,7 +173,7 @@ class ExportController extends Controller
             'font' => ['italic' => true, 'size' => 10]
         ]);
 
-        // Set properties
+        // Set metadata file
         $spreadsheet->getProperties()
             ->setCreator('BBSPGL Admin')
             ->setTitle('Laporan Data Survei Seismik')
@@ -187,6 +188,7 @@ class ExportController extends Controller
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
 
+        // Stream file Excel ke output
         $writer->save('php://output');
         exit;
     }
@@ -196,6 +198,7 @@ class ExportController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Ambil parameter export (baru dan legacy)
         // Handle new export range parameters
         $exportRange = $request->input('export_range');
         $exportTipe = $request->input('export_tipe');
@@ -205,7 +208,7 @@ class ExportController extends Controller
         $bulan = $request->input('bulan');
         $tipe = $request->input('tipe') ?: $exportTipe;
 
-        // Build query with time range filter
+        // Build query dengan filter waktu
         $query = DataSurvei::with(['pengunggah', 'gridKotak']);
 
         // Apply time range filter
@@ -233,7 +236,7 @@ class ExportController extends Controller
             ->limit(100) // Batasi untuk PDF
             ->get();
 
-        // Statistik
+        // Statistik ringkas untuk PDF
         $totalSurvei = DataSurvei::when($tahun, function ($query) use ($tahun) {
             return $query->whereYear('created_at', $tahun);
         })

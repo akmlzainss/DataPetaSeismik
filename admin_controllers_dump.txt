@@ -1,0 +1,2161 @@
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\AdminAuthController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Admin; // Pastikan Model Admin di-import
+
+class AdminAuthController extends Controller
+{
+    // --- 1. LOGIN METHODS ---
+
+    public function showLoginForm()
+    {
+        // KOREKSI PATH VIEW
+        return view('admin.auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'kata_sandi' => ['required'],
+        ], [
+            'email.required' => 'Kolom Email wajib diisi.',
+            'email.email' => 'Format Email tidak valid.',
+            'kata_sandi.required' => 'Kolom Kata Sandi wajib diisi.',
+        ]);
+
+        if (Auth::guard('admin')->attempt(['email' => $credentials['email'], 'password' => $credentials['kata_sandi']], $request->filled('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('admin.dashboard')); 
+        }
+
+        throw ValidationException::withMessages([
+            'email' => 'Kombinasi email dan kata sandi tidak valid.',
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login'); 
+    }
+
+    // --- 2. REGISTRATION METHODS (DAFTAR AKUN) ---
+
+    public function showRegistrationForm()
+    {
+        // KOREKSI PATH VIEW
+        return view('admin.auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validatedData = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:admin,email'],
+            'kata_sandi' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.unique' => 'Email ini sudah terdaftar sebagai Admin lain.'
+        ]);
+
+        Admin::create([
+            'nama' => $validatedData['nama'],
+            'email' => $validatedData['email'],
+            'kata_sandi' => Hash::make($validatedData['kata_sandi']),
+        ]);
+
+        if (Auth::guard('admin')->attempt(['email' => $validatedData['email'], 'password' => $request->kata_sandi])) {
+             $request->session()->regenerate();
+        }
+
+        return redirect()->route('admin.dashboard')->with('status', 'Akun Administrator baru berhasil didaftarkan dan Anda telah masuk.');
+    }
+}
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\DashboardController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DataSurvei;
+use App\Models\GridKotak;
+use App\Models\Admin;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class DashboardController extends Controller
+{
+    public function index(Request $request)
+    {
+        // ========== STATISTIK UTAMA (4 CARDS) ==========
+        $totalSurvei = DataSurvei::count();
+        $totalGridTerisi = GridKotak::where('status', 'filled')->count();
+        $totalAdmin = Admin::count();
+        $surveiBulanIni = DataSurvei::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        // ========== STATISTIK PER TIPE (SIMPLE) ==========
+        $surveiPerTipe = DataSurvei::select(
+            'tipe',
+            DB::raw('COUNT(*) as total')
+        )
+            ->groupBy('tipe')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // ========== AKTIVITAS TERBARU (10 ITEMS) ==========
+        $surveiTerbaru = DataSurvei::with('pengunggah')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // ========== SURVEI PER TAHUN (DENGAN PAGINATION) ==========
+        $surveiPerTahun = DataSurvei::select(
+            'tahun',
+            DB::raw('COUNT(*) as total'),
+            DB::raw('SUM(CASE WHEN tipe = "2D" THEN 1 ELSE 0 END) as tipe_2d'),
+            DB::raw('SUM(CASE WHEN tipe = "3D" THEN 1 ELSE 0 END) as tipe_3d'),
+            DB::raw('SUM(CASE WHEN tipe = "HR" THEN 1 ELSE 0 END) as tipe_hr'),
+            DB::raw('SUM(CASE WHEN tipe NOT IN ("2D", "3D", "HR") THEN 1 ELSE 0 END) as tipe_lainnya')
+        )
+            ->groupBy('tahun')
+            ->orderBy('tahun', 'desc')
+            ->paginate(5, ['*'], 'tahun_page'); // 5 tahun per halaman
+
+        // ========== GRAFIK TREND BULANAN (6 BULAN TERAKHIR) ==========
+        $trendBulanan = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $tanggal = Carbon::now()->subMonths($i);
+            $jumlah = DataSurvei::whereYear('created_at', $tanggal->year)
+                ->whereMonth('created_at', $tanggal->month)
+                ->count();
+
+            $trendBulanan[] = [
+                'bulan' => $tanggal->format('M'),
+                'bulan_lengkap' => $tanggal->format('F Y'),
+                'jumlah' => $jumlah
+            ];
+        }
+
+        // ========== SURVEI PER DEKADE ==========
+        $surveiPerDekade = DataSurvei::select(
+            DB::raw('FLOOR(tahun / 10) * 10 as dekade'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereNotNull('tahun')
+            ->groupBy('dekade')
+            ->orderBy('dekade', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'dekade' => $item->dekade . '-an',
+                    'tahun_awal' => (int) $item->dekade,
+                    'total' => $item->total
+                ];
+            });
+
+        // ========== PERBANDINGAN BULAN INI VS BULAN LALU ==========
+        $bulanLalu = now()->subMonth();
+        $surveiBulanLalu = DataSurvei::whereMonth('created_at', $bulanLalu->month)
+            ->whereYear('created_at', $bulanLalu->year)
+            ->count();
+
+        $pertumbuhanBulanan = $surveiBulanLalu > 0
+            ? round((($surveiBulanIni - $surveiBulanLalu) / $surveiBulanLalu) * 100, 1)
+            : ($surveiBulanIni > 0 ? 100 : 0);
+
+        // ========== STATUS GRID (QUICK INFO) ==========
+        $surveiDenganGrid = DataSurvei::has('gridKotak')->count();
+        $surveiTanpaGrid = DataSurvei::doesntHave('gridKotak')->count();
+        $persentaseGrid = $totalSurvei > 0 ? round(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0;
+
+        // Jika request AJAX untuk pagination
+        if ($request->ajax() && $request->has('tahun_page')) {
+            return response()->json([
+                'html' => view('admin.partials.tahun-pagination', compact('surveiPerTahun'))->render(),
+                'pagination' => view('admin.partials.pagination-controls', ['paginator' => $surveiPerTahun, 'pageParam' => 'tahun_page'])->render()
+            ]);
+        }
+
+        return view('admin.dashboard', compact(
+            'totalSurvei',
+            'totalGridTerisi',
+            'totalAdmin',
+            'surveiBulanIni',
+            'surveiPerTipe',
+            'surveiTerbaru',
+            'surveiPerTahun',
+            'trendBulanan',
+            'surveiPerDekade',
+            'pertumbuhanBulanan',
+            'surveiDenganGrid',
+            'surveiTanpaGrid',
+            'persentaseGrid'
+        ));
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\DataSurveiController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DataSurvei;
+use App\Http\Requests\DataSurveiRequest;
+use App\Services\HtmlSanitizerService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use App\Jobs\ProcessSurveiImage;
+use Illuminate\Support\Str;
+
+class DataSurveiController extends Controller
+{
+    /**
+     * Menampilkan daftar data survei dengan fitur pencarian, filter, dan sorting.
+     */
+    public function index(Request $request)
+    {
+        $query = DataSurvei::with('pengunggah');
+
+        // SEARCH: judul, wilayah, tahun
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'LIKE', "%{$search}%")
+                    ->orWhere('wilayah', 'LIKE', "%{$search}%")
+                    ->orWhere('tahun', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // FILTER TAHUN
+        if ($request->filled('tahun') && $request->tahun != 'semua') {
+            $query->where('tahun', $request->tahun);
+        }
+
+        // SORTING
+        $sort = $request->get('sort', 'terbaru');
+        match ($sort) {
+            'terbaru' => $query->orderBy('created_at', 'desc'),
+            'terlama' => $query->orderBy('created_at', 'asc'),
+            'az'      => $query->orderBy('judul', 'asc'),
+            'za'      => $query->orderBy('judul', 'desc'),
+            default   => $query->orderBy('created_at', 'desc'),
+        };
+
+        // Paginate dengan 12 item per halaman
+        $dataSurvei = $query->paginate(12)->withQueryString();
+
+        // Ambil semua tahun unik untuk dropdown filter
+        $tahuns = DataSurvei::select('tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+
+        return view('admin.data_survei.index', compact('dataSurvei', 'tahuns'));
+    }
+
+    /**
+     * Menampilkan form untuk membuat data survei baru.
+     */
+    public function create()
+    {
+        return view('admin.data_survei.create');
+    }
+
+    /**
+     * Menyimpan data survei baru ke database.
+     */
+    public function store(DataSurveiRequest $request)
+    {
+        $data = $request->validated();
+        $data['diunggah_oleh'] = Auth::guard('admin')->id();
+
+        if (isset($data['deskripsi'])) {
+            $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
+        }
+
+        // Handle upload gambar pratinjau (original)
+        if ($request->hasFile('gambar_pratinjau')) {
+            $file = $request->file('gambar_pratinjau');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            // Simpan gambar_pratinjau ke folder 'gambar_pratinjau' di disk public
+            $path = $file->storeAs('gambar_pratinjau', $fileName, 'public');
+            $data['gambar_pratinjau'] = $path;
+        }
+
+        // Handle upload file scan asli (file besar untuk pegawai internal)
+        if ($request->hasFile('file_scan_asli')) {
+            $file = $request->file('file_scan_asli');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            // Simpan ke folder 'scan_asli' di disk public
+            $path = $file->storeAs('scan_asli', $fileName, 'public');
+            $data['file_scan_asli'] = $path;
+            $data['ukuran_file_asli'] = $file->getSize(); // dalam bytes
+            $data['format_file_asli'] = $file->getClientOriginalExtension();
+        }
+
+        $survei = DataSurvei::create($data);
+
+        // Proses gambar thumbnail dan medium di background menggunakan Job
+        if ($request->hasFile('gambar_pratinjau')) {
+            // Delay 5 detik agar record dataSurvei sudah benar-benar tersimpan di DB
+            ProcessSurveiImage::dispatch($survei->id)->delay(now()->addSeconds(5));
+        }
+
+        return redirect()
+            ->route('admin.data_survei.index')
+            ->with('success', 'Data survei berhasil ditambahkan! Gambar sedang diproses...');
+    }
+
+    /**
+     * Menampilkan detail data survei tertentu.
+     */
+    public function show(DataSurvei $dataSurvei)
+    {
+        // Load relasi pengunggah dan gridKotak (sistem baru)
+        $dataSurvei->load('pengunggah', 'gridKotak');
+        $safeDeskripsi = HtmlSanitizerService::sanitize($dataSurvei->deskripsi);
+        return view('admin.data_survei.show', compact('dataSurvei', 'safeDeskripsi'));
+    }
+
+    /**
+     * Menampilkan form untuk mengedit data survei tertentu.
+     */
+    public function edit(DataSurvei $dataSurvei)
+    {
+        // Load relasi gridKotak untuk menampilkan grid yang sudah terpilih
+        $dataSurvei->load('gridKotak');
+        
+        // Ambil semua grid untuk pilihan dropdown
+        $allGrids = \App\Models\GridKotak::orderBy('nomor_kotak', 'asc')->get();
+        
+        return view('admin.data_survei.edit', compact('dataSurvei', 'allGrids'));
+    }
+
+    /**
+     * Memperbarui data survei di database.
+     */
+    public function update(DataSurveiRequest $request, DataSurvei $dataSurvei)
+    {
+        $data = $request->validated();
+
+        if (isset($data['deskripsi'])) {
+            $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
+        }
+
+        if ($request->hasFile('gambar_pratinjau')) {
+            // Hapus semua versi gambar lama (original, thumbnail, medium)
+            foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium] as $file) {
+                if ($file && Storage::disk('public')->exists($file)) {
+                    Storage::disk('public')->delete($file);
+                }
+            }
+
+            // Reset kolom gambar di DB agar tidak menggunakan path gambar lama
+            $data['gambar_thumbnail'] = null;
+            $data['gambar_medium'] = null;
+
+            // Upload gambar pratinjau (original) yang baru
+            $file = $request->file('gambar_pratinjau');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('gambar_pratinjau', $fileName, 'public');
+            $data['gambar_pratinjau'] = $path;
+        }
+
+        // Handle upload file scan asli baru
+        if ($request->hasFile('file_scan_asli')) {
+            // Hapus file scan asli lama jika ada
+            if ($dataSurvei->file_scan_asli && Storage::disk('public')->exists($dataSurvei->file_scan_asli)) {
+                Storage::disk('public')->delete($dataSurvei->file_scan_asli);
+            }
+
+            // Upload file scan asli yang baru
+            $file = $request->file('file_scan_asli');
+            $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('scan_asli', $fileName, 'public');
+            $data['file_scan_asli'] = $path;
+            $data['ukuran_file_asli'] = $file->getSize();
+            $data['format_file_asli'] = $file->getClientOriginalExtension();
+        }
+
+        $dataSurvei->update($data);
+        
+        // Update posisi grid jika ada input
+        // Kita gunakan sync untuk replace grid yang lama dengan yang baru
+        // Jika input kosong (null), maka grid akan dikosongkan (unassign)
+        if ($request->has('grid_kotak_id')) {
+            // Siapkan array sync data dengan tambahan pivot fields
+            $syncData = [];
+            $gridIds = $request->input('grid_kotak_id', []); // Bisa single value atau array jika multiple allowed
+            
+            // Jika single value, convert ke array
+            if (!is_array($gridIds) && $gridIds) {
+                $gridIds = [$gridIds];
+            } elseif (!$gridIds) {
+                // If empty or null
+                $gridIds = [];
+            }
+            
+            foreach ($gridIds as $gridId) {
+                $syncData[$gridId] = [
+                    'assigned_by' => Auth::guard('admin')->id(),
+                    'assigned_at' => now(),
+                ];
+            }
+            
+            // Update relasi
+            $dataSurvei->gridKotak()->sync($syncData);
+            
+            // Update counter total_data di GridKotak (manual calculation karena sync tidak trigger events observer secara default untuk pivot)
+            // Ini bisa resource intensive jika banyak grid, tapi untuk 1-2 grid tidak masalah.
+            // Cara yang lebih akurat adalah recalculate semua affected grids
+            $affectedGrids = \App\Models\GridKotak::whereIn('id', $gridIds)->get();
+            foreach ($affectedGrids as $grid) {
+                // Recount total_data
+                $count = $grid->dataSurvei()->count();
+                $grid->update([
+                    'total_data' => $count,
+                    'status' => $count > 0 ? 'filled' : 'empty'
+                ]);
+            }
+            
+            
+        }
+
+        // Proses gambar thumbnail dan medium yang baru di background
+        if ($request->hasFile('gambar_pratinjau')) {
+            ProcessSurveiImage::dispatch($dataSurvei->id)->delay(now()->addSeconds(5));
+        }
+
+        return redirect()
+            ->route('admin.data_survei.index')
+            ->with('success', 'Data survei berhasil diperbarui! Gambar sedang diproses...');
+    }
+
+    /**
+     * Menghapus data survei dari database.
+     */
+    public function destroy(DataSurvei $dataSurvei)
+    {
+        // Hapus semua versi gambar dan file scan asli saat delete
+        foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium, $dataSurvei->file_scan_asli] as $file) {
+            if ($file && Storage::disk('public')->exists($file)) {
+                Storage::disk('public')->delete($file);
+            }
+        }
+
+        // AMBIL DULU ID grid yang terhubung sebelum dihapus
+        // agar kita bisa update counter 'total_data' di grid tersebut nanti
+        $connectedGridIds = $dataSurvei->gridKotak()->pluck('grid_kotak.id')->toArray();
+
+        // Hapus data (Pivot di grid_seismik akan terhapus otomatis via Cascade DB)
+        $dataSurvei->delete();
+
+        // UPDATE COUNTER GRID yang terimbas
+        if (!empty($connectedGridIds)) {
+            $affectedGrids = \App\Models\GridKotak::whereIn('id', $connectedGridIds)->get();
+            foreach ($affectedGrids as $grid) {
+                $count = $grid->dataSurvei()->count();
+                $grid->update([
+                    'total_data' => $count,
+                    'status' => $count > 0 ? 'filled' : 'empty'
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('admin.data_survei.index')
+            ->with('success', 'Data survei berhasil dihapus!');
+    }
+
+    /**
+     * Generate search-friendly excerpt from survey description
+     */
+    private function generateExcerpt(DataSurvei $survei): ?string
+    {
+        return HtmlSanitizerService::excerpt($survei->deskripsi, 200);
+    }
+
+    /**
+     * Get plain text version of description for meta tags
+     */
+    private function getPlainDescription(DataSurvei $survei): ?string
+    {
+        return HtmlSanitizerService::toPlainText($survei->deskripsi, 160);
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\ExportController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DataSurvei;
+use App\Services\HtmlSanitizerService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+
+class ExportController extends Controller
+{
+    /**
+     * Export laporan ke Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        // Handle new export range parameters
+        $exportRange = $request->input('export_range');
+        $exportTipe = $request->input('export_tipe');
+
+        // Legacy parameters for backward compatibility
+        $tahun = $request->input('tahun');
+        $bulan = $request->input('bulan');
+        $tipe = $request->input('tipe') ?: $exportTipe;
+
+        // Build query with time range filter
+        $query = DataSurvei::with(['pengunggah', 'gridKotak']);
+
+        // Apply time range filter
+        if ($exportRange) {
+            $dateRange = $this->getDateRangeFromString($exportRange);
+            if ($dateRange) {
+                $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            }
+        } else {
+            // Legacy filters
+            $query->when($tahun, function ($q) use ($tahun) {
+                return $q->whereYear('created_at', $tahun);
+            })
+                ->when($bulan, function ($q) use ($bulan) {
+                    return $q->whereMonth('created_at', $bulan);
+                });
+        }
+
+        // Apply type filter
+        $query->when($tipe, function ($q) use ($tipe) {
+            return $q->where('tipe', $tipe);
+        });
+
+        $surveiData = $query->orderBy('created_at', 'desc')->get();
+
+        // Statistik
+        $totalSurvei = $surveiData->count();
+        $surveiPerTipe = $surveiData->groupBy('tipe')->map->count();
+        $surveiDenganGrid = $surveiData->filter(function ($item) {
+            return $item->gridKotak->count() > 0;
+        })->count();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header perusahaan
+        $this->addCompanyHeader($sheet);
+
+        // Generate filter text
+        if ($exportRange) {
+            $filterText = $this->getExportRangeDescription($exportRange, $tipe);
+        } else {
+            $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        }
+        $sheet->setCellValue('A8', 'LAPORAN DATA SURVEI SEISMIK');
+        $sheet->setCellValue('A9', $filterText);
+        $sheet->mergeCells('A8:H8');
+        $sheet->mergeCells('A9:H9');
+
+        // Style judul
+        $sheet->getStyle('A8:A9')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 14],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+        ]);
+
+        // Ringkasan statistik
+        $row = 11;
+        $sheet->setCellValue('A' . $row, 'RINGKASAN STATISTIK');
+        $sheet->getStyle('A' . $row)->applyFromArray([
+            'font' => ['bold' => true, 'size' => 12],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E3F2FD']]
+        ]);
+        $sheet->mergeCells('A' . $row . ':H' . $row);
+
+        $row++;
+        $sheet->setCellValue('A' . $row, 'Total Survei:');
+        $sheet->setCellValue('B' . $row, $totalSurvei);
+        $sheet->setCellValue('D' . $row, 'Survei dengan Grid:');
+        $sheet->setCellValue('E' . $row, $surveiDenganGrid);
+        $sheet->setCellValue('G' . $row, 'Persentase Grid:');
+        $sheet->setCellValue('H' . $row, $totalSurvei > 0 ? round(($surveiDenganGrid / $totalSurvei) * 100, 1) . '%' : '0%');
+
+        // Distribusi per tipe
+        $row += 2;
+        $sheet->setCellValue('A' . $row, 'DISTRIBUSI PER TIPE SURVEI');
+        $sheet->getStyle('A' . $row)->applyFromArray([
+            'font' => ['bold' => true, 'size' => 12],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E8F5E9']]
+        ]);
+        $sheet->mergeCells('A' . $row . ':H' . $row);
+
+        $row++;
+        $col = 'A';
+        foreach ($surveiPerTipe as $tipe => $jumlah) {
+            $sheet->setCellValue($col . $row, $tipe . ':');
+            $sheet->setCellValue(chr(ord($col) + 1) . $row, $jumlah);
+            $col = chr(ord($col) + 2);
+        }
+
+        // Header tabel data
+        $row += 3;
+        $headers = ['No', 'Tanggal Upload', 'Judul Survei', 'Tipe', 'Tahun', 'Wilayah', 'Ketua Tim', 'Status Grid'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $sheet->getStyle($col . $row)->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '003366']],
+                'font' => ['color' => ['rgb' => 'FFFFFF'], 'bold' => true],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+            $col++;
+        }
+
+        // Data survei
+        $row++;
+        $no = 1;
+        foreach ($surveiData as $survei) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $survei->created_at->format('d/m/Y H:i'));
+            $sheet->setCellValue('C' . $row, $survei->judul);
+            $sheet->setCellValue('D' . $row, $survei->tipe);
+            $sheet->setCellValue('E' . $row, $survei->tahun);
+            $sheet->setCellValue('F' . $row, $survei->wilayah);
+            $sheet->setCellValue('G' . $row, $survei->ketua_tim);
+            $sheet->setCellValue('H' . $row, $survei->gridKotak->count() > 0 ? 'Grid ' . $survei->gridKotak->first()->nomor_kotak : 'Belum di-assign');
+
+            // Style data rows
+            $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true]
+            ]);
+
+            $row++;
+        }
+
+        // Auto width columns
+        foreach (range('A', 'H') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Footer
+        $row += 2;
+        $sheet->setCellValue('A' . $row, 'Dicetak pada: ' . Carbon::now()->format('d F Y H:i:s'));
+        $sheet->setCellValue('F' . $row, 'Balai Besar Survei dan Pemetaan Geologi');
+        $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+            'font' => ['italic' => true, 'size' => 10]
+        ]);
+
+        // Set properties
+        $spreadsheet->getProperties()
+            ->setCreator('BBSPGL Admin')
+            ->setTitle('Laporan Data Survei Seismik')
+            ->setSubject('Laporan Survei')
+            ->setDescription('Laporan data survei seismik BBSPGL');
+
+        $filename = 'Laporan_Survei_' . ($tahun ?? 'Semua') . '_' . Carbon::now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        $writer = new Xlsx($spreadsheet);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Export laporan ke PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        // Handle new export range parameters
+        $exportRange = $request->input('export_range');
+        $exportTipe = $request->input('export_tipe');
+
+        // Legacy parameters for backward compatibility
+        $tahun = $request->input('tahun');
+        $bulan = $request->input('bulan');
+        $tipe = $request->input('tipe') ?: $exportTipe;
+
+        // Build query with time range filter
+        $query = DataSurvei::with(['pengunggah', 'gridKotak']);
+
+        // Apply time range filter
+        if ($exportRange) {
+            $dateRange = $this->getDateRangeFromString($exportRange);
+            if ($dateRange) {
+                $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+            }
+        } else {
+            // Legacy filters
+            $query->when($tahun, function ($q) use ($tahun) {
+                return $q->whereYear('created_at', $tahun);
+            })
+                ->when($bulan, function ($q) use ($bulan) {
+                    return $q->whereMonth('created_at', $bulan);
+                });
+        }
+
+        // Apply type filter
+        $query->when($tipe, function ($q) use ($tipe) {
+            return $q->where('tipe', $tipe);
+        });
+
+        $surveiData = $query->orderBy('created_at', 'desc')
+            ->limit(100) // Batasi untuk PDF
+            ->get();
+
+        // Statistik
+        $totalSurvei = DataSurvei::when($tahun, function ($query) use ($tahun) {
+            return $query->whereYear('created_at', $tahun);
+        })
+            ->when($bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })->count();
+
+        $surveiPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
+            ->when($tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })
+            ->groupBy('tipe')
+            ->get();
+
+        $surveiDenganGrid = DataSurvei::has('gridKotak')
+            ->when($tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when($bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })->count();
+
+        // Generate filter text
+        if ($exportRange) {
+            $filterText = $this->getExportRangeDescription($exportRange, $tipe);
+        } else {
+            $filterText = $this->getFilterText($tahun, $bulan, $tipe);
+        }
+
+        $data = [
+            'surveiData' => $surveiData,
+            'totalSurvei' => $totalSurvei,
+            'surveiPerTipe' => $surveiPerTipe,
+            'surveiDenganGrid' => $surveiDenganGrid,
+            'filterText' => $filterText,
+            'tahun' => $tahun,
+            'bulan' => $bulan,
+            'tipe' => $tipe,
+            'tanggalCetak' => Carbon::now()->format('d F Y H:i:s')
+        ];
+
+        $pdf = Pdf::loadView('admin.laporan.pdf-template', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        $filename = 'Laporan_Survei_' . ($tahun ?? 'Semua') . '_' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Tambahkan header perusahaan ke Excel
+     */
+    private function addCompanyHeader($sheet)
+    {
+        // Logo (jika ada)
+        $logoPath = public_path('storage/logo-esdm2.png');
+        if (file_exists($logoPath)) {
+            $drawing = new Drawing();
+            $drawing->setName('Logo ESDM');
+            $drawing->setDescription('Logo ESDM');
+            $drawing->setPath($logoPath);
+            $drawing->setHeight(60);
+            $drawing->setCoordinates('A1');
+            $drawing->setWorksheet($sheet);
+        }
+
+        // Header text
+        $sheet->setCellValue('B1', 'KEMENTERIAN ENERGI DAN SUMBER DAYA MINERAL');
+        $sheet->setCellValue('B2', 'BADAN GEOLOGI');
+        $sheet->setCellValue('B3', 'BALAI BESAR SURVEI DAN PEMETAAN GEOLOGI');
+        $sheet->setCellValue('B4', 'Jl. Diponegoro No. 57 Bandung 40122');
+        $sheet->setCellValue('B5', 'Telp. (022) 7272606, Fax. (022) 7206965');
+
+        // Style header
+        $sheet->getStyle('B1:B5')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT]
+        ]);
+
+        $sheet->getStyle('B1')->applyFromArray(['font' => ['size' => 12, 'bold' => true]]);
+    }
+
+    /**
+     * Generate filter text
+     */
+    private function getFilterText($tahun, $bulan, $tipe)
+    {
+        $filters = [];
+
+        if ($tahun) {
+            $filters[] = "Tahun: $tahun";
+        }
+
+        if ($bulan) {
+            $bulanNama = Carbon::createFromFormat('m', $bulan)->format('F');
+            $filters[] = "Bulan: $bulanNama";
+        }
+
+        if ($tipe) {
+            $filters[] = "Tipe: $tipe";
+        }
+
+        return empty($filters) ? 'Semua Data' : implode(' | ', $filters);
+    }
+
+    /**
+     * Convert export range string to date range
+     */
+    private function getDateRangeFromString($rangeString)
+    {
+        $now = Carbon::now();
+        $start = null;
+        $end = $now->copy();
+
+        switch ($rangeString) {
+            // Weeks
+            case '1_week':
+                $start = $now->copy()->subWeek();
+                break;
+            case '2_weeks':
+                $start = $now->copy()->subWeeks(2);
+                break;
+            case '3_weeks':
+                $start = $now->copy()->subWeeks(3);
+                break;
+
+            // Months
+            case '1_month':
+                $start = $now->copy()->subMonth();
+                break;
+            case '2_months':
+                $start = $now->copy()->subMonths(2);
+                break;
+            case '3_months':
+                $start = $now->copy()->subMonths(3);
+                break;
+            case '4_months':
+                $start = $now->copy()->subMonths(4);
+                break;
+            case '5_months':
+                $start = $now->copy()->subMonths(5);
+                break;
+            case '6_months':
+                $start = $now->copy()->subMonths(6);
+                break;
+            case '7_months':
+                $start = $now->copy()->subMonths(7);
+                break;
+            case '8_months':
+                $start = $now->copy()->subMonths(8);
+                break;
+            case '9_months':
+                $start = $now->copy()->subMonths(9);
+                break;
+            case '10_months':
+                $start = $now->copy()->subMonths(10);
+                break;
+            case '11_months':
+                $start = $now->copy()->subMonths(11);
+                break;
+
+            // Years
+            case '1_year':
+                $start = $now->copy()->subYear();
+                break;
+            case '2_years':
+                $start = $now->copy()->subYears(2);
+                break;
+            case '3_years':
+                $start = $now->copy()->subYears(3);
+                break;
+            case '4_years':
+                $start = $now->copy()->subYears(4);
+                break;
+            case '5_years':
+                $start = $now->copy()->subYears(5);
+                break;
+
+            default:
+                return null;
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end
+        ];
+    }
+
+    /**
+     * Get human readable description for export range
+     */
+    private function getExportRangeDescription($rangeString, $tipe = null)
+    {
+        $descriptions = [
+            '1_week' => '1 Minggu Terakhir',
+            '2_weeks' => '2 Minggu Terakhir',
+            '3_weeks' => '3 Minggu Terakhir',
+            '1_month' => '1 Bulan Terakhir',
+            '2_months' => '2 Bulan Terakhir',
+            '3_months' => '3 Bulan Terakhir',
+            '4_months' => '4 Bulan Terakhir',
+            '5_months' => '5 Bulan Terakhir',
+            '6_months' => '6 Bulan Terakhir',
+            '7_months' => '7 Bulan Terakhir',
+            '8_months' => '8 Bulan Terakhir',
+            '9_months' => '9 Bulan Terakhir',
+            '10_months' => '10 Bulan Terakhir',
+            '11_months' => '11 Bulan Terakhir',
+            '1_year' => '1 Tahun Terakhir',
+            '2_years' => '2 Tahun Terakhir',
+            '3_years' => '3 Tahun Terakhir',
+            '4_years' => '4 Tahun Terakhir',
+            '5_years' => '5 Tahun Terakhir'
+        ];
+
+        $description = $descriptions[$rangeString] ?? 'Semua Data';
+
+        if ($tipe) {
+            $description .= " - Tipe: $tipe";
+        }
+
+        return $description;
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\ForgotPasswordController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Models\Admin;
+use App\Mail\AdminPasswordResetMail;
+
+class ForgotPasswordController extends Controller
+{
+    public function showLinkRequestForm()
+    {
+        return view('admin.auth.forgot-password');
+    }
+
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:admin,email'
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Email tidak terdaftar dalam sistem.'
+        ]);
+
+        // Generate token
+        $token = Str::random(64);
+
+        // Delete existing tokens for this email
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        // Insert new token
+        DB::table('password_reset_tokens')->insert([
+            'email' => $request->email,
+            'token' => Hash::make($token),
+            'created_at' => now()
+        ]);
+
+        // Get admin data
+        $admin = Admin::where('email', $request->email)->first();
+
+        // Send email
+        try {
+            Mail::to($request->email)->send(new AdminPasswordResetMail($admin, $token));
+
+            return back()->with('success', 'Link reset password telah dikirim ke email Anda. Silakan periksa inbox atau folder spam.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengirim email. Silakan coba lagi nanti.');
+        }
+    }
+
+    public function showResetForm($token)
+    {
+        return view('admin.auth.reset-password', ['token' => $token]);
+    }
+
+    /**
+     * Handle reset password form when token is passed as query string.
+     * This helps testing bots that may use ?token=xxx format.
+     */
+    public function showResetFormFromQuery(Request $request)
+    {
+        $token = $request->query('token');
+        
+        if (!$token) {
+            return redirect()->route('admin.password.request')
+                ->with('error', 'Token reset password tidak ditemukan. Silakan request ulang.');
+        }
+        
+        return view('admin.auth.reset-password', ['token' => $token]);
+    }
+
+    public function reset(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email|exists:admin,email',
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Email tidak terdaftar dalam sistem.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        // Check if token exists and is valid (not older than 60 minutes)
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('created_at', '>', now()->subMinutes(60))
+            ->first();
+
+        if (!$resetRecord || !Hash::check($request->token, $resetRecord->token)) {
+            return back()->with('error', 'Token reset password tidak valid atau sudah kedaluwarsa.');
+        }
+
+        // Update password
+        $admin = Admin::where('email', $request->email)->first();
+        $admin->update([
+            'kata_sandi' => Hash::make($request->password)
+        ]);
+
+        // Delete the token
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect()->route('admin.login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\GridKotakController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DataSurvei;
+use App\Models\GridKotak;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class GridKotakController extends Controller
+{
+    /**
+     * Display grid map dengan semua kotak dan data survei yang belum di-assign
+     */
+    public function index()
+    {
+        // Ambil semua grid kotak dengan data survei yang sudah ter-assign
+        $grids = GridKotak::with(['dataSurvei' => function($query) {
+            $query->with('pengunggah');
+        }])->get();
+
+        // Ambil data survei yang belum di-assign ke grid manapun
+        $surveisBelumAssign = DataSurvei::whereDoesntHave('gridKotak')
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Statistics
+        $stats = [
+            'total_grid' => GridKotak::count(),
+            'grid_terisi' => GridKotak::filled()->count(),
+            'grid_kosong' => GridKotak::empty()->count(),
+            'total_data_survei' => DataSurvei::count(),
+            'data_belum_assign' => $surveisBelumAssign->count(),
+            'persentase_terisi' => GridKotak::count() > 0 
+                ? round((GridKotak::filled()->count() / GridKotak::count()) * 100, 1) 
+                : 0,
+        ];
+
+        return view('admin.grid_kotak.index', compact('grids', 'surveisBelumAssign', 'stats'));
+    }
+
+    /**
+     * Get grid data sebagai JSON untuk AJAX request
+     */
+    public function getGridData()
+    {
+        try {
+            $grids = GridKotak::with(['dataSurvei'])->get();
+
+            return response()->json([
+                'success' => true,
+                'grids' => $grids->map(function($grid) {
+                    return [
+                        'id' => $grid->id,
+                        'nomor_kotak' => $grid->nomor_kotak,
+                        'bounds' => $grid->bounds_array,
+                        'center' => $grid->center_array,
+                        'status' => $grid->status,
+                        'total_data' => $grid->dataSurvei->count(), // Gunakan real-time count agar akurat
+                        'data_survei' => $grid->dataSurvei->map(function($survei) {
+                            return [
+                                'id' => $survei->id,
+                                'judul' => $survei->judul,
+                                'tahun' => $survei->tahun,
+                                'tipe' => $survei->tipe,
+                                'wilayah' => $survei->wilayah,
+                            ];
+                        }),
+                    ];
+                }),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Assign data survei ke grid kotak
+     */
+    public function assign(Request $request)
+    {
+        $request->validate([
+            'grid_kotak_id' => 'required|exists:grid_kotak,id',
+            'data_survei_id' => 'required|exists:data_survei,id',
+        ]);
+
+        $gridKotak = GridKotak::findOrFail($request->grid_kotak_id);
+        $dataSurvei = DataSurvei::findOrFail($request->data_survei_id);
+
+        // Check if already assigned
+        if ($gridKotak->dataSurvei()->where('data_survei_id', $dataSurvei->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data survei sudah ter-assign ke kotak grid ini!',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Attach data survei ke grid kotak
+            $gridKotak->dataSurvei()->attach($dataSurvei->id, [
+                'assigned_by' => Auth::guard('admin')->id(),
+                'assigned_at' => now(),
+            ]);
+
+            // Update counter dan status grid dari real count
+            $totalData = $gridKotak->dataSurvei()->count();
+            $gridKotak->update([
+                'total_data' => $totalData,
+                'status' => 'filled'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data survei berhasil di-assign ke grid kotak ' . $gridKotak->nomor_kotak,
+                'grid' => [
+                    'id' => $gridKotak->id,
+                    'nomor_kotak' => $gridKotak->nomor_kotak,
+                    'total_data' => $gridKotak->total_data,
+                    'status' => $gridKotak->status,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal assign data: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Unassign (remove) data survei dari grid kotak
+     */
+    public function unassign($gridKotakId, $dataSurveiId)
+    {
+        $gridKotak = GridKotak::findOrFail($gridKotakId);
+        $dataSurvei = DataSurvei::findOrFail($dataSurveiId);
+
+        // Check if actually assigned
+        if (!$gridKotak->dataSurvei()->where('data_survei_id', $dataSurvei->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data survei tidak ter-assign ke kotak grid ini!',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Detach data survei dari grid kotak
+            $gridKotak->dataSurvei()->detach($dataSurvei->id);
+
+            // Recalculate count untuk memastikan sinkronisasi
+            $totalData = $gridKotak->dataSurvei()->count();
+            
+            $gridKotak->update([
+                'total_data' => $totalData,
+                'status' => $totalData > 0 ? 'filled' : 'empty'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data survei berhasil di-remove dari grid kotak ' . $gridKotak->nomor_kotak,
+                'grid' => [
+                    'id' => $gridKotak->id,
+                    'nomor_kotak' => $gridKotak->nomor_kotak,
+                    'total_data' => $gridKotak->total_data,
+                    'status' => $gridKotak->status,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal remove data: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get detail grid kotak beserta semua data survei di dalamnya
+     */
+    public function show($id)
+    {
+        $gridKotak = GridKotak::with(['dataSurvei.pengunggah'])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'grid' => [
+                'id' => $gridKotak->id,
+                'nomor_kotak' => $gridKotak->nomor_kotak,
+                'bounds' => $gridKotak->bounds_array,
+                'center' => $gridKotak->center_array,
+                'status' => $gridKotak->status,
+                'total_data' => $gridKotak->total_data,
+            ],
+            'data_survei' => $gridKotak->dataSurvei->map(function($survei) {
+                return [
+                    'id' => $survei->id,
+                    'judul' => $survei->judul,
+                    'tahun' => $survei->tahun,
+                    'tipe' => $survei->tipe,
+                    'wilayah' => $survei->wilayah,
+                    'deskripsi' => $survei->deskripsi,
+                    'pengunggah' => $survei->pengunggah ? $survei->pengunggah->name : 'N/A',
+                    'assigned_at' => $survei->pivot->assigned_at,
+                ];
+            }),
+        ]);
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\LaporanController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DataSurvei;
+use App\Models\Admin;
+use App\Models\GridKotak;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class LaporanController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        // Filter berdasarkan request
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan');
+        $tipe = $request->input('tipe');
+        $exportRange = $request->input('export_range');
+
+        // Fix: Jika user memilih filter manual (Tahun/Bulan), abaikan export_range
+        // Ini mengatasi masalah di mana filter bulan tidak berfungsi jika export_range tertinggal di URL
+        if ($request->has('bulan') || $request->has('tahun')) {
+            $exportRange = null;
+        }
+
+        // ========== LAPORAN PER TIPE SURVEI ==========
+
+        $laporanPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->groupBy('tipe')
+            ->get();
+
+        // ========== TOP 6 GRID ==========
+
+        $topGrid = GridKotak::withCount('dataSurvei')
+            ->orderBy('data_survei_count', 'DESC')
+            ->take(6)
+            ->get();
+
+        // ========== LAPORAN PER TAHUN (5 Tahun Terakhir) ==========
+
+        $laporanPerTahun = DataSurvei::select(
+            DB::raw('YEAR(created_at) as tahun'),
+            DB::raw('COUNT(*) as total'),
+            DB::raw('SUM(CASE WHEN tipe = "2D" THEN 1 ELSE 0 END) as tipe_2d'),
+            DB::raw('SUM(CASE WHEN tipe = "3D" THEN 1 ELSE 0 END) as tipe_3d'),
+            DB::raw('SUM(CASE WHEN tipe = "HR" THEN 1 ELSE 0 END) as tipe_hr'),
+            DB::raw('SUM(CASE WHEN tipe = "Lainnya" THEN 1 ELSE 0 END) as tipe_lainnya')
+        )
+            ->whereYear('created_at', '>=', date('Y') - 4)
+            ->groupBy(DB::raw('YEAR(created_at)'))
+            ->orderBy('tahun', 'DESC')
+            ->get();
+
+        // ========== DISTRIBUSI GRID (dengan pagination) ==========
+
+        $distribusiGrid = GridKotak::withCount('dataSurvei')
+            ->orderBy('data_survei_count', 'DESC')
+            ->orderBy('nomor_kotak', 'ASC')
+            ->paginate(10, ['*'], 'grid_page');
+
+        // ========== LAPORAN AKTIVITAS ADMIN ==========
+
+        $aktivitasAdmin = Admin::select(
+            'admin.id',
+            'admin.nama',
+            'admin.email',
+            DB::raw('COUNT(data_survei.id) as total_upload')
+        )
+            ->leftJoin('data_survei', 'admin.id', '=', 'data_survei.diunggah_oleh')
+            ->groupBy('admin.id', 'admin.nama', 'admin.email')
+            ->orderBy('total_upload', 'DESC')
+            ->get();
+
+        // ========== LAPORAN SURVEI TERBARU (DENGAN PAGINATION) ==========
+
+        $surveiTerbaru = DataSurvei::with(['pengunggah', 'gridKotak'])
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })
+            ->orderBy('created_at', 'DESC')
+            ->paginate(8, ['*'], 'survei_page');
+
+        // ========== STATISTIK BULANAN (12 Bulan Terakhir) ==========
+
+        $statistikBulanan = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $tanggal = Carbon::now()->subMonths($i);
+            $jumlah = DataSurvei::whereYear('created_at', $tanggal->year)
+                ->whereMonth('created_at', $tanggal->month)
+                ->count();
+
+            $statistikBulanan[] = [
+                'bulan' => $tanggal->format('M Y'),
+                'jumlah' => $jumlah
+            ];
+        }
+
+        // ========== SURVEI DENGAN GRID vs TANPA GRID (STATISTIK KESELURUHAN) ==========
+        // Statistik grid dihitung dari SELURUH data (tanpa filter tahun)
+        // karena ini adalah ringkasan kelengkapan data secara keseluruhan
+
+        $totalSurvei = DataSurvei::count();
+        $surveiDenganGrid = DataSurvei::has('gridKotak')->count();
+        $surveiTanpaGrid = DataSurvei::doesntHave('gridKotak')->count();
+
+        // ========== DATA UNTUK FILTER ==========
+
+        $tahunTersedia = DataSurvei::select(DB::raw('YEAR(created_at) as tahun'))
+            ->distinct()
+            ->orderBy('tahun', 'DESC')
+            ->pluck('tahun');
+
+        $tipeSurvei = ['2D', '3D', 'HR', 'Lainnya'];
+
+        // Jika request AJAX untuk pagination survei terbaru
+        if ($request->ajax() && $request->has('survei_page')) {
+            return response()->json([
+                'html' => view('admin.partials.survei-terbaru-table', compact('surveiTerbaru'))->render(),
+                'pagination' => view('admin.partials.pagination-controls', ['paginator' => $surveiTerbaru, 'pageParam' => 'survei_page'])->render()
+            ]);
+        }
+
+        // Jika request AJAX untuk pagination distribusi grid
+        if ($request->ajax() && $request->has('grid_page')) {
+            return response()->json([
+                'html' => view('admin.partials.distribusi-grid-table', compact('distribusiGrid'))->render(),
+                'pagination' => view('admin.partials.pagination-controls', ['paginator' => $distribusiGrid, 'pageParam' => 'grid_page'])->render()
+            ]);
+        }
+
+        return view('admin.laporan.index', compact(
+            'laporanPerTipe',
+            'topGrid',
+            'laporanPerTahun',
+            'distribusiGrid',
+            'aktivitasAdmin',
+            'surveiTerbaru',
+            'statistikBulanan',
+            'totalSurvei',
+            'surveiDenganGrid',
+            'surveiTanpaGrid',
+            'tahunTersedia',
+            'tipeSurvei',
+            'tahun',
+            'bulan',
+            'tipe',
+            'exportRange'
+        ));
+    }
+
+    /**
+     * Export laporan ke PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $data = $this->getReportData($request);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.export-pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
+        
+        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export laporan ke Excel (XLSX format dengan styling)
+     */
+    public function exportExcel(Request $request)
+    {
+        $data = $this->getReportData($request);
+        
+        // Create new Spreadsheet object
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Survei');
+        
+        // ========== HEADER SECTION ==========
+        // Title
+        $sheet->setCellValue('A1', 'LAPORAN DATA SURVEI SEISMIK');
+        $sheet->mergeCells('A1:H1');
+        $sheet->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '003366']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // Subtitle
+        $sheet->setCellValue('A2', 'Balai Besar Survei dan Pemetaan Geologi Kelautan');
+        $sheet->mergeCells('A2:H2');
+        $sheet->getStyle('A2')->applyFromArray([
+            'font' => ['size' => 12, 'color' => ['rgb' => '666666']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // Export info
+        $filterInfo = 'Tanggal Unduh: ' . $data['tanggalExport'];
+        if ($data['tahun']) $filterInfo .= ' | Tahun: ' . $data['tahun'];
+        if ($data['bulan']) $filterInfo .= ' | Bulan: ' . $data['bulan'];
+        if ($data['tipe']) $filterInfo .= ' | Tipe: ' . $data['tipe'];
+        $filterInfo .= ' | Total Data: ' . count($data['surveiTerbaru']) . ' survei';
+        
+        $sheet->setCellValue('A3', $filterInfo);
+        $sheet->mergeCells('A3:H3');
+        $sheet->getStyle('A3')->applyFromArray([
+            'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => '888888']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // ========== TABLE HEADER ==========
+        $headerRow = 5;
+        $headers = ['No', 'Judul Survei', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload', 'Status Grid'];
+        
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $headerRow, $header);
+            $col++;
+        }
+        
+        // Header styling
+        $sheet->getStyle('A' . $headerRow . ':H' . $headerRow)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '003366'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+            ],
+        ]);
+        $sheet->getRowDimension($headerRow)->setRowHeight(25);
+        
+        // ========== DATA ROWS ==========
+        $row = $headerRow + 1;
+        $no = 1;
+        
+        foreach ($data['surveiTerbaru'] as $survei) {
+            $statusGrid = $survei->gridKotak->count() > 0 
+                ? '✓ Grid ' . $survei->gridKotak->first()->nomor_kotak 
+                : '— Belum di-assign';
+            
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $survei->judul);
+            $sheet->setCellValue('C' . $row, $survei->tahun);
+            $sheet->setCellValue('D' . $row, $survei->tipe);
+            $sheet->setCellValue('E' . $row, $survei->wilayah);
+            $sheet->setCellValue('F' . $row, $survei->ketua_tim ?? '-');
+            $sheet->setCellValue('G' . $row, $survei->created_at->format('d/m/Y H:i'));
+            $sheet->setCellValue('H' . $row, $statusGrid);
+            
+            // Alternate row colors
+            if ($no % 2 == 0) {
+                $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F8F9FA'],
+                    ],
+                ]);
+            }
+            
+            // Status Grid coloring
+            if ($survei->gridKotak->count() > 0) {
+                $sheet->getStyle('H' . $row)->applyFromArray([
+                    'font' => ['color' => ['rgb' => '28A745'], 'bold' => true],
+                ]);
+            } else {
+                $sheet->getStyle('H' . $row)->applyFromArray([
+                    'font' => ['color' => ['rgb' => '999999']],
+                ]);
+            }
+            
+            $row++;
+        }
+        
+        // Data borders
+        $lastRow = $row - 1;
+        if ($lastRow >= $headerRow + 1) {
+            $sheet->getStyle('A' . ($headerRow + 1) . ':H' . $lastRow)->applyFromArray([
+                'borders' => [
+                    'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN, 'color' => ['rgb' => 'DDDDDD']],
+                ],
+                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+            ]);
+        }
+        
+        // ========== COLUMN WIDTHS ==========
+        $sheet->getColumnDimension('A')->setWidth(6);   // No
+        $sheet->getColumnDimension('B')->setWidth(40);  // Judul
+        $sheet->getColumnDimension('C')->setWidth(10);  // Tahun
+        $sheet->getColumnDimension('D')->setWidth(12);  // Tipe
+        $sheet->getColumnDimension('E')->setWidth(35);  // Wilayah
+        $sheet->getColumnDimension('F')->setWidth(25);  // Ketua Tim
+        $sheet->getColumnDimension('G')->setWidth(18);  // Tanggal Upload
+        $sheet->getColumnDimension('H')->setWidth(20);  // Status Grid
+        
+        // Center align specific columns
+        $sheet->getStyle('A' . ($headerRow + 1) . ':A' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C' . ($headerRow + 1) . ':D' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('G' . ($headerRow + 1) . ':H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        
+        // ========== FOOTER ==========
+        $footerRow = $lastRow + 2;
+        $sheet->setCellValue('A' . $footerRow, 'Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi Data Peta Seismik BBSPGL');
+        $sheet->mergeCells('A' . $footerRow . ':H' . $footerRow);
+        $sheet->getStyle('A' . $footerRow)->applyFromArray([
+            'font' => ['size' => 9, 'italic' => true, 'color' => ['rgb' => '888888']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ]);
+        
+        // ========== OUTPUT ==========
+        $filename = 'laporan-survei-' . date('Y-m-d-His') . '.xlsx';
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Get report data for export
+     */
+    private function getReportData(Request $request)
+    {
+        $tahun = $request->input('tahun');
+        $bulan = $request->input('bulan');
+        $tipe = $request->input('tipe');
+        $exportRange = $request->input('export_range');
+
+        $query = DataSurvei::with(['pengunggah', 'gridKotak'])
+            ->when($exportRange, function ($query) use ($exportRange) {
+                $dateRange = $this->getDateRangeFromString($exportRange);
+                if ($dateRange) {
+                    return $query->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+                }
+                return $query;
+            })
+            ->when(!$exportRange && $tahun, function ($query) use ($tahun) {
+                return $query->whereYear('created_at', $tahun);
+            })
+            ->when(!$exportRange && $bulan, function ($query) use ($bulan) {
+                return $query->whereMonth('created_at', $bulan);
+            })
+            ->when($tipe, function ($query) use ($tipe) {
+                return $query->where('tipe', $tipe);
+            })
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        return [
+            'surveiTerbaru' => $query,
+            'tahun' => $tahun,
+            'bulan' => $bulan,
+            'tipe' => $tipe,
+            'tanggalExport' => Carbon::now()->format('d F Y H:i'),
+        ];
+    }
+
+    /**
+     * Convert export range string to date range
+     */
+    private function getDateRangeFromString($rangeString)
+    {
+        $now = Carbon::now();
+        $start = null;
+        $end = $now->copy();
+
+        switch ($rangeString) {
+            // Weeks
+            case '1_week':
+                $start = $now->copy()->subWeek();
+                break;
+            case '2_weeks':
+                $start = $now->copy()->subWeeks(2);
+                break;
+            case '3_weeks':
+                $start = $now->copy()->subWeeks(3);
+                break;
+
+            // Months
+            case '1_month':
+                $start = $now->copy()->subMonth();
+                break;
+            case '2_months':
+                $start = $now->copy()->subMonths(2);
+                break;
+            case '3_months':
+                $start = $now->copy()->subMonths(3);
+                break;
+            case '4_months':
+                $start = $now->copy()->subMonths(4);
+                break;
+            case '5_months':
+                $start = $now->copy()->subMonths(5);
+                break;
+            case '6_months':
+                $start = $now->copy()->subMonths(6);
+                break;
+            case '7_months':
+                $start = $now->copy()->subMonths(7);
+                break;
+            case '8_months':
+                $start = $now->copy()->subMonths(8);
+                break;
+            case '9_months':
+                $start = $now->copy()->subMonths(9);
+                break;
+            case '10_months':
+                $start = $now->copy()->subMonths(10);
+                break;
+            case '11_months':
+                $start = $now->copy()->subMonths(11);
+                break;
+
+            // Years
+            case '1_year':
+                $start = $now->copy()->subYear();
+                break;
+            case '2_years':
+                $start = $now->copy()->subYears(2);
+                break;
+            case '3_years':
+                $start = $now->copy()->subYears(3);
+                break;
+            case '4_years':
+                $start = $now->copy()->subYears(4);
+                break;
+            case '5_years':
+                $start = $now->copy()->subYears(5);
+                break;
+
+            default:
+                return null;
+        }
+
+        return [
+            'start' => $start,
+            'end' => $end
+        ];
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\PegawaiApprovalController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\PegawaiInternal;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PegawaiApprovalController extends Controller
+{
+    /**
+     * Menampilkan daftar pegawai yang pending approval
+     */
+    public function index()
+    {
+        $pendingPegawai = PegawaiInternal::pendingApproval()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $approvedPegawai = PegawaiInternal::approved()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.pegawai.index', compact('pendingPegawai', 'approvedPegawai'));
+    }
+
+    /**
+     * Approve pegawai secara manual (backup jika email tidak masuk)
+     */
+    public function approve(Request $request, $id)
+    {
+        $pegawai = PegawaiInternal::findOrFail($id);
+
+        // Jika sudah approved, redirect
+        if ($pegawai->is_approved) {
+            return redirect()
+                ->route('admin.pegawai.index')
+                ->with('info', 'Pegawai ini sudah di-approve sebelumnya.');
+        }
+
+        // Approve pegawai
+        $pegawai->is_approved = true;
+        $pegawai->approved_by = Auth::guard('admin')->id();
+        $pegawai->approved_at = now();
+        
+        // Jika belum verified via email, mark as verified juga
+        if (!$pegawai->hasVerifiedEmail()) {
+            $pegawai->email_verified_at = now();
+        }
+        
+        $pegawai->save();
+
+        return redirect()
+            ->route('admin.pegawai.index')
+            ->with('success', "Pegawai {$pegawai->nama} ({$pegawai->email}) berhasil di-approve!");
+    }
+
+    /**
+     * Reject/Delete pegawai
+     */
+    public function reject(Request $request, $id)
+    {
+        $pegawai = PegawaiInternal::findOrFail($id);
+        $nama = $pegawai->nama;
+        $email = $pegawai->email;
+
+        $pegawai->delete();
+
+        return redirect()
+            ->route('admin.pegawai.index')
+            ->with('success', "Pendaftaran pegawai {$nama} ({$email}) berhasil ditolak dan dihapus.");
+    }
+
+    /**
+     * Revoke approval (optional)
+     */
+    public function revoke(Request $request, $id)
+    {
+        $pegawai = PegawaiInternal::findOrFail($id);
+
+        $pegawai->is_approved = false;
+        $pegawai->approved_by = null;
+        $pegawai->approved_at = null;
+        $pegawai->save();
+
+        return redirect()
+            ->route('admin.pegawai.index')
+            ->with('warning', "Approval untuk {$pegawai->nama} telah dicabut.");
+    }
+}
+
+
+==================== C:\laragon\www\DataPetaSeismik\app\Http\Controllers\Admin\PengaturanController.php ====================
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\DataSurvei;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Password;
+
+class PengaturanController extends Controller
+{
+    /**
+     * Display pengaturan page
+     */
+    public function index()
+    {
+        $admin = Auth::guard('admin')->user();
+        
+        // Pegawai Internal dengan pagination 8 per page
+        $pegawaiInternal = \App\Models\PegawaiInternal::orderBy('created_at', 'desc')->paginate(8);
+        
+        // System Info
+        $systemInfo = [
+            'app_name' => 'Sistem Informasi Survei Seismik',
+            'app_version' => '1.0.0',
+            'laravel_version' => app()->version(),
+            'php_version' => phpversion(),
+            'database' => config('database.default'),
+            'total_admin' => Admin::count(),
+            'total_survei' => DataSurvei::count(),
+            'disk_usage' => $this->getDiskUsage(),
+        ];
+        
+        return view('admin.pengaturan.index', compact('admin', 'systemInfo', 'pegawaiInternal'));
+    }
+
+    /**
+     * Update profil admin
+     */
+    public function updateProfile(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:admin,email,' . $admin->id,
+        ], [
+            'nama.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah digunakan admin lain',
+        ]);
+        
+        try {
+            $admin->update([
+                'nama' => $request->nama,
+                'email' => $request->email,
+            ]);
+            
+            return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui profil: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi',
+            'new_password.required' => 'Password baru wajib diisi',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok',
+            'new_password.min' => 'Password minimal 8 karakter',
+        ]);
+        
+        $admin = Auth::guard('admin')->user();
+        
+        // Cek password lama
+        if (!Hash::check($request->current_password, $admin->kata_sandi)) {
+            return redirect()->back()->with('error', 'Password saat ini tidak sesuai!');
+        }
+        
+        try {
+            $admin->update([
+                'kata_sandi' => Hash::make($request->new_password)
+            ]);
+            
+            return redirect()->back()->with('success', 'Password berhasil diubah!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengubah password: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get disk usage info
+     */
+    private function getDiskUsage()
+    {
+        $path = public_path();
+        
+        if (function_exists('disk_free_space') && function_exists('disk_total_space')) {
+            $free = disk_free_space($path);
+            $total = disk_total_space($path);
+            $used = $total - $free;
+            
+            return [
+                'used' => $this->formatBytes($used),
+                'total' => $this->formatBytes($total),
+                'percentage' => round(($used / $total) * 100, 1)
+            ];
+        }
+        
+        return [
+            'used' => 'N/A',
+            'total' => 'N/A',
+            'percentage' => 0
+        ];
+    }
+
+    /**
+     * Format bytes to human readable
+     */
+    private function formatBytes($bytes, $precision = 2)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+        
+        return round($bytes, $precision) . ' ' . $units[$i];
+    }
+
+    /**
+     * Clear cache (optional)
+     */
+    public function clearCache()
+    {
+        try {
+            \Artisan::call('cache:clear');
+            \Artisan::call('config:clear');
+            \Artisan::call('route:clear');
+            \Artisan::call('view:clear');
+            
+            return redirect()->back()->with('success', 'Cache berhasil dibersihkan!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update data pegawai internal
+     */
+    public function updatePegawai(Request $request, $id)
+    {
+        $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+        
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|ends_with:@esdm.go.id|unique:pegawai_internal,email,' . $pegawai->id,
+            'nip' => 'nullable|string|max:50',
+            'jabatan' => 'nullable|string|max:100',
+            'is_approved' => 'required|boolean',
+        ], [
+            'nama.required' => 'Nama wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.ends_with' => 'Email harus menggunakan domain @esdm.go.id',
+            'email.unique' => 'Email sudah digunakan pegawai lain',
+            'is_approved.required' => 'Status approval wajib dipilih',
+        ]);
+        
+        try {
+            $pegawai->update([
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'nip' => $request->nip,
+                'jabatan' => $request->jabatan,
+                'is_approved' => $request->is_approved,
+            ]);
+            
+            $statusText = $request->is_approved ? 'approved' : 'revoked';
+            return redirect()->route('admin.pengaturan.index')->with('success', "Data pegawai berhasil diperbarui! Status: {$statusText}");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui data pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete pegawai internal
+     */
+    public function deletePegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            $nama = $pegawai->nama;
+            $pegawai->delete();
+            
+            return redirect()->route('admin.pengaturan.index')->with('success', "Pegawai {$nama} berhasil dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Approve pegawai pending
+     */
+    public function approvePegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            
+            // Update is_approved menjadi true
+            $pegawai->update([
+                'is_approved' => true,
+            ]);
+            
+            return redirect()->route('admin.pengaturan.index')
+                ->with('success', "Pegawai {$pegawai->nama} berhasil di-approve!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal approve pegawai: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject pegawai pending (delete)
+     */
+    public function rejectPegawai($id)
+    {
+        try {
+            $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
+            $nama = $pegawai->nama;
+            $pegawai->delete();
+            
+            return redirect()->route('admin.pengaturan.index')
+                ->with('success', "Pegawai {$nama} berhasil ditolak dan dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal reject pegawai: ' . $e->getMessage());
+        }
+    }
+}

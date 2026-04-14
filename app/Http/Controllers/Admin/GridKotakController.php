@@ -16,8 +16,9 @@ class GridKotakController extends Controller
      */
     public function index()
     {
+        // Ambil semua grid beserta data survei yang ter-assign
         // Ambil semua grid kotak dengan data survei yang sudah ter-assign
-        $grids = GridKotak::with(['dataSurvei' => function($query) {
+        $grids = GridKotak::with(['dataSurvei' => function ($query) {
             $query->with('pengunggah');
         }])->get();
 
@@ -26,15 +27,15 @@ class GridKotakController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        // Statistics
+        // Statistik ringkas untuk dashboard grid
         $stats = [
             'total_grid' => GridKotak::count(),
             'grid_terisi' => GridKotak::filled()->count(),
             'grid_kosong' => GridKotak::empty()->count(),
             'total_data_survei' => DataSurvei::count(),
             'data_belum_assign' => $surveisBelumAssign->count(),
-            'persentase_terisi' => GridKotak::count() > 0 
-                ? round((GridKotak::filled()->count() / GridKotak::count()) * 100, 1) 
+            'persentase_terisi' => GridKotak::count() > 0
+                ? round((GridKotak::filled()->count() / GridKotak::count()) * 100, 1)
                 : 0,
         ];
 
@@ -47,11 +48,12 @@ class GridKotakController extends Controller
     public function getGridData()
     {
         try {
+            // Ambil data grid untuk kebutuhan peta interaktif
             $grids = GridKotak::with(['dataSurvei'])->get();
 
             return response()->json([
                 'success' => true,
-                'grids' => $grids->map(function($grid) {
+                'grids' => $grids->map(function ($grid) {
                     return [
                         'id' => $grid->id,
                         'nomor_kotak' => $grid->nomor_kotak,
@@ -59,7 +61,7 @@ class GridKotakController extends Controller
                         'center' => $grid->center_array,
                         'status' => $grid->status,
                         'total_data' => $grid->dataSurvei->count(), // Gunakan real-time count agar akurat
-                        'data_survei' => $grid->dataSurvei->map(function($survei) {
+                        'data_survei' => $grid->dataSurvei->map(function ($survei) {
                             return [
                                 'id' => $survei->id,
                                 'judul' => $survei->judul,
@@ -84,6 +86,7 @@ class GridKotakController extends Controller
      */
     public function assign(Request $request)
     {
+        // Validasi input assign
         $request->validate([
             'grid_kotak_id' => 'required|exists:grid_kotak,id',
             'data_survei_id' => 'required|exists:data_survei,id',
@@ -92,7 +95,7 @@ class GridKotakController extends Controller
         $gridKotak = GridKotak::findOrFail($request->grid_kotak_id);
         $dataSurvei = DataSurvei::findOrFail($request->data_survei_id);
 
-        // Check if already assigned
+        // Cegah assign ganda
         if ($gridKotak->dataSurvei()->where('data_survei_id', $dataSurvei->id)->exists()) {
             return response()->json([
                 'success' => false,
@@ -109,7 +112,7 @@ class GridKotakController extends Controller
                 'assigned_at' => now(),
             ]);
 
-            // Update counter dan status grid dari real count
+            // Update counter dan status grid dari hitungan aktual
             $totalData = $gridKotak->dataSurvei()->count();
             $gridKotak->update([
                 'total_data' => $totalData,
@@ -128,10 +131,9 @@ class GridKotakController extends Controller
                     'status' => $gridKotak->status,
                 ],
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal assign data: ' . $e->getMessage(),
@@ -147,7 +149,7 @@ class GridKotakController extends Controller
         $gridKotak = GridKotak::findOrFail($gridKotakId);
         $dataSurvei = DataSurvei::findOrFail($dataSurveiId);
 
-        // Check if actually assigned
+        // Pastikan relasi memang ada
         if (!$gridKotak->dataSurvei()->where('data_survei_id', $dataSurvei->id)->exists()) {
             return response()->json([
                 'success' => false,
@@ -158,12 +160,12 @@ class GridKotakController extends Controller
         try {
             DB::beginTransaction();
 
-            // Detach data survei dari grid kotak
+            // Lepas relasi data survei dari grid kotak
             $gridKotak->dataSurvei()->detach($dataSurvei->id);
 
-            // Recalculate count untuk memastikan sinkronisasi
+            // Hitung ulang untuk memastikan sinkronisasi
             $totalData = $gridKotak->dataSurvei()->count();
-            
+
             $gridKotak->update([
                 'total_data' => $totalData,
                 'status' => $totalData > 0 ? 'filled' : 'empty'
@@ -181,10 +183,9 @@ class GridKotakController extends Controller
                     'status' => $gridKotak->status,
                 ],
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal remove data: ' . $e->getMessage(),
@@ -197,6 +198,7 @@ class GridKotakController extends Controller
      */
     public function show($id)
     {
+        // Ambil detail grid dan data survei terkait
         $gridKotak = GridKotak::with(['dataSurvei.pengunggah'])->findOrFail($id);
 
         return response()->json([
@@ -209,7 +211,7 @@ class GridKotakController extends Controller
                 'status' => $gridKotak->status,
                 'total_data' => $gridKotak->total_data,
             ],
-            'data_survei' => $gridKotak->dataSurvei->map(function($survei) {
+            'data_survei' => $gridKotak->dataSurvei->map(function ($survei) {
                 return [
                     'id' => $survei->id,
                     'judul' => $survei->judul,

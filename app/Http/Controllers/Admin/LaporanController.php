@@ -17,13 +17,14 @@ class LaporanController extends Controller
      */
     public function index(Request $request)
     {
+        // Ambil parameter filter dari request
         // Filter berdasarkan request
         $tahun = $request->input('tahun', date('Y'));
         $bulan = $request->input('bulan');
         $tipe = $request->input('tipe');
         $exportRange = $request->input('export_range');
 
-        // Fix: Jika user memilih filter manual (Tahun/Bulan), abaikan export_range
+        // Jika user memilih filter manual (Tahun/Bulan), abaikan export_range
         // Ini mengatasi masalah di mana filter bulan tidak berfungsi jika export_range tertinggal di URL
         if ($request->has('bulan') || $request->has('tahun')) {
             $exportRange = null;
@@ -185,13 +186,14 @@ class LaporanController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Ambil data laporan sesuai filter
         $data = $this->getReportData($request);
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.laporan.export-pdf', $data);
         $pdf->setPaper('a4', 'landscape');
-        
+
         $filename = 'laporan-survei-' . date('Y-m-d-His') . '.pdf';
-        
+
         return $pdf->download($filename);
     }
 
@@ -200,13 +202,14 @@ class LaporanController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        // Ambil data laporan sesuai filter
         $data = $this->getReportData($request);
-        
+
         // Create new Spreadsheet object
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Survei');
-        
+
         // ========== HEADER SECTION ==========
         // Title
         $sheet->setCellValue('A1', 'LAPORAN DATA SURVEI SEISMIK');
@@ -215,7 +218,7 @@ class LaporanController extends Controller
             'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '003366']],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
         ]);
-        
+
         // Subtitle
         $sheet->setCellValue('A2', 'Balai Besar Survei dan Pemetaan Geologi Kelautan');
         $sheet->mergeCells('A2:H2');
@@ -223,31 +226,31 @@ class LaporanController extends Controller
             'font' => ['size' => 12, 'color' => ['rgb' => '666666']],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
         ]);
-        
+
         // Export info
         $filterInfo = 'Tanggal Unduh: ' . $data['tanggalExport'];
         if ($data['tahun']) $filterInfo .= ' | Tahun: ' . $data['tahun'];
         if ($data['bulan']) $filterInfo .= ' | Bulan: ' . $data['bulan'];
         if ($data['tipe']) $filterInfo .= ' | Tipe: ' . $data['tipe'];
         $filterInfo .= ' | Total Data: ' . count($data['surveiTerbaru']) . ' survei';
-        
+
         $sheet->setCellValue('A3', $filterInfo);
         $sheet->mergeCells('A3:H3');
         $sheet->getStyle('A3')->applyFromArray([
             'font' => ['size' => 10, 'italic' => true, 'color' => ['rgb' => '888888']],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
         ]);
-        
+
         // ========== TABLE HEADER ==========
         $headerRow = 5;
         $headers = ['No', 'Judul Survei', 'Tahun', 'Tipe', 'Wilayah', 'Ketua Tim', 'Tanggal Upload', 'Status Grid'];
-        
+
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . $headerRow, $header);
             $col++;
         }
-        
+
         // Header styling
         $sheet->getStyle('A' . $headerRow . ':H' . $headerRow)->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
@@ -264,16 +267,16 @@ class LaporanController extends Controller
             ],
         ]);
         $sheet->getRowDimension($headerRow)->setRowHeight(25);
-        
+
         // ========== DATA ROWS ==========
         $row = $headerRow + 1;
         $no = 1;
-        
+
         foreach ($data['surveiTerbaru'] as $survei) {
-            $statusGrid = $survei->gridKotak->count() > 0 
-                ? '✓ Grid ' . $survei->gridKotak->first()->nomor_kotak 
+            $statusGrid = $survei->gridKotak->count() > 0
+                ? '✓ Grid ' . $survei->gridKotak->first()->nomor_kotak
                 : '— Belum di-assign';
-            
+
             $sheet->setCellValue('A' . $row, $no++);
             $sheet->setCellValue('B' . $row, $survei->judul);
             $sheet->setCellValue('C' . $row, $survei->tahun);
@@ -282,7 +285,7 @@ class LaporanController extends Controller
             $sheet->setCellValue('F' . $row, $survei->ketua_tim ?? '-');
             $sheet->setCellValue('G' . $row, $survei->created_at->format('d/m/Y H:i'));
             $sheet->setCellValue('H' . $row, $statusGrid);
-            
+
             // Alternate row colors
             if ($no % 2 == 0) {
                 $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
@@ -292,7 +295,7 @@ class LaporanController extends Controller
                     ],
                 ]);
             }
-            
+
             // Status Grid coloring
             if ($survei->gridKotak->count() > 0) {
                 $sheet->getStyle('H' . $row)->applyFromArray([
@@ -303,10 +306,10 @@ class LaporanController extends Controller
                     'font' => ['color' => ['rgb' => '999999']],
                 ]);
             }
-            
+
             $row++;
         }
-        
+
         // Data borders
         $lastRow = $row - 1;
         if ($lastRow >= $headerRow + 1) {
@@ -317,7 +320,7 @@ class LaporanController extends Controller
                 'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
             ]);
         }
-        
+
         // ========== COLUMN WIDTHS ==========
         $sheet->getColumnDimension('A')->setWidth(6);   // No
         $sheet->getColumnDimension('B')->setWidth(40);  // Judul
@@ -327,12 +330,12 @@ class LaporanController extends Controller
         $sheet->getColumnDimension('F')->setWidth(25);  // Ketua Tim
         $sheet->getColumnDimension('G')->setWidth(18);  // Tanggal Upload
         $sheet->getColumnDimension('H')->setWidth(20);  // Status Grid
-        
+
         // Center align specific columns
         $sheet->getStyle('A' . ($headerRow + 1) . ':A' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('C' . ($headerRow + 1) . ':D' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('G' . ($headerRow + 1) . ':H' . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        
+
         // ========== FOOTER ==========
         $footerRow = $lastRow + 2;
         $sheet->setCellValue('A' . $footerRow, 'Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi Data Peta Seismik BBSPGL');
@@ -341,13 +344,13 @@ class LaporanController extends Controller
             'font' => ['size' => 9, 'italic' => true, 'color' => ['rgb' => '888888']],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
         ]);
-        
+
         // ========== OUTPUT ==========
         $filename = 'laporan-survei-' . date('Y-m-d-His') . '.xlsx';
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -359,6 +362,7 @@ class LaporanController extends Controller
      */
     private function getReportData(Request $request)
     {
+        // Bangun query laporan sesuai filter dan export range
         $tahun = $request->input('tahun');
         $bulan = $request->input('bulan');
         $tipe = $request->input('tipe');

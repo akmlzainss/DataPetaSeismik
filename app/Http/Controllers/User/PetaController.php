@@ -17,6 +17,7 @@ class PetaController extends Controller
      */
     public function index()
     {
+        // Siapkan data grid untuk peta interaktif
         // Ambil semua grid kotak dengan relasi data survei
         $gridsData = GridKotak::with(['dataSurvei' => function ($query) {
             $query->with('pengunggah');
@@ -67,6 +68,7 @@ class PetaController extends Controller
         // Debug: Log stats
         Log::info('Stats data for view:', $stats);
 
+        // Render halaman peta user
         return view('User.peta.index', compact('grids', 'stats'));
     }
 }
