@@ -12,62 +12,64 @@ class HomeController extends Controller
 {
     public function index()
     {
+        // Kumpulkan data statistik dan konten utama homepage
         // ========== STATISTIK UNTUK HOMEPAGE ==========
-        
+
         // Total data survei
         $totalSurvei = DataSurvei::count();
-        
+
         // Jumlah wilayah unik
         $totalWilayah = DataSurvei::distinct('wilayah')->count('wilayah');
-        
+
         // Data survei bulan ini
         $surveiBulanIni = DataSurvei::whereMonth('created_at', now()->month)
-                                    ->whereYear('created_at', now()->year)
-                                    ->count();
-        
+            ->whereYear('created_at', now()->year)
+            ->count();
+
         // Tahun beroperasi (dari survei pertama)
         $tahunPertama = DataSurvei::min('tahun');
         $tahunBeroperasi = $tahunPertama ? (date('Y') - $tahunPertama + 1) : 0;
-        
+
         // ========== FEATURED SURVEYS (6 TERBARU) ==========
-        
+
         $featuredSurveys = DataSurvei::with(['pengunggah', 'gridKotak'])
-                                     ->latest()
-                                     ->take(6)
-                                     ->get();
-        
+            ->latest()
+            ->take(6)
+            ->get();
+
         // ========== LATEST UPDATES (5 TERKINI UNTUK TIMELINE) ==========
-        
+
         $latestUpdates = DataSurvei::latest()
-                                   ->take(5)
-                                   ->get();
-        
+            ->take(5)
+            ->get();
+
         // ========== SURVEI PER TIPE (UNTUK CHART/VISUAL) ==========
-        
+
         $surveiPerTipe = DataSurvei::select('tipe', DB::raw('COUNT(*) as total'))
-                                   ->groupBy('tipe')
-                                   ->orderBy('total', 'desc')
-                                   ->get();
-        
+            ->groupBy('tipe')
+            ->orderBy('total', 'desc')
+            ->get();
+
         // ========== DATA UNTUK MAP PREVIEW (GRID SYSTEM) ==========
-        
+
         // Ambil grid yang memiliki data survei untuk ditampilkan di peta
         $grids = GridKotak::filled()
-                          ->with('dataSurvei')
-                          ->take(50) // Limit untuk performa
-                          ->get();
-        
+            ->with('dataSurvei')
+            ->take(50) // Limit untuk performa
+            ->get();
+
         // Count total grid yang terisi
         $totalGrid = GridKotak::filled()->count();
-        
+
         // ========== TOP 5 WILAYAH ==========
-        
+
         $topWilayah = DataSurvei::select('wilayah', DB::raw('COUNT(*) as total'))
-                                ->groupBy('wilayah')
-                                ->orderBy('total', 'DESC')
-                                ->take(5)
-                                ->get();
-        
+            ->groupBy('wilayah')
+            ->orderBy('total', 'DESC')
+            ->take(5)
+            ->get();
+
+        // Render homepage user dengan data ringkasan
         return view('user.homepage.index', compact(
             'totalSurvei',
             'totalWilayah',

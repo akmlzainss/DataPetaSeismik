@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DataSurvei;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -15,6 +16,7 @@ class ScanDownloadController extends Controller
      */
     public function download(Request $request, $id)
     {
+        // Batasi akses hanya untuk pegawai internal yang login
         // WAJIB: Cek apakah user adalah pegawai internal yang sudah login
         if (!Auth::guard('pegawai')->check()) {
             abort(403, 'Akses ditolak. Hanya pegawai internal ESDM yang dapat mengunduh file scan asli.');
@@ -27,7 +29,7 @@ class ScanDownloadController extends Controller
             abort(403, 'Akun Anda belum diverifikasi. Silakan verifikasi email atau hubungi administrator.');
         }
 
-        // Cari data survei
+        // Cari data survei berdasarkan ID
         $dataSurvei = DataSurvei::findOrFail($id);
 
         // Cek apakah file scan asli ada
@@ -35,7 +37,7 @@ class ScanDownloadController extends Controller
             abort(404, 'File scan asli tidak tersedia untuk data survei ini.');
         }
 
-        // Cek apakah file exists di storage
+        // Pastikan file ada di storage public
         if (!Storage::disk('public')->exists($dataSurvei->file_scan_asli)) {
             abort(404, 'File scan asli tidak ditemukan di server.');
         }
@@ -54,9 +56,9 @@ class ScanDownloadController extends Controller
             'downloaded_at' => now(),
         ]);
 
-        // Get file path
+        // Ambil path absolut file di storage
         $filePath = Storage::disk('public')->path($dataSurvei->file_scan_asli);
-        
+
         // Generate filename yang user-friendly
         $downloadName = sprintf(
             'BBSPGL_%s_%s_%s.%s',
@@ -66,9 +68,12 @@ class ScanDownloadController extends Controller
             $dataSurvei->format_file_asli
         );
 
+        // Tentukan mime type dengan fallback jika tidak terdeteksi
+        $mimeType = File::mimeType($filePath) ?: 'application/octet-stream';
+
         // Return file untuk download
         return response()->download($filePath, $downloadName, [
-            'Content-Type' => Storage::disk('public')->mimeType($dataSurvei->file_scan_asli),
+            'Content-Type' => $mimeType,
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
             'Expires' => '0',

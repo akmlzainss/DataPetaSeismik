@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Admin; // Pastikan Model Admin di-import
+use App\Models\Admin; // Model Admin
 
 class AdminAuthController extends Controller
 {
@@ -15,12 +15,13 @@ class AdminAuthController extends Controller
 
     public function showLoginForm()
     {
-        // KOREKSI PATH VIEW
+        // Tampilkan form login admin
         return view('admin.auth.login');
     }
 
     public function login(Request $request)
     {
+        // Validasi input login
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'kata_sandi' => ['required'],
@@ -30,11 +31,14 @@ class AdminAuthController extends Controller
             'kata_sandi.required' => 'Kolom Kata Sandi wajib diisi.',
         ]);
 
+        // Autentikasi menggunakan guard admin
         if (Auth::guard('admin')->attempt(['email' => $credentials['email'], 'password' => $credentials['kata_sandi']], $request->filled('remember'))) {
+            // Regenerasi session untuk keamanan
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard')); 
+            return redirect()->intended(route('admin.dashboard'));
         }
 
+        // Gagal login: tampilkan pesan error
         throw ValidationException::withMessages([
             'email' => 'Kombinasi email dan kata sandi tidak valid.',
         ]);
@@ -42,23 +46,27 @@ class AdminAuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Logout guard admin
         Auth::guard('admin')->logout();
+        // Bersihkan session dan regenerasi token CSRF
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login'); 
+        // Kembali ke halaman login admin
+        return redirect()->route('admin.login');
     }
 
     // --- 2. REGISTRATION METHODS (DAFTAR AKUN) ---
 
     public function showRegistrationForm()
     {
-        // KOREKSI PATH VIEW
+        // Tampilkan form registrasi admin
         return view('admin.auth.register');
     }
 
     public function register(Request $request)
     {
+        // Validasi input registrasi
         $validatedData = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:admin,email'],
@@ -67,16 +75,19 @@ class AdminAuthController extends Controller
             'email.unique' => 'Email ini sudah terdaftar sebagai Admin lain.'
         ]);
 
+        // Simpan admin baru
         Admin::create([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
             'kata_sandi' => Hash::make($validatedData['kata_sandi']),
         ]);
 
+        // Auto-login setelah registrasi
         if (Auth::guard('admin')->attempt(['email' => $validatedData['email'], 'password' => $request->kata_sandi])) {
-             $request->session()->regenerate();
+            $request->session()->regenerate();
         }
 
+        // Redirect ke dashboard dengan status sukses
         return redirect()->route('admin.dashboard')->with('status', 'Akun Administrator baru berhasil didaftarkan dan Anda telah masuk.');
     }
 }

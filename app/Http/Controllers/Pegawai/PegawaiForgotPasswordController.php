@@ -18,6 +18,7 @@ class PegawaiForgotPasswordController extends Controller
      */
     public function showLinkRequestForm()
     {
+        // Tampilkan form permintaan reset password pegawai
         return view('pegawai.auth.forgot-password');
     }
 
@@ -26,6 +27,7 @@ class PegawaiForgotPasswordController extends Controller
      */
     public function sendResetLinkEmail(Request $request)
     {
+        // Validasi email pegawai
         $request->validate([
             'email' => 'required|email|exists:pegawai_internal,email'
         ], [
@@ -34,23 +36,23 @@ class PegawaiForgotPasswordController extends Controller
             'email.exists' => 'Email tidak terdaftar dalam sistem.'
         ]);
 
-        // Generate token
+        // Generate token reset
         $token = Str::random(64);
 
-        // Delete existing tokens for this email
+        // Hapus token lama untuk email ini
         DB::table('pegawai_password_resets')->where('email', $request->email)->delete();
 
-        // Insert new token
+        // Simpan token baru
         DB::table('pegawai_password_resets')->insert([
             'email' => $request->email,
             'token' => Hash::make($token),
             'created_at' => now()
         ]);
 
-        // Get pegawai data
+        // Ambil data pegawai untuk email
         $pegawai = PegawaiInternal::where('email', $request->email)->first();
 
-        // Send email
+        // Kirim email reset password
         try {
             Mail::to($request->email)->send(new PegawaiPasswordResetMail($pegawai, $token));
 
@@ -65,6 +67,7 @@ class PegawaiForgotPasswordController extends Controller
      */
     public function showResetForm($token)
     {
+        // Tampilkan form reset password dengan token dari URL
         return view('pegawai.auth.reset-password', ['token' => $token]);
     }
 
@@ -73,13 +76,14 @@ class PegawaiForgotPasswordController extends Controller
      */
     public function showResetFormFromQuery(Request $request)
     {
+        // Ambil token dari query string
         $token = $request->query('token');
-        
+
         if (!$token) {
             return redirect()->route('pegawai.password.request')
                 ->with('error', 'Token reset password tidak ditemukan. Silakan request ulang.');
         }
-        
+
         return view('pegawai.auth.reset-password', ['token' => $token]);
     }
 
@@ -88,6 +92,7 @@ class PegawaiForgotPasswordController extends Controller
      */
     public function reset(Request $request)
     {
+        // Validasi input reset password
         $request->validate([
             'token' => 'required',
             'email' => 'required|email|exists:pegawai_internal,email',
@@ -101,7 +106,7 @@ class PegawaiForgotPasswordController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        // Check if token exists and is valid (not older than 60 minutes)
+        // Cek token dan masa berlaku (maks 60 menit)
         $resetRecord = DB::table('pegawai_password_resets')
             ->where('email', $request->email)
             ->where('created_at', '>', now()->subMinutes(60))
@@ -111,13 +116,13 @@ class PegawaiForgotPasswordController extends Controller
             return back()->with('error', 'Token reset password tidak valid atau sudah kedaluwarsa.');
         }
 
-        // Update password
+        // Update password pegawai
         $pegawai = PegawaiInternal::where('email', $request->email)->first();
         $pegawai->update([
             'kata_sandi' => Hash::make($request->password)
         ]);
 
-        // Delete the token
+        // Hapus token agar tidak bisa dipakai ulang
         DB::table('pegawai_password_resets')->where('email', $request->email)->delete();
 
         return redirect()->route('pegawai.login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');

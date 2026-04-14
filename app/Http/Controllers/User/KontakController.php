@@ -14,14 +14,16 @@ class KontakController extends Controller
      */
     public function index()
     {
+        // Tampilkan halaman kontak user
         return view('User.kontak.index');
     }
-    
+
     /**
      * Menangani pengiriman form kontak.
      */
     public function submit(Request $request)
     {
+        // Validasi input form kontak
         $validated = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email|max:255',

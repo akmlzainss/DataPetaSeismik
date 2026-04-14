@@ -13,6 +13,7 @@ class KatalogController extends Controller
      */
     public function index(Request $request)
     {
+        // Siapkan query dasar katalog dengan relasi penting
         // Ambil data survei dari database dengan pagination
         $query = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->orderBy('tahun', 'desc')
@@ -52,6 +53,7 @@ class KatalogController extends Controller
         $tipe_options = DataSurvei::distinct()->orderBy('tipe')->pluck('tipe');
         $wilayah_options = DataSurvei::distinct()->orderBy('wilayah')->pluck('wilayah');
 
+        // Render halaman katalog user
         return view('User.katalog.index', compact(
             'surveys',
             'tahun_options',
@@ -65,6 +67,7 @@ class KatalogController extends Controller
      */
     public function show($id)
     {
+        // Ambil detail survei beserta relasi
         $survey = DataSurvei::with(['pengunggah', 'gridKotak'])
             ->findOrFail($id);
 
@@ -72,6 +75,7 @@ class KatalogController extends Controller
         $fromPeta = request()->has('from_peta') && request('from_peta') === '1';
         $showFromPeta = $fromPeta;
 
+        // Render halaman detail survei
         return view('user.katalog.show', compact('survey', 'showFromPeta'));
     }
 }

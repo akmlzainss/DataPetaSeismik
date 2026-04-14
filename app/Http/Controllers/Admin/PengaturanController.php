@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\DataSurvei;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
@@ -18,11 +19,12 @@ class PengaturanController extends Controller
      */
     public function index()
     {
+        // Ambil admin login dan data ringkasan sistem
         $admin = Auth::guard('admin')->user();
-        
+
         // Pegawai Internal dengan pagination 8 per page
         $pegawaiInternal = \App\Models\PegawaiInternal::orderBy('created_at', 'desc')->paginate(8);
-        
+
         // System Info
         $systemInfo = [
             'app_name' => 'Sistem Informasi Survei Seismik',
@@ -34,7 +36,7 @@ class PengaturanController extends Controller
             'total_survei' => DataSurvei::count(),
             'disk_usage' => $this->getDiskUsage(),
         ];
-        
+
         return view('admin.pengaturan.index', compact('admin', 'systemInfo', 'pegawaiInternal'));
     }
 
@@ -43,8 +45,9 @@ class PengaturanController extends Controller
      */
     public function updateProfile(Request $request)
     {
+        // Validasi dan update profil admin
         $admin = Auth::guard('admin')->user();
-        
+
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:admin,email,' . $admin->id,
@@ -54,13 +57,13 @@ class PengaturanController extends Controller
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan admin lain',
         ]);
-        
+
         try {
             $admin->update([
                 'nama' => $request->nama,
                 'email' => $request->email,
             ]);
-            
+
             return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui profil: ' . $e->getMessage());
@@ -72,6 +75,7 @@ class PengaturanController extends Controller
      */
     public function updatePassword(Request $request)
     {
+        // Validasi password lama dan password baru
         $request->validate([
             'current_password' => 'required',
             'new_password' => ['required', 'confirmed', Password::min(8)],
@@ -81,19 +85,19 @@ class PengaturanController extends Controller
             'new_password.confirmed' => 'Konfirmasi password tidak cocok',
             'new_password.min' => 'Password minimal 8 karakter',
         ]);
-        
+
         $admin = Auth::guard('admin')->user();
-        
+
         // Cek password lama
         if (!Hash::check($request->current_password, $admin->kata_sandi)) {
             return redirect()->back()->with('error', 'Password saat ini tidak sesuai!');
         }
-        
+
         try {
             $admin->update([
                 'kata_sandi' => Hash::make($request->new_password)
             ]);
-            
+
             return redirect()->back()->with('success', 'Password berhasil diubah!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengubah password: ' . $e->getMessage());
@@ -105,20 +109,21 @@ class PengaturanController extends Controller
      */
     private function getDiskUsage()
     {
+        // Hitung penggunaan disk di folder public
         $path = public_path();
-        
+
         if (function_exists('disk_free_space') && function_exists('disk_total_space')) {
             $free = disk_free_space($path);
             $total = disk_total_space($path);
             $used = $total - $free;
-            
+
             return [
                 'used' => $this->formatBytes($used),
                 'total' => $this->formatBytes($total),
                 'percentage' => round(($used / $total) * 100, 1)
             ];
         }
-        
+
         return [
             'used' => 'N/A',
             'total' => 'N/A',
@@ -131,12 +136,13 @@ class PengaturanController extends Controller
      */
     private function formatBytes($bytes, $precision = 2)
     {
+        // Ubah bytes menjadi format yang mudah dibaca
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, $precision) . ' ' . $units[$i];
     }
 
@@ -145,12 +151,13 @@ class PengaturanController extends Controller
      */
     public function clearCache()
     {
+        // Bersihkan cache aplikasi
         try {
-            \Artisan::call('cache:clear');
-            \Artisan::call('config:clear');
-            \Artisan::call('route:clear');
-            \Artisan::call('view:clear');
-            
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+
             return redirect()->back()->with('success', 'Cache berhasil dibersihkan!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
@@ -162,8 +169,9 @@ class PengaturanController extends Controller
      */
     public function updatePegawai(Request $request, $id)
     {
+        // Update data pegawai internal
         $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
-        
+
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|ends_with:@esdm.go.id|unique:pegawai_internal,email,' . $pegawai->id,
@@ -177,7 +185,7 @@ class PengaturanController extends Controller
             'email.unique' => 'Email sudah digunakan pegawai lain',
             'is_approved.required' => 'Status approval wajib dipilih',
         ]);
-        
+
         try {
             $pegawai->update([
                 'nama' => $request->nama,
@@ -186,7 +194,7 @@ class PengaturanController extends Controller
                 'jabatan' => $request->jabatan,
                 'is_approved' => $request->is_approved,
             ]);
-            
+
             $statusText = $request->is_approved ? 'approved' : 'revoked';
             return redirect()->route('admin.pengaturan.index')->with('success', "Data pegawai berhasil diperbarui! Status: {$statusText}");
         } catch (\Exception $e) {
@@ -199,11 +207,12 @@ class PengaturanController extends Controller
      */
     public function deletePegawai($id)
     {
+        // Hapus data pegawai internal
         try {
             $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
             $nama = $pegawai->nama;
             $pegawai->delete();
-            
+
             return redirect()->route('admin.pengaturan.index')->with('success', "Pegawai {$nama} berhasil dihapus!");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus pegawai: ' . $e->getMessage());
@@ -215,14 +224,15 @@ class PengaturanController extends Controller
      */
     public function approvePegawai($id)
     {
+        // Approve pegawai pending dari halaman pengaturan
         try {
             $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
-            
+
             // Update is_approved menjadi true
             $pegawai->update([
                 'is_approved' => true,
             ]);
-            
+
             return redirect()->route('admin.pengaturan.index')
                 ->with('success', "Pegawai {$pegawai->nama} berhasil di-approve!");
         } catch (\Exception $e) {
@@ -235,11 +245,12 @@ class PengaturanController extends Controller
      */
     public function rejectPegawai($id)
     {
+        // Reject pegawai pending (hapus)
         try {
             $pegawai = \App\Models\PegawaiInternal::findOrFail($id);
             $nama = $pegawai->nama;
             $pegawai->delete();
-            
+
             return redirect()->route('admin.pengaturan.index')
                 ->with('success', "Pegawai {$nama} berhasil ditolak dan dihapus!");
         } catch (\Exception $e) {

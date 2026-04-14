@@ -12,6 +12,7 @@ class TentangKamiController extends Controller
      */
     public function index()
     {
+        // Tampilkan halaman Tentang Kami
         return view('User.tentang_kami.index');
     }
 }

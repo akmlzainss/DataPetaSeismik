@@ -14,6 +14,7 @@ class PegawaiApprovalController extends Controller
      */
     public function index()
     {
+        // Ambil pegawai pending dan approved untuk ditampilkan terpisah
         $pendingPegawai = PegawaiInternal::pendingApproval()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -30,6 +31,7 @@ class PegawaiApprovalController extends Controller
      */
     public function approve(Request $request, $id)
     {
+        // Approve manual oleh admin
         $pegawai = PegawaiInternal::findOrFail($id);
 
         // Jika sudah approved, redirect
@@ -43,12 +45,12 @@ class PegawaiApprovalController extends Controller
         $pegawai->is_approved = true;
         $pegawai->approved_by = Auth::guard('admin')->id();
         $pegawai->approved_at = now();
-        
+
         // Jika belum verified via email, mark as verified juga
         if (!$pegawai->hasVerifiedEmail()) {
             $pegawai->email_verified_at = now();
         }
-        
+
         $pegawai->save();
 
         return redirect()
@@ -61,6 +63,7 @@ class PegawaiApprovalController extends Controller
      */
     public function reject(Request $request, $id)
     {
+        // Hapus data pegawai yang ditolak
         $pegawai = PegawaiInternal::findOrFail($id);
         $nama = $pegawai->nama;
         $email = $pegawai->email;
@@ -77,6 +80,7 @@ class PegawaiApprovalController extends Controller
      */
     public function revoke(Request $request, $id)
     {
+        // Cabut status approval
         $pegawai = PegawaiInternal::findOrFail($id);
 
         $pegawai->is_approved = false;

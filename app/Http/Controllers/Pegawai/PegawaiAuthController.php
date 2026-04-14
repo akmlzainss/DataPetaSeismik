@@ -18,6 +18,7 @@ class PegawaiAuthController extends Controller
      */
     public function showRegistrationForm()
     {
+        // Tampilkan form registrasi pegawai
         return view('pegawai.auth.register');
     }
 
@@ -26,6 +27,7 @@ class PegawaiAuthController extends Controller
      */
     public function register(Request $request)
     {
+        // Validasi input registrasi pegawai
         $validatedData = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'email' => [
@@ -46,7 +48,7 @@ class PegawaiAuthController extends Controller
             'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
-        // Create pegawai
+        // Simpan data pegawai baru
         $pegawai = PegawaiInternal::create([
             'nama' => $validatedData['nama'],
             'email' => $validatedData['email'],
@@ -55,13 +57,13 @@ class PegawaiAuthController extends Controller
             'jabatan' => $validatedData['jabatan'] ?? null,
         ]);
 
-        // Generate verification token
+        // Generate token verifikasi email
         $token = $pegawai->generateVerificationToken();
 
-        // Send verification email
+        // Kirim email verifikasi
         try {
             Mail::to($pegawai->email)->send(new PegawaiVerificationMail($pegawai, $token));
-            
+
             return redirect()
                 ->route('pegawai.login')
                 ->with('success', 'Akun berhasil dibuat! Silakan cek email ' . $pegawai->email . ' untuk verifikasi. Link verifikasi berlaku 1 jam.');
@@ -78,6 +80,7 @@ class PegawaiAuthController extends Controller
      */
     public function verifyEmail(string $token)
     {
+        // Cari pegawai yang tokennya valid
         // Cari pegawai dengan token yang cocok
         $pegawai = PegawaiInternal::whereNotNull('verification_token')
             ->whereNotNull('verification_token_expires_at')
@@ -92,7 +95,7 @@ class PegawaiAuthController extends Controller
                 ->with('error', 'Link verifikasi tidak valid atau sudah kadaluarsa. Silakan hubungi administrator.');
         }
 
-        // Mark as verified
+        // Tandai email sebagai terverifikasi
         $pegawai->markEmailAsVerified();
 
         return redirect()
@@ -105,6 +108,7 @@ class PegawaiAuthController extends Controller
      */
     public function showLoginForm()
     {
+        // Tampilkan form login pegawai
         return view('pegawai.auth.login');
     }
 
@@ -113,6 +117,7 @@ class PegawaiAuthController extends Controller
      */
     public function login(Request $request)
     {
+        // Validasi input login
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'kata_sandi' => ['required'],
@@ -122,7 +127,7 @@ class PegawaiAuthController extends Controller
             'kata_sandi.required' => 'Kolom Kata Sandi wajib diisi.',
         ]);
 
-        // Cek apakah pegawai exists
+        // Pastikan pegawai terdaftar
         $pegawai = PegawaiInternal::where('email', $credentials['email'])->first();
 
         if (!$pegawai) {
@@ -131,14 +136,14 @@ class PegawaiAuthController extends Controller
             ]);
         }
 
-        // Cek apakah sudah verified atau approved
+        // Pastikan akun sudah verified/approved
         if (!$pegawai->canLogin()) {
             throw ValidationException::withMessages([
                 'email' => 'Akun Anda belum diverifikasi. Silakan cek email atau hubungi administrator.',
             ]);
         }
 
-        // Attempt login
+        // Autentikasi dengan guard pegawai
         if (Auth::guard('pegawai')->attempt([
             'email' => $credentials['email'],
             'password' => $credentials['kata_sandi']
@@ -157,6 +162,7 @@ class PegawaiAuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Logout dan bersihkan session
         Auth::guard('pegawai')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -170,6 +176,7 @@ class PegawaiAuthController extends Controller
     public function updatePassword(Request $request)
     {
         try {
+            // Validasi password lama dan baru
             $request->validate([
                 'current_password' => ['required'],
                 'new_password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -182,7 +189,7 @@ class PegawaiAuthController extends Controller
 
             $pegawai = Auth::guard('pegawai')->user();
 
-            // Verify current password
+            // Pastikan password lama cocok
             if (!Hash::check($request->current_password, $pegawai->kata_sandi)) {
                 return response()->json([
                     'success' => false,
@@ -190,7 +197,7 @@ class PegawaiAuthController extends Controller
                 ], 422);
             }
 
-            // Update password
+            // Update password baru
             $pegawai->update([
                 'kata_sandi' => Hash::make($request->new_password),
             ]);

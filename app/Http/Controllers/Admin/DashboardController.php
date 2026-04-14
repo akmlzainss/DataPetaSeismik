@@ -14,6 +14,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Menyiapkan semua data ringkasan untuk dashboard admin
         // ========== STATISTIK UTAMA (4 CARDS) ==========
         $totalSurvei = DataSurvei::count();
         $totalGridTerisi = GridKotak::where('status', 'filled')->count();
@@ -97,7 +98,7 @@ class DashboardController extends Controller
         $surveiTanpaGrid = DataSurvei::doesntHave('gridKotak')->count();
         $persentaseGrid = $totalSurvei > 0 ? round(($surveiDenganGrid / $totalSurvei) * 100, 1) : 0;
 
-        // Jika request AJAX untuk pagination
+        // Jika request AJAX untuk pagination tabel per tahun
         if ($request->ajax() && $request->has('tahun_page')) {
             return response()->json([
                 'html' => view('admin.partials.tahun-pagination', compact('surveiPerTahun'))->render(),
@@ -105,6 +106,7 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Render halaman dashboard utama
         return view('admin.dashboard', compact(
             'totalSurvei',
             'totalGridTerisi',

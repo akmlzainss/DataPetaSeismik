@@ -16,11 +16,13 @@ class ForgotPasswordController extends Controller
 {
     public function showLinkRequestForm()
     {
+        // Tampilkan form permintaan reset password
         return view('admin.auth.forgot-password');
     }
 
     public function sendResetLinkEmail(Request $request)
     {
+        // Validasi email admin
         $request->validate([
             'email' => 'required|email|exists:admin,email'
         ], [
@@ -29,23 +31,23 @@ class ForgotPasswordController extends Controller
             'email.exists' => 'Email tidak terdaftar dalam sistem.'
         ]);
 
-        // Generate token
+        // Generate token reset baru
         $token = Str::random(64);
 
-        // Delete existing tokens for this email
+        // Hapus token lama untuk email ini
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-        // Insert new token
+        // Simpan token baru
         DB::table('password_reset_tokens')->insert([
             'email' => $request->email,
             'token' => Hash::make($token),
             'created_at' => now()
         ]);
 
-        // Get admin data
+        // Ambil data admin untuk email
         $admin = Admin::where('email', $request->email)->first();
 
-        // Send email
+        // Kirim email reset password
         try {
             Mail::to($request->email)->send(new AdminPasswordResetMail($admin, $token));
 
@@ -57,6 +59,7 @@ class ForgotPasswordController extends Controller
 
     public function showResetForm($token)
     {
+        // Tampilkan form reset password dengan token dari URL
         return view('admin.auth.reset-password', ['token' => $token]);
     }
 
@@ -66,18 +69,20 @@ class ForgotPasswordController extends Controller
      */
     public function showResetFormFromQuery(Request $request)
     {
+        // Ambil token dari query string
         $token = $request->query('token');
-        
+
         if (!$token) {
             return redirect()->route('admin.password.request')
                 ->with('error', 'Token reset password tidak ditemukan. Silakan request ulang.');
         }
-        
+
         return view('admin.auth.reset-password', ['token' => $token]);
     }
 
     public function reset(Request $request)
     {
+        // Validasi input reset password
         $request->validate([
             'token' => 'required',
             'email' => 'required|email|exists:admin,email',
@@ -91,7 +96,7 @@ class ForgotPasswordController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        // Check if token exists and is valid (not older than 60 minutes)
+        // Cek token dan masa berlaku (maks 60 menit)
         $resetRecord = DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->where('created_at', '>', now()->subMinutes(60))
@@ -101,13 +106,13 @@ class ForgotPasswordController extends Controller
             return back()->with('error', 'Token reset password tidak valid atau sudah kedaluwarsa.');
         }
 
-        // Update password
+        // Update password admin
         $admin = Admin::where('email', $request->email)->first();
         $admin->update([
             'kata_sandi' => Hash::make($request->password)
         ]);
 
-        // Delete the token
+        // Hapus token agar tidak bisa dipakai ulang
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return redirect()->route('admin.login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');

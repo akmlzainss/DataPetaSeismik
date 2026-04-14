@@ -19,6 +19,7 @@ class DataSurveiController extends Controller
      */
     public function index(Request $request)
     {
+        // Query dasar dengan relasi pengunggah
         $query = DataSurvei::with('pengunggah');
 
         // SEARCH: judul, wilayah, tahun
@@ -71,9 +72,11 @@ class DataSurveiController extends Controller
      */
     public function store(DataSurveiRequest $request)
     {
+        // Simpan data valid dan catat admin pengunggah
         $data = $request->validated();
         $data['diunggah_oleh'] = Auth::guard('admin')->id();
 
+        // Sanitasi deskripsi HTML sebelum disimpan
         if (isset($data['deskripsi'])) {
             $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
         }
@@ -100,6 +103,7 @@ class DataSurveiController extends Controller
 
         $survei = DataSurvei::create($data);
 
+        // Jalankan pemrosesan gambar secara async setelah data tersimpan
         // Proses gambar thumbnail dan medium di background menggunakan Job
         if ($request->hasFile('gambar_pratinjau')) {
             // Delay 5 detik agar record dataSurvei sudah benar-benar tersimpan di DB
@@ -129,10 +133,10 @@ class DataSurveiController extends Controller
     {
         // Load relasi gridKotak untuk menampilkan grid yang sudah terpilih
         $dataSurvei->load('gridKotak');
-        
+
         // Ambil semua grid untuk pilihan dropdown
         $allGrids = \App\Models\GridKotak::orderBy('nomor_kotak', 'asc')->get();
-        
+
         return view('admin.data_survei.edit', compact('dataSurvei', 'allGrids'));
     }
 
@@ -143,6 +147,7 @@ class DataSurveiController extends Controller
     {
         $data = $request->validated();
 
+        // Sanitasi deskripsi HTML sebelum update
         if (isset($data['deskripsi'])) {
             $data['deskripsi'] = HtmlSanitizerService::sanitize($data['deskripsi']);
         }
@@ -183,7 +188,8 @@ class DataSurveiController extends Controller
         }
 
         $dataSurvei->update($data);
-        
+
+        // Sinkronisasi relasi grid jika ada input dari form
         // Update posisi grid jika ada input
         // Kita gunakan sync untuk replace grid yang lama dengan yang baru
         // Jika input kosong (null), maka grid akan dikosongkan (unassign)
@@ -191,7 +197,7 @@ class DataSurveiController extends Controller
             // Siapkan array sync data dengan tambahan pivot fields
             $syncData = [];
             $gridIds = $request->input('grid_kotak_id', []); // Bisa single value atau array jika multiple allowed
-            
+
             // Jika single value, convert ke array
             if (!is_array($gridIds) && $gridIds) {
                 $gridIds = [$gridIds];
@@ -199,17 +205,18 @@ class DataSurveiController extends Controller
                 // If empty or null
                 $gridIds = [];
             }
-            
+
             foreach ($gridIds as $gridId) {
                 $syncData[$gridId] = [
                     'assigned_by' => Auth::guard('admin')->id(),
                     'assigned_at' => now(),
                 ];
             }
-            
+
             // Update relasi
             $dataSurvei->gridKotak()->sync($syncData);
-            
+
+            // Hitung ulang statistik grid terkait
             // Update counter total_data di GridKotak (manual calculation karena sync tidak trigger events observer secara default untuk pivot)
             // Ini bisa resource intensive jika banyak grid, tapi untuk 1-2 grid tidak masalah.
             // Cara yang lebih akurat adalah recalculate semua affected grids
@@ -222,12 +229,6 @@ class DataSurveiController extends Controller
                     'status' => $count > 0 ? 'filled' : 'empty'
                 ]);
             }
-            
-            // Kita juga harus update grid LAMA yang mungkin sekarang jadi kosong
-            // Tapi kita tidak tahu grid lama mana yang di-detach tanpa query dulu.
-            // Solusi sederhana: update status semua grid (TERLALU BERAT).
-            // Solusi: Kita asumsikan user tidak sering pindah grid, jadi manual update cukup.
-            // Note: GridKotakController mungkin punya logic update counter yang lebih baik.
         }
 
         // Proses gambar thumbnail dan medium yang baru di background
@@ -245,6 +246,7 @@ class DataSurveiController extends Controller
      */
     public function destroy(DataSurvei $dataSurvei)
     {
+        // Hapus file terkait sebelum hapus record
         // Hapus semua versi gambar dan file scan asli saat delete
         foreach ([$dataSurvei->gambar_pratinjau, $dataSurvei->gambar_thumbnail, $dataSurvei->gambar_medium, $dataSurvei->file_scan_asli] as $file) {
             if ($file && Storage::disk('public')->exists($file)) {
@@ -259,6 +261,7 @@ class DataSurveiController extends Controller
         // Hapus data (Pivot di grid_seismik akan terhapus otomatis via Cascade DB)
         $dataSurvei->delete();
 
+        // Recalculate statistik grid yang terhubung
         // UPDATE COUNTER GRID yang terimbas
         if (!empty($connectedGridIds)) {
             $affectedGrids = \App\Models\GridKotak::whereIn('id', $connectedGridIds)->get();
